@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html id="html">
+<head>
+<meta name="viewport" content="width=1200">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<link rel=stylesheet type="text/css" href="css/jquery.selectbox.css" media="all" />
+<link href="css/stylish-select.css" type="text/css" rel="stylesheet" />
+<link href="css/style_page.css" type="text/css" rel="stylesheet" />
+<title></title>
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/header.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.selectbox-0.2_new.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/verify/verify.js"></script>
+<style type="text/css">
+.subdevicename_show
+{
+	width:260px;
+	overflow:hidden;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+}
+</style>
+<script type="text/javascript">
+//xframeoption
+if(top!=self){top.location=self.location;}
+
+var DebugMode=0;
+var HNAP = new HNAP_XML();
+var G_AccessList_Black = [];
+var G_AccessList_White = [];
+var G_Wire=[];
+var G_Wlan2g=[];
+var G_Wlan2gGuest=[];
+var G_Wlan5gGuest=[];
+var G_Wlan5g=[];
+var G_WlanAcess=[];
+var G_WlanOffLine=[];
+var G_AccessMacArray=[];
+var wireless_maclist_mode="";
+var localpc="";
+var max_show_width="260px";//最大显示宽度px
+var MAX_TABLELIST_NUM=16;//最多允许添加的数目
+function CreateTableDevice(Node,Value){
+		var Table = document.getElementById(Node);
+		var Tbody = Table.getElementsByTagName('tbody')[0];
+		
+		if(Tbody == null){
+			Tbody = document.createElement('tbody');
+		}
+	
+		for(var i = 0; i < Value.length; i++){
+			var Tr = [];
+			Tr[i]  = document.createElement('tr');
+			
+	
+			if(Value[i] == undefined) continue;
+			for(var j = 0; j < Value[i].length; j++){
+				var Td = [];
+				
+				Td[j]  = document.createElement('td');
+				Td[j].innerHTML = Value[i][j];
+				Td[j].align = "center";
+				Td[j].id        = Node + "_" + i.toString() + j.toString();
+				Td[j].style.height= "120px";
+				if(j==0)
+				{
+					Td[j].style.width= "228px";
+				}
+				if(j==1)
+				{
+					Td[j].style.width= "436px";
+					Td[j].style.position="relative";
+				}
+				Tr[i].appendChild(Td[j]);
+			}
+			Tbody.appendChild(Tr[i]);
+		}
+		Table.appendChild(Tbody);
+	}
+	
+function ChangSecondToTime(time)
+{
+			var second="";
+			if(time>0)
+			{
+				second= Number(time);
+				var strtime="";
+				if (second >= (24 * 3600)) {
+					//strtime += parseInt(second / (24 * 3600)) + '天';//多语言
+					strtime += parseInt(second / (24 * 3600)) + I18N("j","Devices_Day");
+					second %= 24 * 3600;
+				}
+				if (second >= 3600) {
+					//strtime += parseInt(second / 3600) + '小时';//多语言
+					strtime += parseInt(second / 3600) + I18N("j","Devices_Hour");
+					second %= 3600;
+				}
+				if (second >= 60) {
+					//strtime += parseInt(second / 60) + '分钟';//多语言
+					strtime += parseInt(second / 60) + I18N("j","Devices_Minute");
+					second %= 60;
+				}
+				if (second > 0) {
+					//strtime += second+' 秒';//多语言
+					strtime += second+ I18N("j","Devices_Second");
+				}
+			}
+			else
+			{
+				//偶现在线时长undefined
+				return "0" + I18N("j","Devices_Second");
+			}
+     return strtime;
+
+
+}
+
+function changStatue2g(id)
+{
+	var statueid="list_statue2g"+id;
+	var statueenable="list_enable2g"+id;
+	var mac=G_Wlan2g[id][0];
+	var devicename=G_Wlan2g[id][2];
+	var enable="deny";
+	$.ajax({
+		cache: false,
+		url: "./js/CheckConnection",
+		timeout: 5000,
+		type: "GET",
+		success: function(data) {
+			if("allow" == wireless_maclist_mode)
+			{
+				SetMacListAccessControl(mac,devicename,"","delete");
+				//SetResult_3st(mac,"0");//如果当前为“白名单”模式，点击“关闭”后应该是将它从白名单中删除
+			}
+			else
+			{
+				if(G_WlanAcess.length >= MAX_TABLELIST_NUM)
+				{
+					document.getElementById("createPop_Maclist_Max_Num").style.display = "";
+					return false;
+				}
+				SetMacListAccessControl(mac,devicename,enable,"add");
+				//SetResult_1st(mac,devicename,enable);
+			}
+			document.getElementById(statueid).className = "checkbox_off";
+			document.getElementById(statueenable).checked=false;
+			document.getElementById("CreatePopAlertMessage").style.display = "inline";
+			document.getElementById("waitSettingFinish").style.display = "inline";
+		},
+		error: function() {
+			document.getElementById("DetectRouterConnection").style.display = "inline";
+		}
+	});
+}
+
+function changStatueGuest2g(id)
+{
+	var statueid="list_statueGuest2g"+id;
+	var statueenable="list_enableGuest2g"+id;
+	var mac=G_Wlan2gGuest[id][0];
+	var devicename=G_Wlan2gGuest[id][2];
+	var enable="deny";
+	$.ajax({
+		cache: false,
+		url: "./js/CheckConnection",
+		timeout: 5000,
+		type: "GET",
+		success: function(data) {
+			if("allow" == wireless_maclist_mode)
+			{
+				SetMacListAccessControl(mac,devicename,"","delete");
+				//SetResult_3st(mac,"0");//如果当前为“白名单”模式，点击“关闭”后应该是将它从白名单中删除
+			}
+			else
+			{
+				if(G_WlanAcess.length >= MAX_TABLELIST_NUM)
+				{
+					document.getElementById("createPop_Maclist_Max_Num").style.display = "";
+					return false;
+				}
+				SetMacListAccessControl(mac,devicename,enable,"add");
+				//SetResult_1st(mac,devicename,enable);
+			}
+			document.getElementById(statueid).className = "checkbox_off";
+			document.getElementById(statueenable).checked=false;
+			document.getElementById("CreatePopAlertMessage").style.display = "inline";
+			document.getElementById("waitSettingFinish").style.display = "inline";
+		},
+		error: function() {
+			document.getElementById("DetectRouterConnection").style.display = "inline";
+		}
+	});
+}
+
+function changStatue5g(id)
+{
+	var statueid="list_statue5g"+id;
+	var statueenable="list_enable5g"+id;
+	var mac=G_Wlan5g[id][0];
+	var devicename=G_Wlan5g[id][2];
+	var enable="deny";
+	$.ajax({
+		cache: false,
+		url: "./js/CheckConnection",
+		timeout: 5000,
+		type: "GET",
+		success: function(data) {
+			if("allow" == wireless_maclist_mode)
+			{
+				SetMacListAccessControl(mac,devicename,"","delete");
+				//SetResult_3st(mac,"0");//如果当前为“白名单”模式，点击“关闭”后应该是将它从白名单中删除
+			}
+			else
+			{
+				if(G_WlanAcess.length >= MAX_TABLELIST_NUM)
+				{
+					document.getElementById("createPop_Maclist_Max_Num").style.display = "";
+					return false;
+				}
+				SetMacListAccessControl(mac,devicename,enable,"add");
+				//SetResult_1st(mac,devicename,enable);
+			}
+			document.getElementById(statueid).className = "checkbox_off";
+			document.getElementById(statueenable).checked=false;
+			document.getElementById("CreatePopAlertMessage").style.display = "inline";
+			document.getElementById("waitSettingFinish").style.display = "inline";
+		},
+		error: function() {
+			document.getElementById("DetectRouterConnection").style.display = "inline";
+		}
+	});
+}
+
+function changStatueguest5g(id)
+{
+	var statueid="list_statueguest5g"+id;
+	var statueenable="list_enableguest5g"+id;
+	var mac=G_Wlan5gGuest[id][0];
+	var devicename=G_Wlan5gGuest[id][2];
+	var enable="deny";
+	$.ajax({
+		cache: false,
+		url: "./js/CheckConnection",
+		timeout: 5000,
+		type: "GET",
+		success: function(data) {
+			if("allow" == wireless_maclist_mode)
+			{
+				SetMacListAccessControl(mac,devicename,"","delete");
+				//SetResult_3st(mac,"0");//如果当前为“白名单”模式，点击“关闭”后应该是将它从白名单中删除
+			}
+			else
+			{
+				if(G_WlanAcess.length >= MAX_TABLELIST_NUM)
+				{
+					document.getElementById("createPop_Maclist_Max_Num").style.display = "";
+					return false;
+				}
+				SetMacListAccessControl(mac,devicename,enable,"add");
+				//SetResult_1st(mac,devicename,enable);
+			}
+			document.getElementById(statueid).className = "checkbox_off";
+			document.getElementById(statueenable).checked=false;
+			document.getElementById("CreatePopAlertMessage").style.display = "inline";
+			document.getElementById("waitSettingFinish").style.display = "inline";
+		},
+		error: function() {
+			document.getElementById("DetectRouterConnection").style.display = "inline";
+		}
+	});
+}
+function changStatuewire(id)
+{
+	var statueid="list_statuewire"+id;
+	var statueenable="list_enablewire"+id;
+	var mac=G_Wire[id][0];
+	var devicename=G_Wire[id][2];
+	var enable="deny";
+	$.ajax({
+		cache: false,
+		url: "./js/CheckConnection",
+		timeout: 5000,
+		type: "GET",
+		success: function(data) {
+			if("allow" == wireless_maclist_mode)
+			{
+				SetMacListAccessControl(mac,devicename,"","delete");
+				//SetResult_3st(mac,"0");//如果当前为“白名单”模式，点击“关闭”后应该是将它从白名单中删除
+			}
+			else
+			{
+				if(G_WlanAcess.length >= MAX_TABLELIST_NUM)
+				{
+					document.getElementById("createPop_Maclist_Max_Num").style.display = "";
+					return false;
+				}
+				SetMacListAccessControl(mac,devicename,enable,"add");
+				//SetResult_1st(mac,devicename,enable);
+			}
+			document.getElementById(statueid).className = "checkbox_off";
+			document.getElementById(statueenable).checked=false;
+			document.getElementById("CreatePopAlertMessage").style.display = "inline";
+			document.getElementById("waitSettingFinish").style.display = "inline";
+		},
+		error: function() {
+			document.getElementById("DetectRouterConnection").style.display = "inline";
+		}
+	});
+}
+
+function changStatueacess(id)
+{
+	var statueid="list_statueacess"+id;
+	var statueenable="list_enableacess"+id;
+	var mac=G_WlanAcess[id][1];
+	var devicename=G_WlanAcess[id][0];
+	if(wireless_maclist_mode=="off")
+	{
+		//alert("Wi-Fi 访问控制功能未开启，此开关暂无法使用。请进入“Wi-Fi 访问控制”页面打开“Wi-Fi 访问控制”开关后再试。");//多语言
+		alert(I18N("j","MobileDevices_Open_ACL"));
+		return ;
+	}
+	if(wireless_maclist_mode=="deny")
+	var enable="allow";
+	else
+	var enable="deny";
+	document.getElementById(statueid).className = "checkbox_on";
+	document.getElementById(statueenable).checked=true;	
+	document.getElementById("CreatePopAlertMessage").style.display = "inline";
+	document.getElementById("waitSettingFinish").style.display = "inline";
+		$.ajax({
+			cache: false,
+			url: "./js/CheckConnection",
+			timeout: 5000,
+			type: "GET",
+			success: function(data) {
+				SetResult_1st(mac,devicename,enable);
+			},
+			error: function() {
+				document.getElementById("DetectRouterConnection").style.display = "inline";
+			}
+		});	
+}
+function SetResult_1st(a,b,c) {
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		
+		result_xml.Set("SetStationSettings/station_mac", a);
+        result_xml.Set("SetStationSettings/station_ext_name", b);
+		result_xml.Set("SetStationSettings/station_access_enable", c);
+		HNAP.SetXMLAsync("SetStationSettings", result_xml, function(xml)	{	SetResult_2nd(xml);	});
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetResult_1st");	
+		}	
+	}
+}
+
+function SetResult_2nd(result_xml) {
+	var SetResult_1st = result_xml.Get("SetStationSettingsResponse/SetStationSettingsResult");
+	if (SetResult_1st == "OK") {
+		setTimeout("waitSettingFinished()", 1000);
+	}
+	if (SetResult_1st == "ERROR") {
+		if (DebugMode == 1) {
+		alert("[!!SetXML Error!!] Function: SetResult_2nd");
+		}
+		window.location.reload();
+	}
+}
+function waitSettingFinished() 
+{
+	window.location.reload();
+}
+
+/*点击禁止或“允许”按钮时下发“访问控制”页面规则。访问控制为关闭点击“禁止”后需开启
+访问控制并将mac添加到macliststr下发所有规则，点击“允许”时则从白名单中删除*/
+function SetMacListAccessControl(mac,devicename,enable,type) {
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		
+		var macliststr="";
+		if(wireless_maclist_mode == "off" || wireless_maclist_mode == "deny")
+		{
+			G_WlanAcess = G_AccessList_Black;
+			result_xml.Set("SetMacFilterSettings/enabled", "1");
+			result_xml.Set("SetMacFilterSettings/mode", "deny");
+			if(type == "add")//添加到黑名单
+			{
+				var flag = false;
+				for(var i=0;i<G_WlanAcess.length;i++)//去掉重复
+				{
+					if(mac == G_WlanAcess[i][1])
+					{
+						flag = true;
+					}
+				}
+				if(flag == false)
+				{
+					G_WlanAcess.push([devicename,mac]);
+				}
+			}
+			else if(type == "delete")//从黑名单中删除
+			{
+				for(var i=0;i<G_WlanAcess.length;i++)
+				{
+					if(mac == G_WlanAcess[i][1])
+					{
+						G_WlanAcess.splice(i,1);
+					}
+				}
+			}
+		}
+		else if(wireless_maclist_mode == "allow")
+		{
+			G_WlanAcess = G_AccessList_White;
+			result_xml.Set("SetMacFilterSettings/enabled", "1");
+			result_xml.Set("SetMacFilterSettings/mode", "allow");
+			for(var i=0;i<G_WlanAcess.length;i++)
+			{
+				if(mac == G_WlanAcess[i][1])
+				{
+					G_WlanAcess.splice(i,1);
+				}
+			}
+		}
+		for(var i=0;i<G_WlanAcess.length;i++)
+		{
+			if(i == G_WlanAcess.length-1)
+			{
+				macliststr+=G_WlanAcess[i][0]+","+G_WlanAcess[i][1];
+			}
+			else
+			{
+				macliststr+=G_WlanAcess[i][0]+","+G_WlanAcess[i][1]+";";
+			}
+		}
+		result_xml.Set("SetMacFilterSettings/device", macliststr);
+
+		HNAP.SetXMLAsync("SetMacFilterSettings", result_xml, function(xml)	{	SetMacListAccessControl_2nd(xml,mac,devicename,enable);	});
+	} else {
+		if (DebugMode == 1)	{
+			alert("[!!SetXML Error!!] Function: SetMacListAccessControl_1st");
+		}	
+	}
+}
+function SetMacListAccessControl_2nd(result_xml,mac,devicename,enable) {
+	var SetMacListAccessResult = result_xml.Get("SetMacFilterSettingsResponse/SetMacFilterSettingsResult");
+	if (SetMacListAccessResult == "OK") {
+		if("allow" == wireless_maclist_mode || enable == "")
+		{
+			SetResult_3st(mac,"0");//如果当前为“白名单”模式，点击“关闭”后应该是将它从白名单中删除
+		}
+		else
+		{
+			SetResult_1st(mac,devicename,enable);
+		}
+	}
+	if (SetMacListAccessResult == "ERROR") {
+		if (DebugMode == 1) {
+		alert("[!!SetXML Error!!] Function: SetResult_2nd");
+		}
+		window.location.reload();
+	}
+}
+function changName2g(id)
+{
+	var deviceName="devicename2g"+id;
+	var textid="devicename2ginput"+id;
+	var value=document.getElementById(textid).value;
+	var mac=G_Wlan2g[id][0];
+	var enable="allow";
+	$("#error_2g"+id).hide();
+	if(value.length==0)
+	{
+		document.getElementById(deviceName).innerHTML=G_Wlan2g[id][2];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		return ;
+	}
+	var errorid="2g"+id;
+	var namevalue=document.getElementById(textid).value;
+	var result=checkDeviceNameEdit(namevalue,errorid);
+	if(result)
+	{
+		G_Wlan2g[id][2]=document.getElementById(textid).value;
+		document.getElementById(deviceName).innerHTML=G_Wlan2g[id][2];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		SetDeviceName(mac,value,enable);
+	}
+}
+function changNameGuest2g(id)
+{
+	var deviceName="devicenameguest2g"+id;
+	var textid="devicenameinputguest2g"+id;
+	var value=document.getElementById(textid).value;
+	var mac=G_Wlan2gGuest[id][0];
+	var enable="allow";
+	$("#error_guest2g"+id).hide();
+	if(value.length==0)
+	{
+		document.getElementById(deviceName).innerHTML=G_Wlan2gGuest[id][2];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		return ;
+	}
+	var errorid="guest2g"+id;
+	var namevalue=document.getElementById(textid).value;
+	var result=checkDeviceNameEdit(namevalue,errorid);
+	if(result)
+	{
+		G_Wlan2gGuest[id][2]=document.getElementById(textid).value;
+		document.getElementById(deviceName).innerHTML=G_Wlan2gGuest[id][2];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		SetDeviceName(mac,value,enable);
+	}
+}
+
+function changName5g(id)
+{
+	var deviceName="devicename5g"+id;
+	var textid="devicename5ginput"+id;
+	var value=document.getElementById(textid).value;
+	var mac=G_Wlan5g[id][0];
+	var enable="allow";
+	$("#error_5g"+id).hide();
+	if(value.length==0)
+	{
+		document.getElementById(deviceName).innerHTML=G_Wlan5g[id][2];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		return ;
+	}
+	var errorid="5g"+id;
+	var namevalue=document.getElementById(textid).value;
+	var result=checkDeviceNameEdit(namevalue,errorid);
+	if(result)
+	{
+		G_Wlan5g[id][2]=document.getElementById(textid).value;
+		document.getElementById(deviceName).innerHTML=G_Wlan5g[id][2];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		SetDeviceName(mac,value,enable);
+	}
+}
+
+function changNameGuest5g(id)
+{
+	var deviceName="devicenameguest5g"+id;
+	var textid="devicenameinputguest5g"+id;
+	var value=document.getElementById(textid).value;
+	var mac=G_Wlan5gGuest[id][0];
+	var enable="allow";
+	$("#error_guest5g"+id).hide();
+	if(value.length==0)
+	{
+		document.getElementById(deviceName).innerHTML=G_Wlan5gGuest[id][2];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		return ;
+	}
+	var errorid="guest5g"+id;
+	var namevalue=document.getElementById(textid).value;
+	var result=checkDeviceNameEdit(namevalue,errorid);
+	if(result)
+	{
+		G_Wlan5gGuest[id][2]=document.getElementById(textid).value;
+		document.getElementById(deviceName).innerHTML=G_Wlan5gGuest[id][2];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		SetDeviceName(mac,value,enable);
+	}
+}
+
+function changNameWire(id)
+{
+	var deviceName="devicenamewire"+id;
+	var textid="devicenamewireinput"+id;
+	var value=document.getElementById(textid).value;
+	var mac=G_Wire[id][0];
+	var enable="allow";
+	$("#error_wire"+id).hide();
+	if(value.length==0)
+	{
+		document.getElementById(deviceName).innerHTML=G_Wire[id][2];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		return ;
+	}
+	var errorid="wire"+id;
+	var namevalue=document.getElementById(textid).value;
+	var result=checkDeviceNameEdit(namevalue,errorid);
+	if(result)
+	{
+		G_Wire[id][2]=document.getElementById(textid).value;
+		document.getElementById(deviceName).innerHTML=G_Wire[id][2];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		SetDeviceName(mac,value,enable);
+	}
+}
+
+function changNameAcess(id)
+{
+	var deviceName="devicenameacess"+id;
+	var textid="devicenameacessinput"+id;
+	var value=document.getElementById(textid).value;
+	var mac=G_WlanAcess[id][1];
+	var enable=wireless_maclist_mode;
+	$("#error_acess"+id).hide();
+	if(value.length==0)
+	{
+		document.getElementById(deviceName).innerHTML=G_WlanAcess[id][0];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		return ;
+	}
+	var errorid="acess"+id;
+	var namevalue=document.getElementById(textid).value;
+	var result=checkDeviceNameEdit(namevalue,errorid);
+	if(result)
+	{
+		G_WlanAcess[id][0]=document.getElementById(textid).value;
+		document.getElementById(deviceName).innerHTML=G_WlanAcess[id][0];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		SetDeviceName(mac,value,enable);
+	}
+}
+
+function changNameOffLine(id)
+{
+	var deviceName="devicenameoffline"+id;
+	var textid="devicenameOffonlineinput"+id;
+	var value=document.getElementById(textid).value;
+	var mac=G_WlanOffLine[id][0];
+	var enable="allow";
+	$("#error_offline"+id).hide();
+	if(value.length==0)
+	{
+		document.getElementById(deviceName).innerHTML=G_WlanOffLine[id][2];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		return ;
+	}
+	var errorid="offline"+id;
+	var namevalue=document.getElementById(textid).value;
+	var result=checkDeviceNameEdit(namevalue,errorid);
+	if(result)
+	{
+		G_WlanOffLine[id][2]=document.getElementById(textid).value;
+		document.getElementById(deviceName).innerHTML=G_WlanOffLine[id][2];
+		document.getElementById(deviceName).style.display="";
+		document.getElementById(textid).style.display="none";
+		SetDeviceName(mac,value,enable);
+	}
+}
+
+function SetDeviceName(a,b,c) {
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		document.getElementById("CreatePopAlertMessage").style.display = "inline";
+		document.getElementById("waitSettingFinish").style.display = "inline";
+		result_xml.Set("SetStationSettings/station_mac", a);
+        result_xml.Set("SetStationSettings/station_ext_name", b);
+		result_xml.Set("SetStationSettings/station_access_enable", c);
+		HNAP.SetXMLAsync("SetStationSettings", result_xml, function(xml)	{	SetResult_3nd(xml,a,b);	});
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetDeviceName");	
+		}	
+	}
+}
+
+function SetResult_3nd(result_xml,a,b) {
+	var SetResult_1st = result_xml.Get("SetStationSettingsResponse/SetStationSettingsResult");
+	if (SetResult_1st == "OK") {
+		SetMacListDeviceName_1st(a,b);
+	}
+	if (SetResult_1st == "ERROR") {
+		if (DebugMode == 1) {
+		alert("[!!SetXML Error!!] Function: SetResult_3nd");
+		}
+		window.location.reload();
+	}
+}
+
+//更改别名同时下发更改Maclist中的别名
+function SetMacListDeviceName_1st(a,b) {
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		result_xml.Set("SetMacFilterAliasSettings/dev", a);
+        result_xml.Set("SetMacFilterAliasSettings/extname", b);
+		HNAP.SetXMLAsync("SetMacFilterAliasSettings", result_xml, function(xml)	{	SetMacListDeviceName_2nd(xml);	});
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetMacListDeviceName_1st");
+		}	
+	}
+}
+
+function SetMacListDeviceName_2nd(result_xml) {
+	var SetMacListDeviceNameResult = result_xml.Get("SetMacFilterAliasSettingsResponse/SetMacFilterAliasSettingsResult");
+	if (SetMacListDeviceNameResult == "OK") {
+		window.location.reload();
+	}
+	if (SetMacListDeviceNameResult == "ERROR") {
+		if (DebugMode == 1) {
+		alert("[!!SetXML Error!!] Function: SetMacListDeviceName_2nd");
+		}
+		window.location.reload();
+	}
+}
+
+function editData2g(id)
+{
+	$("#error_2g"+id).hide();
+	var deviceName="devicename2g"+id;
+	var textid="devicename2ginput"+id;
+	document.getElementById(deviceName).style.display="none";
+	document.getElementById(textid).value=G_Wlan2g[id][2];
+	document.getElementById(textid).style.display="";
+	$("#"+textid).val("").focus().val(G_Wlan2g[id][2]);
+}
+
+function editDataguest2g(id)
+{
+	$("#error_guest2g"+id).hide();
+	var deviceName="devicenameguest2g"+id;
+	var textid="devicenameinputguest2g"+id;
+	document.getElementById(deviceName).style.display="none";
+	document.getElementById(textid).value=G_Wlan2gGuest[id][2];
+	document.getElementById(textid).style.display="";
+	$("#"+textid).val("").focus().val(G_Wlan2gGuest[id][2]);
+}
+
+function editData5g(id)
+{
+	$("#error_5g"+id).hide();
+	var deviceName="devicename5g"+id;
+	var textid="devicename5ginput"+id;
+	document.getElementById(deviceName).style.display="none";
+	document.getElementById(textid).value=G_Wlan5g[id][2];
+	document.getElementById(textid).style.display="";
+	$("#"+textid).val("").focus().val(G_Wlan5g[id][2]);
+}
+
+function editDataguest5g(id)
+{
+	$("#error_guest5g"+id).hide();
+	var deviceName="devicenameguest5g"+id;
+	var textid="devicenameinputguest5g"+id;
+	document.getElementById(deviceName).style.display="none";
+	document.getElementById(textid).value=G_Wlan5gGuest[id][2];
+	document.getElementById(textid).style.display="";
+	$("#"+textid).val("").focus().val(G_Wlan5gGuest[id][2]);
+}
+
+function editDatawire(id)
+{
+	$("#error_wire"+id).hide();
+	var deviceName="devicenamewire"+id;
+	var textid="devicenamewireinput"+id;
+	document.getElementById(deviceName).style.display="none";
+	document.getElementById(textid).value=G_Wire[id][2];
+	document.getElementById(textid).style.display="";
+	$("#"+textid).val("").focus().val(G_Wire[id][2]);
+}
+
+function editDataacess(id)
+{
+	$("#error_acess"+id).hide();
+	var deviceName="devicenameacess"+id;
+	var textid="devicenameacessinput"+id;
+	document.getElementById(deviceName).style.display="none";
+	document.getElementById(textid).value=G_WlanAcess[id][0];
+	document.getElementById(textid).style.display="";
+	$("#"+textid).val("").focus().val(G_WlanAcess[id][0]);
+}
+
+function editDataOffline(id)
+{
+	$("#error_offline"+id).hide();
+	var deviceName="devicenameoffline"+id;
+	var textid="devicenameOffonlineinput"+id;
+	document.getElementById(deviceName).style.display="none";
+	document.getElementById(textid).value=G_WlanOffLine[id][2];
+	document.getElementById(textid).style.display="";
+	document.getElementById(textid).focus();
+	$("#"+textid).val("").focus().val(G_WlanOffLine[id][2]);
+}
+
+function deleteDataacess(id)
+{
+	  var mac=G_WlanAcess[id][1];
+	  var devicename=G_WlanAcess[id][0];
+	  var type="0";
+		$.ajax({
+			cache: false,
+			url: "./js/CheckConnection",
+			timeout: 5000,
+			type: "GET",
+			success: function(data) {
+				//SetResult_3st(mac,type);
+				SetMacListAccessControl(mac,devicename,"","delete");
+			},
+			error: function() {
+				document.getElementById("DetectRouterConnection").style.display = "inline";
+			}
+		});	
+}
+
+function deleteDataOffline(id)
+{
+	  var mac=G_WlanOffLine[id][0];
+	   var type="1";
+		$.ajax({
+			cache: false,
+			url: "./js/CheckConnection",
+			timeout: 5000,
+			type: "GET",
+			success: function(data) {
+				SetResult_3st(mac,type);
+			},
+			error: function() {
+				document.getElementById("DetectRouterConnection").style.display = "inline";
+			}
+		});	
+}
+
+function SetResult_3st(a,b) {
+	document.getElementById("CreatePopAlertMessage").style.display = "inline";
+	document.getElementById("waitSettingFinish").style.display = "inline";
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		
+		result_xml.Set("DelStationSettings/station_mac", a);
+		result_xml.Set("DelStationSettings/del_type", b);
+		HNAP.SetXMLAsync("DelStationSettings", result_xml, function(xml)	{	SetResult_4nd(xml);	});
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetResult_3st");	
+		}	
+	}
+}
+
+function SetResult_4nd(result_xml) {
+	var SetResult_1st = result_xml.Get("DelStationSettingsResponse/DelStationSettingsResult");
+	if (SetResult_1st == "OK") {
+		setTimeout("waitSettingFinished()", 1000);
+	}
+	if (SetResult_1st == "ERROR") {
+		if (DebugMode == 1) {
+		alert("[!!SetXML Error!!] Function: SetResult_4nd");
+		}
+		window.location.reload();
+	}
+}
+
+function DeviceType(type,tag)
+{
+	var htmlstr="";
+	if(type.indexOf("Apple")>-1)
+	{
+		htmlstr="<div class='appledevice'></div>";
+	}
+	else if(type.indexOf("HUAWEI")>-1 || type.indexOf("Huawei")>-1)
+	{
+		htmlstr="<div class='huaweidevice'></div>";
+	}
+	else if(type.indexOf("Samsung")>-1 || type.indexOf("SAMSUNG")>-1)
+	{
+		htmlstr="<div class='sansungdevice'></div>";
+	}
+	else if(type.indexOf("XIAOMI")>-1 || type.indexOf("Xiaomi")>-1 )
+	{
+		htmlstr="<div class='xiaomidevice'></div>";
+	}
+
+	else if(type.indexOf("Lenovo")>-1 || type.indexOf("LENOVO")>-1)
+	{
+		htmlstr="<div class='lenovodevice'></div>";
+	}
+
+	else if(type.indexOf("ACER")>-1 || type.indexOf("Acer")>-1 )
+	{
+		htmlstr="<div class='acerdevice'></div>";
+	}
+	
+	else if(type.indexOf("ASUSTek")>-1)
+	{
+		htmlstr="<div class='asusdevice'></div>";
+	}
+
+	else if(type.indexOf("Dell")>-1)
+	{
+		htmlstr="<div class='delldevice'></div>";
+	}
+
+	else if(type.indexOf("HP")>-1)
+	{
+		htmlstr="<div class='hpdevice'></div>";
+	}
+	else
+	{
+		if(tag=="1")
+		{
+			htmlstr="<div class='otherwifidevice'></div>";
+		
+		}
+		else
+		{
+			htmlstr="<div class='otherwiredevice'></div>";
+		}
+	}
+	return htmlstr;
+}
+
+function DeviceTypeOff(type,tag)
+{
+	var htmlstr="";
+	if(type.indexOf("Apple")>-1)
+	{
+		htmlstr="<div class='appledeviceoff'></div>";
+	}
+	else if(type.indexOf("HUAWEI")>-1 || type.indexOf("Huawei")>-1)
+	{
+		htmlstr="<div class='huaweideviceoff'></div>";
+	}
+	else if(type.indexOf("Samsung")>-1 || type.indexOf("SAMSUNG")>-1)
+	{
+		htmlstr="<div class='sansungdeviceoff'></div>";
+	}
+	else if(type.indexOf("XIAOMI")>-1 || type.indexOf("Xiaomi")>-1 )
+	{
+		htmlstr="<div class='xiaomideviceoff'></div>";
+	}
+
+	else if(type.indexOf("Lenovo")>-1 || type.indexOf("LENOVO")>-1)
+	{
+		htmlstr="<div class='lenovodeviceoff'></div>";
+	}
+
+	else if(type.indexOf("ACER")>-1 || type.indexOf("Acer")>-1 )
+	{
+		htmlstr="<div class='acerdeviceoff'></div>";
+	}
+	
+	else if(type.indexOf("ASUSTek")>-1)
+	{
+		htmlstr="<div class='asusdeviceoff'></div>";
+	}
+
+	else if(type.indexOf("Dell")>-1)
+	{
+		htmlstr="<div class='delldeviceoff'></div>";
+	}
+
+	else if(type.indexOf("HP")>-1)
+	{
+		htmlstr="<div class='hpdeviceoff'></div>";
+	}
+	else
+	{
+		if(tag=="0")
+		{
+			htmlstr="<div class='otherwiredeviceoff'></div>";
+		
+		}
+		else
+		{
+			htmlstr="<div class='otherwifideviceoff'></div>";
+		}
+	
+	
+	}
+	return htmlstr;
+}
+
+function Create24Table()
+{
+
+	if(G_Wlan2g.length==0 && G_Wlan2gGuest.length==0)
+	{
+		document.getElementById("Wlan24table").style.display="none";
+	}
+	else
+	{
+		document.getElementById("Wlan24table").style.display="";
+	}
+	ClearTable("Wlan24table",1);
+	var AccessTableList=[];
+	var n=0;
+	for(var i=0;i<G_Wlan2g.length;i++)
+	{
+		AccessTableList[n]=[];
+		var outstring1="";
+		//var devicename_2g_display=subDeviceNameDisplay(G_Wlan2g[i][2],subname_maxlength);//显示...
+		outstring1=DeviceType(G_Wlan2g[i][6],"1");
+		 var timestr=ChangSecondToTime(G_Wlan2g[i][4]); //onlinetime
+		 //outstring1+="<div class='deviceonlinetext'>在线时长:"+timestr+"</div>";//多语言
+		 outstring1+="<div class='deviceonlinetext'>"+I18N("j","Devices_Online_Time")+timestr+"</div>";
+		
+		var outstring2="";
+		outstring2="<div class='devicename'><div id='devicename2g"+i+"' class='subdevicename_show'>" + G_Wlan2g[i][2] + "</div><div><input type='text' id='devicename2ginput"+i+"' class='styled-text' style='display:none; ' maxlength='64' onblur='changName2g("+i+")'></div>"+
+			"<div class='errorinfo' id='error_2g"+i+"' style='display:none;'><table><tbody><tr><td><div class='ic-sign ic'></div></td><td id='errorinfo_2g"+i+"'></td></tr></tbody></table></div></div>";
+		outstring2+="<div class='deviceipmac'><span class='deviceip'><span>IP:"+G_Wlan2g[i][1] + "</span></span><span><span>MAC:</span>" +G_Wlan2g[i][0] +"</span></div>";
+		//outstring2+="<div class='devicesmalltext'>接入时间："+G_Wlan2g[i][3] + "</div>";//多语言
+		outstring2+="<div class='devicesmalltext'>"+I18N("j","Devices_Access_time")+G_Wlan2g[i][3] + "</div>";
+
+		if(localpc==G_Wlan2g[i][0])
+		{
+			//var outstring3="<div class='words2'>本机</div>";//多语言
+			var outstring3="<div class='words2'>"+I18N("j","Devices_Local_PC")+"</div>";
+		}	
+		else if(JudgeForbidden(G_Wlan2g[i][0]) == true)
+		{
+			var outstring3="<div class='words2'>"+I18N("j","Devices_Wire_Forbidden")+"</div>";
+		}
+		else
+		{
+			var outstring3="<div id='list_statue2g"+i+"' class='checkbox_on' onclick='changStatue2g("+i+")'><input type='checkbox' style='display:none;' id='list_enable2g"+i+"' checked></div>"; 
+		}
+		
+		AccessTableList[n].push(outstring1);
+		AccessTableList[n].push(outstring2);
+		AccessTableList[n].push(outstring3);
+		AccessTableList[n].push("<div class='editimg' onclick='editData2g("+i+")'></div>");
+		n++;
+	}
+	
+	for(var i=0;i<G_Wlan2gGuest.length;i++)
+	{
+		AccessTableList[n]=[];
+		var outstring1="";
+		//var devicename_2gGuest_display=subDeviceNameDisplay(G_Wlan2gGuest[i][2],subname_maxlength);//显示...
+		outstring1=DeviceType(G_Wlan2gGuest[i][6],"1");
+		 var timestr=ChangSecondToTime(G_Wlan2gGuest[i][4]); //onlinetime
+		 //outstring1+="<div class='deviceonlinetext'>在线时长:"+timestr+"</div>";//多语言
+		 outstring1+="<div class='deviceonlinetext'>"+I18N("j","Devices_Online_Time")+timestr+"</div>";
+		
+		var outstring2="";
+		outstring2="<div class='devicename'><div id='devicenameguest2g"+i+"' class='subdevicename_show'>" + G_Wlan2gGuest[i][2] + "</div><div><input type='text' id='devicenameinputguest2g"+i+"' class='styled-text' style='display:none; ' maxlength='64' onblur='changNameGuest2g("+i+")'></div>"+
+		"<div class='errorinfo' id='error_guest2g"+i+"' style='display:none;'><table><tbody><tr><td><div class='ic-sign ic'></div></td><td id='errorinfo_guest2g"+i+"'></td></tr></tbody></table></div></div>";
+		outstring2+="<div class='deviceipmac'><span class='deviceip'><span>IP:"+G_Wlan2gGuest[i][1] + "</span></span><span><span>MAC:</span>" +G_Wlan2gGuest[i][0] +"</span></div>";
+		//outstring2+="<div class='devicesmalltext'>接入时间："+G_Wlan2gGuest[i][3] + "</div>";//多语言
+		outstring2+="<div class='devicesmalltext'>"+I18N("j","Devices_Access_time")+G_Wlan2gGuest[i][3] + "</div>";
+		//outstring2+="<div class='deviceguest'>访客</div>";//多语言
+		outstring2+="<div class='deviceguest'>"+I18N("j","Devices_Guest")+"</div>";
+
+		if(localpc==G_Wlan2gGuest[i][0])
+		{
+			//var outstring3="<div class='words2'>本机</div>";//多语言
+			var outstring3="<div class='words2'>"+I18N("j","Devices_Local_PC")+"</div>";
+		}	
+		else if(JudgeForbidden(G_Wlan2gGuest[i][0]) == true)
+		{
+			var outstring3="<div class='words2'>"+I18N("j","Devices_Wire_Forbidden")+"</div>";
+		}
+		else
+		{
+			var outstring3="<div id='list_statueGuest2g"+i+"' class='checkbox_on' onclick='changStatueGuest2g("+i+")'><input type='checkbox' style='display:none;' id='list_enableGuest2g"+i+"' checked></div>"; 
+		}
+		
+		AccessTableList[n].push(outstring1);
+		AccessTableList[n].push(outstring2);
+		AccessTableList[n].push(outstring3);
+		AccessTableList[n].push("<div class='editimg' onclick='editDataguest2g("+i+")'></div>");
+		n++;
+	}	
+	CreateTableDevice("Wlan24table", AccessTableList);
+}
+
+function Create5gTable()
+{
+
+	if(G_Wlan5g.length==0 && G_Wlan5gGuest.length==0)
+	{
+		document.getElementById("Wlantable5g").style.display="none";
+		return ;
+	}
+	else
+	{
+		document.getElementById("Wlantable5g").style.display="";
+	}
+	ClearTable("Wlantable5g",1);
+	var AccessTableList=[];
+	var n=0;
+	for(var i=0;i<G_Wlan5g.length;i++)
+	{
+		AccessTableList[n]=[];
+		var outstring1="";
+		//var devicename_5g_display=subDeviceNameDisplay(G_Wlan5g[i][2],subname_maxlength);//显示...
+		outstring1=DeviceType(G_Wlan5g[i][6],"1");
+		 var timestr=ChangSecondToTime(G_Wlan5g[i][4]); //onlinetime
+		 //outstring1+="<div class='deviceonlinetext'>在线时长:"+timestr+"</div>";//多语言
+		 outstring1+="<div class='deviceonlinetext'>"+I18N("j","Devices_Online_Time")+timestr+"</div>";
+		
+		var outstring2="";
+		outstring2="<div class='devicename'><div id='devicename5g"+i+"' class='subdevicename_show'>" + G_Wlan5g[i][2] + "</div><div><input type='text' id='devicename5ginput"+i+"' class='styled-text' style='display:none; ' maxlength='64' onblur='changName5g("+i+")'></div>"+
+			"<div class='errorinfo' id='error_5g"+i+"' style='display:none;'><table><tbody><tr><td><div class='ic-sign ic'></div></td><td id='errorinfo_5g"+i+"'></td></tr></tbody></table></div></div>";
+		outstring2+="<div class='deviceipmac'><span class='deviceip'><span>IP:"+G_Wlan5g[i][1] + "</span></span><span><span>MAC:</span>" +G_Wlan5g[i][0] +"</span></div>";
+		//outstring2+="<div class='devicesmalltext'>接入时间："+G_Wlan5g[i][3] + "</div>";//多语言
+		outstring2+="<div class='devicesmalltext'>"+I18N("j","Devices_Access_time")+G_Wlan5g[i][3] + "</div>";
+
+		if(localpc==G_Wlan5g[i][0])
+		{
+			//var outstring3="<div class='words2'>本机</div>";//多语言
+			var outstring3="<div class='words2'>"+I18N("j","Devices_Local_PC")+"</div>";
+		}
+		else if(JudgeForbidden(G_Wlan5g[i][0]) == true)
+		{
+			var outstring3="<div class='words2'>"+I18N("j","Devices_Wire_Forbidden")+"</div>";
+		}
+		else
+		{
+			var outstring3="<div id='list_statue5g"+i+"' class='checkbox_on' onclick='changStatue5g("+i+")'><input type='checkbox' style='display:none;' id='list_enable5g"+i+"' checked></div>"; 
+		}
+		
+		AccessTableList[n].push(outstring1);
+		AccessTableList[n].push(outstring2);
+		AccessTableList[n].push(outstring3);
+		AccessTableList[n].push("<div class='editimg' onclick='editData5g("+i+")'></div>");
+		n++;
+	}
+
+	for(var i=0;i<G_Wlan5gGuest.length;i++)
+	{
+		AccessTableList[n]=[];
+		var outstring1="";
+		//var devicename_5gGuest_display=subDeviceNameDisplay(G_Wlan5gGuest[i][2],subname_maxlength);//显示...
+		outstring1=DeviceType(G_Wlan5gGuest[i][6],"1");
+		 var timestr=ChangSecondToTime(G_Wlan5gGuest[i][4]); //onlinetime
+		 //outstring1+="<div class='deviceonlinetext'>在线时长:"+timestr+"</div>";//多语言
+		 outstring1+="<div class='deviceonlinetext'>"+I18N("j","Devices_Online_Time")+timestr+"</div>";
+		
+		var outstring2="";
+		outstring2="<div class='devicename'><div id='devicenameguest5g"+i+"' class='subdevicename_show'>" + G_Wlan5gGuest[i][2] + "</div><div><input type='text' id='devicenameinputguest5g"+i+"' class='styled-text' style='display:none; ' maxlength='64' onblur='changNameGuest5g("+i+")'></div>"+
+			"<div class='errorinfo' id='error_guest5g"+i+"' style='display:none;'><table><tbody><tr><td><div class='ic-sign ic'></div></td><td id='errorinfo_guest5g"+i+"'></td></tr></tbody></table></div></div>";
+		outstring2+="<div class='deviceipmac'><span class='deviceip'><span>IP:"+G_Wlan5gGuest[i][1] + "</span></span><span><span>MAC:</span>" +G_Wlan5gGuest[i][0] +"</span></div>";
+		//outstring2+="<div class='devicesmalltext'>接入时间："+G_Wlan5gGuest[i][3] + "</div>";//多语言
+		outstring2+="<div class='devicesmalltext'>"+I18N("j","Devices_Access_time")+G_Wlan5gGuest[i][3] + "</div>";
+		//outstring2+="<div class='deviceguest'>访客</div>";//多语言
+		outstring2+="<div class='deviceguest'>"+I18N("j","Devices_Guest")+"</div>";
+
+		if(localpc==G_Wlan5gGuest[i][0])
+		{
+			//var outstring3="<div class='words2'>本机</div>";//多语言
+			var outstring3="<div class='words2'>"+I18N("j","Devices_Local_PC")+"</div>";
+		}
+		else if(JudgeForbidden(G_Wlan5gGuest[i][0]) == true)
+		{
+			var outstring3="<div class='words2'>"+I18N("j","Devices_Wire_Forbidden")+"</div>";
+		}
+		else
+		{
+			var outstring3="<div id='list_statueguest5g"+i+"' class='checkbox_on' onclick='changStatueguest5g("+i+")'><input type='checkbox' style='display:none;' id='list_enableguest5g"+i+"' checked></div>"; 
+		}
+		
+		AccessTableList[n].push(outstring1);
+		AccessTableList[n].push(outstring2);
+		AccessTableList[n].push(outstring3);
+		AccessTableList[n].push("<div class='editimg' onclick='editDataguest5g("+i+")'></div>");
+		n++;
+	}	
+	CreateTableDevice("Wlantable5g", AccessTableList);
+}
+
+function CreateWireTable()
+{
+
+	if(G_Wire.length==0)
+	{
+		document.getElementById("Wiretable").style.display="none";
+		return ;
+	}
+	else
+	{
+		document.getElementById("Wiretable").style.display="";
+	}
+	ClearTable("Wiretable",1);
+	var AccessTableList=[];
+	var n=0;
+	for(var i=0;i<G_Wire.length;i++)
+	{
+		AccessTableList[n]=[];
+		var outstring1="";
+		//var devicename_wire_display=subDeviceNameDisplay(G_Wire[i][2],subname_maxlength);//显示...
+		outstring1=DeviceType(G_Wire[i][6],"0");
+		 var timestr=ChangSecondToTime(G_Wire[i][4]); //onlinetime
+		 //outstring1+="<div class='deviceonlinetext'>在线时长:"+timestr+"</div>";//多语言
+		 outstring1+="<div class='deviceonlinetext'>"+I18N("j","Devices_Online_Time")+timestr+"</div>";
+		
+		var outstring2="";
+		outstring2="<div class='devicename'><div id='devicenamewire"+i+"' class='subdevicename_show'>" +G_Wire[i][2]+ "</div><div><input type='text' id='devicenamewireinput"+i+"' class='styled-text' style='display:none; ' maxlength='64' onblur='changNameWire("+i+")'></div>"+
+			"<div class='errorinfo' id='error_wire"+i+"' style='display:none;'><table><tbody><tr><td><div class='ic-sign ic'></div></td><td id='errorinfo_wire"+i+"'></td></tr></tbody></table></div></div>";
+		outstring2+="<div class='deviceipmac'><span class='deviceip'><span>IP:"+G_Wire[i][1] + "</span></span><span><span>MAC:</span>" +G_Wire[i][0] +"</span></div>";
+		//outstring2+="<div class='devicesmalltext'>接入时间："+G_Wire[i][3] + "</div>";//多语言
+		outstring2+="<div class='devicesmalltext'>"+I18N("j","Devices_Access_time")+G_Wire[i][3] + "</div>";
+
+		//var outstring3="<div id='list_statuewire"+i+"' class='checkbox_on' onclick='changStatuewire("+i+")'><input type='checkbox' styel='display:none;' id='list_enablewire"+i+"' checked></div>"; 
+		if(localpc==G_Wire[i][0])
+		{
+			//var outstring3="<div class='words2'>本机</div>";//多语言
+			var outstring3="<div class='words2'>"+I18N("j","Devices_Local_PC")+"</div>";
+		}
+		else if(JudgeForbidden(G_Wire[i][0]) == true)
+		{
+			var outstring3="<div class='words2'>"+I18N("j","Devices_Wire_Forbidden")+"</div>";
+		}
+		else
+		{
+			var outstring3="<div id='list_statuewire"+i+"' class='checkbox_on' onclick='changStatuewire("+i+")'><input type='checkbox' styel='display:none;' id='list_enablewire"+i+"' checked></div>"; 
+		}
+		
+		AccessTableList[n].push(outstring1);
+		AccessTableList[n].push(outstring2);
+		AccessTableList[n].push(outstring3);
+		AccessTableList[n].push("<div class='editimg' onclick='editDatawire("+i+")'></div>");
+		n++;
+	}
+	CreateTableDevice("Wiretable", AccessTableList);
+}
+
+function CreateWlanAcessTable()
+{
+
+	if(G_WlanAcess.length==0)
+	{
+		document.getElementById("Acesstable").style.display="none";
+		return ;
+	}
+	else
+	{
+		document.getElementById("Acesstable").style.display="";
+	}
+	ClearTable("Acesstable",1);
+	var AccessTableList=[];
+	var n=0;
+	for(var i=0;i<G_WlanAcess.length;i++)
+	{
+		AccessTableList[n]=[];
+		var a=0;
+		var outstring1="";
+		if(wireless_maclist_mode=="deny")
+		{
+			for(var j=0;j<G_WlanOffLine.length;j++)
+			{
+				if(G_WlanAcess[i][1]==G_WlanOffLine[j][0])
+				{
+				 	a=1;
+					outstring1=DeviceTypeOff(G_WlanOffLine[j][6],G_WlanOffLine[j][5]);
+					break;
+				}
+			
+			}
+			
+			if(a==0)
+			{
+				for(var j=0;j<G_Wire.length;j++)
+				{
+					if(G_WlanAcess[i][1]==G_Wire[j][0])//从有线列表中查找
+					{
+						a=1;
+						outstring1=DeviceTypeOff(G_Wire[j][6],"0");
+						break;
+					}
+			    }
+			}
+			
+			if(a==0)
+			{
+				outstring1="<div class='otherwifideviceoff'></div>";
+			}
+		
+		}
+		
+		else if(wireless_maclist_mode=="allow")
+		{
+			for(var j=0;j<G_Wlan2g.length;j++)
+			{
+				if(G_WlanAcess[i][1]==G_Wlan2g[j][0])
+				{
+				 	a=1;
+					outstring1=DeviceType(G_Wlan2g[j][6],1);
+					break;
+				}			
+			}
+			if(a==0)
+			{
+				for(var j=0;j<G_Wlan2gGuest.length;j++)
+				{
+					if(G_WlanAcess[i][1]==G_Wlan2gGuest[j][0])
+					{
+						a=1;
+						outstring1=DeviceType(G_Wlan2gGuest[j][6],1);
+						break;
+					}			
+			   }			
+
+		    }
+			
+			if(a==0)
+			{
+				for(var j=0;j<G_Wlan5g.length;j++)
+				{
+					if(G_WlanAcess[i][1]==G_Wlan5g[j][0])
+					{
+						a=1;
+						outstring1=DeviceType(G_Wlan5g[j][6],1);
+						break;
+					}			
+			   }						
+			
+			}
+			
+			if(a==0)
+			{
+			
+				for(var j=0;j<G_Wlan5gGuest.length;j++)
+				{
+					if(G_WlanAcess[i][1]==G_Wlan5gGuest[j][0])
+					{
+						a=1;
+						outstring1=DeviceType(G_Wlan5gGuest[j][6],1);
+						break;
+					}			
+			   }						
+			
+			}
+			
+			if(a==0)
+			{
+			
+				for(var j=0;j<G_WlanOffLine.length;j++)
+				{
+					if(G_WlanAcess[i][1]==G_WlanOffLine[j][0])
+					{
+						a=1;
+						outstring1=DeviceTypeOff(G_WlanOffLine[j][6],G_WlanOffLine[j][5]);
+						break;
+					}			
+			   }						
+			
+			}
+			
+			if(a==0)
+			{
+				for(var j=0;j<G_Wire.length;j++)
+				{
+					if(G_WlanAcess[i][1]==G_Wire[j][0])
+					{
+						a=1;
+						outstring1=DeviceType(G_Wire[j][6],"0");
+						break;
+					}
+			   }
+			}
+			
+			if(a==0)
+			{
+				outstring1="<div class='otherwifideviceoff'></div>";
+			
+			}
+			
+		 
+		
+		 }
+		
+		
+		//if(G_WlanAcess[i][5]=="apple") //devtype
+		//{
+		// outstring1="<div><img src='image/u1732.png' class='img'  width='50' height='50'></div>";
+		//}
+		//else if(G_WlanAcess[i][5]=="huawei")
+		//{
+		//}
+		// var timestr=G_WlanAcess[i][4]; //onlinetime
+		// outstring1+="<div class='deviceonlinetext'>在线时长:"+timestr+"</div>";
+		//var devicename_access_display=subDeviceNameDisplay(G_WlanAcess[i][0],subname_maxlength);//显示...
+		var outstring2="";
+		outstring2="<div class='devicename'><div id='devicenameacess"+i+"' class='subdevicename_show'>" + G_WlanAcess[i][0] + "</div><div><input type='text' id='devicenameacessinput"+i+"' class='styled-text' style='display:none; ' maxlength='64' onblur='changNameAcess("+i+")'></div>"+
+			"<div class='errorinfo' id='error_acess"+i+"' style='display:none;'><table><tbody><tr><td><div class='ic-sign ic'></div></td><td id='errorinfo_acess"+i+"'></td></tr></tbody></table></div></div>";
+		//outstring2+="<div class='devicesmalltext'><span class='deviceip'><span>IP:"+G_WlanAcess[i][1] + "</span></span><span><span>MAC:</span>" +G_WlanAcess[i][0] +"</span></div>";
+		outstring2+="<div class='deviceipmac'><span class='deviceip'>"+ "<span><span>MAC:</span>" +G_WlanAcess[i][1] +"</span></div>";		
+		//outstring2+="<div class='devicesmalltext'>接入时间："+G_WlanAcess[i][3] + "</div>";
+		if(localpc==G_WlanAcess[i][1])
+		{
+			var outstring3="<div class='words2'>"+I18N("j","Devices_Local_PC")+"</div>";//白名单且本机上线
+		}
+		else if(wireless_maclist_mode=="deny")
+		{
+		var outstring3="<div id='list_statueacess"+i+"' class='checkbox_off' onclick='deleteDataacess("+i+")'><input type='checkbox' style='display:none;' id='list_enableacess"+i+"'></div>"; 
+		}
+		else
+		{
+		var outstring3="<div id='list_statueacess"+i+"' class='checkbox_on' onclick='deleteDataacess("+i+")'><input type='checkbox' style='display:none;' id='list_enableacess"+i+"' checked></div>"; 
+		}
+		AccessTableList[n].push(outstring1);
+		AccessTableList[n].push(outstring2);
+		AccessTableList[n].push(outstring3);
+		AccessTableList[n].push("<div class='editimg'  onclick='editDataacess("+i+")'></div>");
+		n++;
+	}
+	
+	CreateTableDevice("Acesstable", AccessTableList);
+}
+
+function CreateWlanOffLineTable()
+{
+
+	if(G_WlanOffLine.length==0)
+	{
+		document.getElementById("OffLinetable").style.display="none";
+		return ;
+	}
+	else
+	{
+		document.getElementById("OffLinetable").style.display="";
+	}
+	ClearTable("OffLinetable",1);
+	var AccessTableList=[];
+	var n=0;
+	for(var i=0;i<G_WlanOffLine.length;i++)
+	{
+		AccessTableList[n]=[];
+		var outstring1="";
+		//var devicename_offline_display=subDeviceNameDisplay(G_WlanOffLine[i][2],subname_maxlength);//显示...
+		outstring1=DeviceTypeOff(G_WlanOffLine[i][6],G_WlanOffLine[i][5]);
+		// var timestr=G_WlanOffLine[i][4]; //onlinetime
+		// outstring1+="<div class='deviceonlinetext'>在线时长:"+timestr+"</div>";
+		
+		var outstring2="";
+		outstring2="<div class='devicename'><div id='devicenameoffline"+i+"' class='subdevicename_show'>" + G_WlanOffLine[i][2] + "</div><div><input type='text' id='devicenameOffonlineinput"+i+"' class='styled-text' style='display:none; ' maxlength='64' onblur='changNameOffLine("+i+")'></div>"+
+			"<div class='errorinfo' id='error_offline"+i+"' style='display:none;'><table><tbody><tr><td><div class='ic-sign ic'></div></td><td id='errorinfo_offline"+i+"'></td></tr></tbody></table></div></div>";
+		outstring2+="<div class='deviceipmac'><span class='deviceip'><span>IP:"+G_WlanOffLine[i][1] + "</span></span><span><span>MAC:</span>" +G_WlanOffLine[i][0] +"</span></div>";
+		//outstring2+="<div class='devicesmalltext'>接入时间："+G_WlanOffLine[i][3] + "</div>";//多语言
+		outstring2+="<div class='devicesmalltext'>"+I18N("j","Devices_Access_time")+G_WlanOffLine[i][3] + "</div>";
+
+		//var outstring3="<div id='list_statueacess"+i+"' class='checkbox_on' onclick='changStatueacess("+i+")'><input type='checkbox' styel='display:none;' id='list_enableacess"+i+"'></div>"; 
+		
+		
+		AccessTableList[n].push(outstring1);
+		AccessTableList[n].push(outstring2);
+		AccessTableList[n].push("&nbsp;");
+		AccessTableList[n].push("<div class='divboximg'><div class='editimg pull-left' onclick='editDataOffline("+i+")'></div><div class='delimg pull-right' onclick='deleteDataOffline("+i+")'></div></div>");
+		n++;
+	}
+	
+	CreateTableDevice("OffLinetable", AccessTableList);
+}
+
+function GetXML()	
+{	
+	GetResult_1st();
+}
+function GetResult_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetMultipleHNAPs/GetStationSettings");
+		result_xml.Set("GetMultipleHNAPs/GetCurrentInfoSettings");
+		result_xml.Set("GetMultipleHNAPs/GetMacFilterSettings");
+		result_xml.Set("GetMultipleHNAPs/GetWhiteMacFilterSettings");
+		result_xml.Set("GetMultipleHNAPs/GetBlackMacFilterSettings");
+		HNAP.SetXMLAsync("GetMultipleHNAPs", result_xml, function(xml)	{	GetResult_2nd(xml);	});
+	}
+	else	{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetResult_1st");	}	}
+}
+
+function GetResult_2nd(result_xml)
+{
+	var GetResult_2nd = result_xml.Get("GetMultipleHNAPsResponse/GetMultipleHNAPsResult");
+	//var GetResult_2nd="OK";
+	if (GetResult_2nd == "OK"){
+	
+		var wire_sta_list = result_xml.Get("GetMultipleHNAPsResponse/GetStationSettingsResponse/wire_sta_list");
+		var wireless_sta_2g_list= result_xml.Get("GetMultipleHNAPsResponse/GetStationSettingsResponse/wireless_sta_2g_list");
+		var wireless_sta_2g_guest_list= result_xml.Get("GetMultipleHNAPsResponse/GetStationSettingsResponse/wireless_sta_2g_guest_list");
+		var wireless_sta_5g_list= result_xml.Get("GetMultipleHNAPsResponse/GetStationSettingsResponse/wireless_sta_5g_list");
+		var wireless_sta_5g_guest_list= result_xml.Get("GetMultipleHNAPsResponse/GetStationSettingsResponse/wireless_sta_5g_guest_list");
+		var offline_sta_list= result_xml.Get("GetMultipleHNAPsResponse/GetStationSettingsResponse/offline_sta_list");
+		var wireless_maclist_black = result_xml.Get("GetMultipleHNAPsResponse/GetBlackMacFilterSettingsResponse/device");;
+		var wireless_maclist_white = result_xml.Get("GetMultipleHNAPsResponse/GetWhiteMacFilterSettingsResponse/device");;
+		if(result_xml.Get("GetMultipleHNAPsResponse/GetMacFilterSettingsResponse/enabled") == "1")
+		{
+			wireless_maclist_mode = result_xml.Get("GetMultipleHNAPsResponse/GetMacFilterSettingsResponse/mode");
+		}
+		else 
+		{
+			wireless_maclist_mode = "off";
+		}
+		localpc=result_xml.Get("GetMultipleHNAPsResponse/GetCurrentInfoSettingsResponse/current_client_mac");
+		//var wireless_sta_2g_list="12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple";
+		//wireless_sta_2g_guest_list="e0:b9:4d:19:e6:f2,192.168.51.10,192.168.51.10,2017-02-05 14:40:39,2663,0,null";
+		//wireless_sta_5g_list="12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple";
+		
+		//wireless_sta_5g_guest_list="12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple";
+		
+		//offline_sta_list="12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple";
+		//wireless_maclist="12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple;12:12:12:12:12:12,192.168.1.11,fafdasf,2016-9-10 4:00,1天,apple";
+		var have2g=0;
+		var have5g=0;
+		var havewire=0;
+		
+		
+		 var wirelisttem=[];
+		  if(wire_sta_list!="")
+		  {
+			wirelisttem=wire_sta_list.split(";");
+		  }
+		for(var i=0;i<wirelisttem.length;i++)
+		{
+			G_Wire.push(wirelisttem[i].split(","));	
+		}
+		
+		
+		 var wireless_sta_2g_listttem=[];
+		  if(wireless_sta_2g_list!="")
+		  {
+			wireless_sta_2g_listttem=wireless_sta_2g_list.split(";");
+		  }
+		 for(var i=0;i<wireless_sta_2g_listttem.length;i++)
+		 {
+			G_Wlan2g.push(wireless_sta_2g_listttem[i].split(","));	
+		 }
+
+		 var wireless_sta_2g_guest_list_tem=[];
+		  if(wireless_sta_2g_guest_list!="")
+		  {
+			wireless_sta_2g_guest_list_tem=wireless_sta_2g_guest_list.split(";");
+		  }
+		 for(var i=0;i<wireless_sta_2g_guest_list_tem.length;i++)
+		 {
+			G_Wlan2gGuest.push(wireless_sta_2g_guest_list_tem[i].split(","));	
+		 }
+		 
+		
+		 var wireless_sta_5g_lis_tem=[];
+		  if(wireless_sta_5g_list!="")
+		  {
+			wireless_sta_5g_lis_tem=wireless_sta_5g_list.split(";");
+		  }
+		 for(var i=0;i<wireless_sta_5g_lis_tem.length;i++)
+		 {
+			G_Wlan5g.push(wireless_sta_5g_lis_tem[i].split(","));	
+		 }				
+		
+		 var wireless_sta_5g_guest_listtem=[];
+		  if(wireless_sta_5g_guest_list!="")
+		  {
+			wireless_sta_5g_guest_listtem=wireless_sta_5g_guest_list.split(";");
+		  }
+		 for(var i=0;i<wireless_sta_5g_guest_listtem.length;i++)
+		 {
+			G_Wlan5gGuest.push(wireless_sta_5g_guest_listtem[i].split(","));	
+		 }
+		 		 
+		 var offline_sta_listtem=[];
+		  if(offline_sta_list!="")
+		  {
+			offline_sta_listtem=offline_sta_list.split(";");
+		  }
+		 for(var i=0;i<offline_sta_listtem.length;i++)
+		 {
+			G_WlanOffLine.push(offline_sta_listtem[i].split(","));	
+		 }	
+		 
+		 var wireless_maclisttem_black=[];
+		  if(wireless_maclist_black!="")
+		  {
+			wireless_maclisttem_black=wireless_maclist_black.split(";");
+		  }
+		 for(var i=0;i<wireless_maclisttem_black.length;i++)
+		 {
+			G_AccessList_Black.push(wireless_maclisttem_black[i].split(","));
+		 }
+		 
+		 var wireless_maclisttem_white=[];
+		  if(wireless_maclist_white!="")
+		  {
+			wireless_maclisttem_white=wireless_maclist_white.split(";");
+		  }
+		 for(var i=0;i<wireless_maclisttem_white.length;i++)
+		 {
+			G_AccessList_White.push(wireless_maclisttem_white[i].split(","));
+		 }
+
+		 if(wireless_maclist_mode=="off")
+		 {
+		   document.getElementById("Acesstable").style.display="none";
+		 }
+		 else if(wireless_maclist_mode=="allow"){
+			//document.getElementById("accesstableheader").innerHTML="允许无线连接的设备";
+			document.getElementById("accesstableheader").innerHTML=I18N("j","MobileDevices_Allow");
+			G_WlanAcess = G_AccessList_White;
+			CreateWlanAcessTable();
+		 }
+		 else if(wireless_maclist_mode=="deny"){
+			//document.getElementById("accesstableheader").innerHTML="被禁止连接无线的设备";
+			document.getElementById("accesstableheader").innerHTML=I18N("j","Devices_Forbid_WiFi");
+			G_WlanAcess = G_AccessList_Black;
+			CreateWlanAcessTable();
+		 }
+		for(var i=0;i<G_WlanAcess.length;i++)
+		{
+			G_AccessMacArray.push(G_WlanAcess[i][1].toLowerCase());//保存黑白名单列表中的mac
+		}
+		 if(G_Wlan2g.length>0 || G_Wlan2gGuest.length>0)
+		 {
+		 	have2g=1;
+		 }
+		 
+		 if(G_Wlan5g.length>0 || G_Wlan5gGuest.length>0)
+		 {
+		 	have5g=1;
+		 }
+		 
+		 if(G_Wire.length>0)
+		 {
+		 	havewire=1;
+		 }
+		 
+		 if(have2g==1)
+		 {
+		   document.getElementById("allowifi5g").style.display="none";
+		    document.getElementById("operate5g").style.display="none";
+		   document.getElementById("allowifiwire").style.display="none";
+		    document.getElementById("operatewire").style.display="none";		 
+		}
+		else if(have5g==1)
+		{
+		   document.getElementById("allowifi5g").style.display="";
+		    document.getElementById("operate5g").style.display="";
+		   document.getElementById("allowifiwire").style.display="none";
+		    document.getElementById("operatewire").style.display="none";		
+		}
+		else if(havewire==1)
+		{
+
+		   document.getElementById("allowifiwire").style.display="";
+		    document.getElementById("operatewire").style.display="";				
+		
+		}
+		 
+		Create24Table();
+		Create5gTable();
+		CreateWireTable();
+		CreateWlanOffLineTable();
+		
+		$(".devicename td").css({"height":"auto","border":"0","min-height":"auto","font-weight":"normal"});//添加样式
+		document.getElementById("content").style.display="";
+		document.getElementById("CreateOnloadMessage").style.display="none";	
+	} else {	
+		document.getElementById("content").style.display="";
+	document.getElementById("CreateOnloadMessage").style.display="none";
+		if (DebugMode == 1)	{	
+			alert("[!!GetXML Error!!] Function: GetResult_2nd");
+		}
+	}
+}
+
+$(document).ready( function() {
+	document.getElementById("content").style.display="none";
+	document.getElementById("CreateOnloadMessage").style.display="";
+	basiccontainerminiheigh();
+	GetXML();
+	checkTimeout();
+});
+
+function checkDeviceNameEdit(devicename,id)//检验编辑设备名时的有效性验证
+{
+	var result=verifyDeviceName(devicename);
+	switch(result)
+	{
+		case ERR_DEVICE_SPACE:
+			showErr("error_"+id,"errorinfo_"+id,I18N("j","Err_Devices_NameSpace"));
+			return false;
+		case ERR_DEVICE_IVALID:
+			showErr("error_"+id,"errorinfo_"+id,I18N("j","Err_Devices_NameIvalid"));
+			return false;
+		case ERR_DEVICE_LEN:
+			showErr("error_"+id,"errorinfo_"+id,I18N("j","Err_Devices_NameLength"));
+			return false;
+		default:
+			break;
+	}
+	return true;
+}
+
+function MaclistMaxNumConfirm()
+{
+	document.getElementById("createPop_Maclist_Max_Num").style.display = "none";
+}
+
+//判断是否在黑名单中或者不在白名单中
+function JudgeForbidden(mac)
+{
+	var flag = false;/*是否已被禁止*/
+	if(G_AccessMacArray.length !=0)
+	{
+		if(wireless_maclist_mode=="allow")/*在线设备不在白名单时显示“已禁止”*/
+		{
+			if(($.inArray(mac.toLowerCase(),G_AccessMacArray)) ==-1)
+			{
+				flag = true;
+			}
+		}
+		else if(wireless_maclist_mode=="deny")/*在线设备在黑名单列表时显示“已禁止”*/
+		{
+			if(($.inArray(mac.toLowerCase(),G_AccessMacArray)) !=-1)
+			{
+				flag = true;
+			}
+		}
+	}
+	
+	return flag;
+}
+</script>
+
+
+
+<body>
+<!-------------------- Logo menu------------------------->
+	<div class="wrapper"> 
+	<div id="header"></div>
+
+	<div class="clearboth" align="center" id="content" style="display:none; ">
+	  <div class="basiccontainer" align="center" id="basiccontent">
+	  	 <div class="clearboth headerline" align="left">
+			<script>I18N("h","Commom_Device_Users");</script><!-- 终端用户 -->
+		  </div>
+		  <div class="line"></div>
+	  	  <div style="margin-top:64px;">
+		  	<table class="table_list" id="Wlan24table" align="center" cellpadding="0" cellspacing="0" style="display:none; ">
+				<tbody>
+					<tr class="tableheader3">
+						<td  style="width:663px; " align="center" colspan="2"><script>I18N("h","Devices_24G_Access");</script><!-- 2.4G连接设备 --></td>
+						<td  style="width:189px; " align="center"><script>I18N("h","Devices_Allow_WiFi");</script><!-- 允许连接WiFi --></td>
+						<td  style="width:188px; " align="center"><script>I18N("h","Commom_Operation");</script><!-- 操作 --></td>
+					</tr>
+					<!--tr>
+					<td style="width:120px; height:100px;">
+					<div><img src="image/u1732.png" class="img " id="u1814_img" width="50" height="50"></div>
+					<div class="devicesmalltext">在线时长:0天0小时0分</div>
+					
+					</td>
+					<td style="width:400px; position:relative;">
+						<div class="devicename"><div id="devicename1">fasfdafdafdafd</div><div><input type="text" id="url_3" name="url_3" class="styled-text" style="display:; "></div></div>
+						<div class="devicesmalltext"><span class="deviceip"><span>IP:192.168.1.1 </span></span><span><span>MAC:</span>12:12:12:12:12:12</span></div>
+						<div class="devicesmalltext">接入时间：2016-9-22 16:00 </div>
+						<div class="deviceguest">访客网络</div>
+					
+					</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					</tr-->
+				
+				
+				</tbody>
+			
+			
+			</table>
+		  	<table class="table_list" id="Wlantable5g" align="center" cellpadding="0" cellspacing="0" style="display:none; ">
+				<tbody>
+					<tr class="tableheader3">
+						<td  style="width:663px; " align="center" colspan="2"><script>I18N("h","Devices_5G_Access");</script><!-- 5G连接设备 --></td>
+						<td  style="width:189px; " align="center"><span id="allowifi5g" style="display:none; "><script>I18N("h","Devices_Allow_WiFi");</script><!-- 允许连接WiFi --></span></td>
+						<td  style="width:188px; " align="center"><span id="operate5g" style="display:none; "><script>I18N("h","Commom_Operation");</script><!-- 操作 --></span></td>
+					</tr>
+				
+				</tbody>
+			
+			
+			</table>				
+		  	<table class="table_list" id="Wiretable" align="center" cellpadding="0" cellspacing="0" style="display:none; ">
+				<tbody>
+					<tr class="tableheader3">
+						<td  style="width:663px; " align="center" colspan="2"><script>I18N("h","Devices_Wire");</script><!-- 有线连接设备 --></td>
+						<td  style="width:189px; " align="center"><span id="allowifiwire" style="display:none; "><script>I18N("h","Devices_Allow_WiFi");</script><!-- 允许连接WiFi --></span></td>
+						<td  style="width:188px; " align="center"><span id="operatewire" style="display:none; "><script>I18N("h","Commom_Operation");</script><!-- 操作 --></span></td>
+					</tr>
+				
+				</tbody>
+			
+			
+			</table>								
+		  	<table class="table_list" id="Acesstable" align="center" cellpadding="0" cellspacing="0" style="display:none; ">
+				<tbody>
+					<tr class="tableheader3">
+						<td  style="width:663px; " align="center" colspan="2" id="accesstableheader"><script>I18N("h","Devices_Forbid_WiFi");</script><!-- 被禁止连接无线的设备 --></td>
+						<td  style="width:189px; " align="center"></td>
+						<td  style="width:188px; " align="center"></td>
+					</tr>
+				
+				</tbody>
+			
+			
+			</table>								
+		  	<table class="table_list" id="OffLinetable" align="center" cellpadding="0" cellspacing="0" style="display:none; ">
+				<tbody>
+					<tr class="tableheader3">
+						<td  style="width:663px; " align="center" colspan="2"><script>I18N("h","Devices_Offline");</script><!-- 离线设备 --></td>
+						<td  style="width:189px; " align="center"></td>
+						<td  style="width:188px; " align="center"></td>
+					</tr>
+				
+				</tbody>
+			
+			
+			</table>	
+		</div>
+	  
+	  
+	  </div>
+	</div>
+	 <div class="footer_placeholder"></div> 
+</div>
+	<div style="display:none;" id="createPop_Maclist_Max_Num" class="createPopRecovery">
+		<div class="dialogBoxBackup">
+			<div class="advance_rowBackup">
+				<span><script>I18N("h","AdvWlanAccess_Tips");</script><!-- 提示 --></span>
+			</div>
+			<div align="center" style="margin-bottom:34px;margin-top:36px">
+				<img src="image/icon_peizhi_sb-.png" class="Backup_img">
+				<div class="descriptionBackup" style="margin-bottom:34px;margin-top:26px"><script>I18N("h","Err_Devices_MacMaxNum");</script></div>
+			</div>
+			<div class="advance_rowBackup" style="padding-bottom:0px;margin:0"></div>
+			<div align="center" style="margin-top:26px;">
+				<input type="button" id="confirm_btn" value="确认" style="width:280px" class="styled_button_ss" onClick="MaclistMaxNumConfirm();">
+			</div>
+		</div>
+	</div>
+	<div id="footer"></div>
+	<div id="CreatePopAlertMessage" style=" display:none;"></div>
+	<div style=" display:none;" id="DetectRouterConnection"></div>
+	<div id="CreateOnloadMessage" style="display:none;"><div class="OnLoadPopRect"><img src="/image/submit.gif" width="58" height="58"></div></div>
+</body>
+<script type="text/javascript">
+Initial();
+</script>
+</html>

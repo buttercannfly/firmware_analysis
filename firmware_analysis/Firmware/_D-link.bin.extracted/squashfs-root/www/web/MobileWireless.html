@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html id="html">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<link rel=stylesheet type="text/css" href="css/jquery.selectbox.css" media="all" />
+<link href="css/style_mobile.css" type="text/css" rel="stylesheet" />
+<!-- <title>无线设置</title> -->
+<title></title>
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.selectbox-0.2_new.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/AES.js"></script>
+
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/verify/verify.js"></script>
+<style>
+#content{
+background-color: #ffffff;
+}
+.styled-text{
+    color: #333333;
+    border:0;
+    font-size: 1.4em;
+    height: 32px;
+	padding-left:12px;
+    width: 90%;
+}
+.leftth {
+	color:#666666;
+    font-weight: normal;
+    text-align: left;
+	padding-left:14px;
+	width:80px;
+	float:left;
+	font-size:1.4em;
+}
+.tabletitle{
+	width:96.67%;
+	margin-left:3.33%;
+	border-collapse:collapse;
+	border-bottom:1px solid #dddddd;
+	height:44px;
+}
+.interval{
+	border-bottom:none;
+}
+.input_div{
+	height:44px;
+	line-height:44px;
+	width:93.33%;
+	margin:12px 0 9px;
+	text-align:left;
+	border:1px solid #bbbbbb;
+	border-radius:3px;
+}
+.frequInfo{
+	color:#333333;
+	font-size:1.6em;
+	text-align:left;
+	padding-left:3.33%;
+	float:left;
+	line-height:45px;
+}
+.select{
+	color:#a1a1a1;
+	font-size:0.75em;
+}
+.enable_switch{
+	float:right;
+	vertical-align:middle;
+	padding-right:3.33%;
+}
+.enable_switch div{
+	height:45px;
+	display:table-cell;
+	vertical-align:middle;
+}
+.div_new_ssid
+{
+	width:186px;
+	text-overflow:ellipsis;
+	overflow:hidden;
+	white-space:nowrap;
+}
+</style>
+<script type="text/javascript">
+
+//xframeoption
+if(top!=self){top.location=self.location;}
+
+var DebugMode=0;
+var HNAP = new HNAP_XML();
+var Guest2G_enable="";//访客网络
+var Guest2G_SSID="";
+var Guest2G_passwd="";
+var Guest2G_crypto="";
+var Guest5G_enable="";//访客网络
+var Guest5G_SSID="";
+var Guest5G_passwd="";
+var Guest5G_crypto="";
+var new_wifiName_24="";
+var new_wifiName_5="";
+var cur_ssid = "";
+var cur_passwd = "";
+var my_devmac = "";
+var G_Wlan2g=[];
+var G_Wlan5g=[];
+var cur_connect = "";
+var encodingvalue_24 = "utf-8";
+var encodingvalue_5 = "utf-8";
+function GetXML()	
+{	
+	GetResult_1st();	
+}
+
+function GetResult_1st() {
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		result_xml.Set("GetMultipleHNAPs/GetMasterWLanSettings");
+		result_xml.Set("GetMultipleHNAPs/GetGuestWLanSettings");
+		result_xml.Set("GetMultipleHNAPs/GetCurrentInfoSettings");
+		result_xml.Set("GetMultipleHNAPs/GetStationSettings");
+		result_xml.Set("GetMultipleHNAPs/GetBandSteering");
+		HNAP.SetXMLAsync("GetMultipleHNAPs", result_xml, function(xml) {GetResult_2nd(xml); });
+	} else {
+		if (DebugMode == 1) {
+			alert("[!!GetXML Error!!] Function: GetResult_1st");
+		}
+	}
+}
+var wifi24_enable;
+var wifiName_24;
+var wireless_passwd_24="";
+var wireless_crypto_24;
+var wifi5_enable;
+var wifiName_5;
+var wireless_passwd_5="";
+var wireless_crypto_5;
+function GetResult_2nd(result_xml) {
+	var GetResult_2nd = result_xml.Get("GetMultipleHNAPsResponse/GetMultipleHNAPsResult");
+	if (GetResult_2nd == "OK") {
+		wifiName_24=result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(0).(0)_ssid");
+		wifi24_enable = result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(0).(0)_enable");
+		wireless_crypto_24 = result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(0).(0)_crypto");
+		if(wireless_crypto_24 !="none")//根据加密方式来设置主网络密码信息
+		{
+			wireless_passwd_24=AES_Decrypt128(result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(0).(0)_preshared_key"));
+		}
+		wifi5_enable = result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(1).(0)_enable");
+		wifiName_5=result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(1).(0)_ssid");
+		wireless_crypto_5 = result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(1).(0)_crypto");
+		if(wireless_crypto_5 !="none")//根据加密方式来设置主网络密码信息
+		{
+			wireless_passwd_5=AES_Decrypt128(result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(1).(0)_preshared_key"));
+		}
+		Guest2G_enable=result_xml.Get("GetMultipleHNAPsResponse/GetGuestWLanSettingsResponse/wl(0).(1)_enable");
+		Guest2G_SSID=result_xml.Get("GetMultipleHNAPsResponse/GetGuestWLanSettingsResponse/wl(0).(1)_ssid");
+		Guest2G_passwd=result_xml.Get("GetMultipleHNAPsResponse/GetGuestWLanSettingsResponse/wl(0).(1)_preshared_key");
+		Guest2G_crypto=result_xml.Get("GetMultipleHNAPsResponse/GetGuestWLanSettingsResponse/wl(0).(1)_crypto");
+		
+		Guest5G_enable=result_xml.Get("GetMultipleHNAPsResponse/GetGuestWLanSettingsResponse/wl(1).(1)_enable");
+		Guest5G_SSID=result_xml.Get("GetMultipleHNAPsResponse/GetGuestWLanSettingsResponse/wl(1).(1)_ssid");
+		Guest5G_passwd=result_xml.Get("GetMultipleHNAPsResponse/GetGuestWLanSettingsResponse/wl(1).(1)_preshared_key");
+		Guest5G_crypto=result_xml.Get("GetMultipleHNAPsResponse/GetGuestWLanSettingsResponse/wl(1).(1)_crypto");
+		
+		document.getElementById("wifiName_unity").value=wifiName_24;
+		document.getElementById("password1_unity").value = wireless_passwd_24;
+		document.getElementById("password2_unity").value = wireless_passwd_24;
+		var unityEnable=result_xml.Get("GetMultipleHNAPsResponse/GetBandSteeringResponse/wl(0)_bandsteering");
+		if(result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(0).(0)_charCode") != "") {
+			encodingvalue_24 = result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(0).(0)_charCode");
+		}
+		if(result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(1).(0)_charCode") != "") {
+			encodingvalue_5 = result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(1).(0)_charCode");
+		}
+		if(encodingvalue_24 == "gb2312") {
+			CharacterEncodingSelect(1,'24');
+		} else {
+			CharacterEncodingSelect(0,'24');
+		}
+		if(encodingvalue_5 == "gb2312")	{
+			CharacterEncodingSelect(1,'5');
+		} else {
+			CharacterEncodingSelect(0,'5');
+		}
+		if(unityEnable == 1)
+		{
+			document.getElementById("wifiunityenable").checked = true;
+			document.getElementById("wlan_unity").src = "/image/mobile/icon_chosse_kai.png";
+			
+			if (wifi24_enable == 1)
+			{
+				//document.getElementById("wifienable_unity").checked = true;
+				document.getElementById("wlan_unitystatus").src = "/image/mobile/icon_chosse_kai.png";
+				
+			}
+			else
+			{
+				document.getElementById("wifienable_unity").checked = false;
+				document.getElementById("wlan_unitystatus").className = "/image/mobile/icon_chosse_guan.png";
+				
+			}
+			document.getElementById('unity_DIV').style.display = "";
+			document.getElementById('separateDIV').style.display = "none";
+		}
+		else
+		{
+			document.getElementById("wifiunityenable").checked = false;
+			document.getElementById("wlan_unity").src = "/image/mobile/icon_chosse_guan.png";
+			document.getElementById("wifienable_unity").checked = true;
+			document.getElementById('unity_DIV').style.display = "none";
+			document.getElementById('separateDIV').style.display = "";
+		}
+		
+		wifi24_enable = result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(0).(0)_enable");
+		if (wifi24_enable == 1)
+		{
+			document.getElementById("wifienable_24").checked = true;
+			document.getElementById("wlan_statue").src = "image/mobile/icon_chosse_kai.png";
+			
+			document.getElementById('wireless_name_24').style.display = "";
+			document.getElementById('wireless_passwd_24').style.display = "";
+			document.getElementById('wireless_encoding_24').style.display = "";
+		}
+		else
+		{
+			document.getElementById("wifienable_24").checked = false;
+			//document.getElementById("wlan_statue").className = "checkbox_switch";
+			document.getElementById("wlan_statue").src = "image/mobile/icon_chosse_guan.png";
+			
+			$("#tabletitle_24").addClass("interval");
+			document.getElementById('wireless_name_24').style.display = "none";
+			document.getElementById('wireless_passwd_24').style.display = "none";
+			document.getElementById('wireless_encoding_24').style.display = "none";
+		}
+		new_wifiName_24 = wifiName_24;
+		document.getElementById("wifiName_24").value=wifiName_24;
+		document.getElementById("password1_24").value = wireless_passwd_24;
+		document.getElementById("password2_24").value = wireless_passwd_24;
+		
+		if (wifi5_enable == 1)
+		{
+			document.getElementById("wifienable_5").checked = true;
+			document.getElementById("wlan_statue_5").src = "image/mobile/icon_chosse_kai.png";
+			
+			document.getElementById('wireless_name_5').style.display = "";
+			document.getElementById('wireless_passwd_5').style.display = "";
+			document.getElementById('wireless_encoding_5').style.display = "";
+		}
+		else
+		{
+			document.getElementById("wifienable_5").checked = false;
+			document.getElementById("wlan_statue_5").src = "image/mobile/icon_chosse_guan.png";
+			
+			$("#tabletitle_5").addClass("interval");
+			document.getElementById('wireless_name_5').style.display = "none";
+			document.getElementById('wireless_passwd_5').style.display = "none";
+			document.getElementById('wireless_encoding_5').style.display = "none";
+		}
+		new_wifiName_5 = document.getElementById("wifiName_5").value=wifiName_5;
+		document.getElementById("password1_5").value = wireless_passwd_5;
+		document.getElementById("password2_5").value = wireless_passwd_5;
+		
+		my_devmac = result_xml.Get("GetMultipleHNAPsResponse/GetCurrentInfoSettingsResponse/current_client_mac");
+		
+		var wireless_sta_2g_list= result_xml.Get("GetMultipleHNAPsResponse/GetStationSettingsResponse/wireless_sta_2g_list");
+		var wireless_sta_5g_list= result_xml.Get("GetMultipleHNAPsResponse/GetStationSettingsResponse/wireless_sta_5g_list");
+		var wireless_sta_2g_listttem=[];
+		if(wireless_sta_2g_list!="")
+		{
+			wireless_sta_2g_listttem=wireless_sta_2g_list.split(";");
+		}
+		for(var i=0;i<wireless_sta_2g_listttem.length;i++)
+		{
+			G_Wlan2g.push(wireless_sta_2g_listttem[i].split(","));	
+		}
+		for(var i=0;i<G_Wlan2g.length;i++)
+		{
+			if(my_devmac == G_Wlan2g[i][0])
+				cur_connect = "2.4G";
+		}
+		if(cur_connect == "")
+			cur_connect = "5G";
+		var wireless_sta_5g_lis_tem=[];
+		if(wireless_sta_5g_list!="")
+		{
+			wireless_sta_5g_lis_tem=wireless_sta_5g_list.split(";");
+		}
+		for(var i=0;i<wireless_sta_5g_lis_tem.length;i++)
+		{
+			G_Wlan5g.push(wireless_sta_5g_lis_tem[i].split(","));	
+		}
+	} else {
+		if (DebugMode == 1) {
+		  alert("[!!GetXML Error!!] Function: GetResult_2nd");
+		}
+	}
+}
+function hideAll2GErrorInfo()
+{
+	document.getElementById("error_1").style.display = "none"; 
+	document.getElementById("error_2").style.display = "none"; 
+}
+function hideAll5GErrorInfo()
+{
+	document.getElementById("error_3").style.display = "none"; 
+	document.getElementById("error_4").style.display = "none"; 
+}
+function verifyWirelessSet()//验证用户输入设置
+{
+	hideAll2GErrorInfo();
+	var wifi2GNameValue=$("#wifiName_24").val();
+	var wifi2GPasswordValue=$("#password1_24").val();
+	var result2GSSID=verifySSID(wifi2GNameValue);//验证2.4G SSID
+	
+	hideAll5GErrorInfo();
+	var wifi5GNameValue=$("#wifiName_5").val();
+	var wifi5GPasswordValue=$("#password1_5").val();
+	var result5GSSID=verifySSID(wifi5GNameValue);//验证5G SSID
+	
+	if(document.getElementById("wifienable_24").checked==true)
+	{
+		switch(result2GSSID)////SSID
+		{
+			case ERR_SSID_NULL:
+				showErr("error_1","errorinfo_1",I18N("j","Err_Wireless_Name2GEmpty"));
+				return false;
+			case ERR_SSID_SPACE:
+				showErr("error_1","errorinfo_1",I18N("j","Err_Wireless_Name2GSpace"));
+				return false;
+			case ERR_SSID_IVALID:
+				showErr("error_1","errorinfo_1",I18N("j","Err_Wireless_Name2GInvalid"));
+				return false;
+			case ERR_SSID_LEN:
+				showErr("error_1","errorinfo_1",I18N("j","Err_Wireless_Name2GLength"));
+				return false;
+			default:
+				if(Guest2G_SSID == wifi2GNameValue || Guest5G_SSID == wifi2GNameValue)
+				{
+					showErr("error_1","errorinfo_1",I18N("j","Err_Wireless_Name2GSameGuest"));
+					return false;
+				}
+				/*//允许2.4G和5G一样ssid
+				if(wifi5GNameValue == wifi2GNameValue)
+				{
+					showErr("error_1","errorinfo_1",I18N("j","Err_Wireless_Name2GSame5G"));
+					return false;
+				}
+				*/
+				new_wifiName_24=wifi2GNameValue;
+				break;
+		}
+		if(""!=wifi2GPasswordValue)
+		{
+			if(!checkDoubleByteStr(wifi2GPasswordValue))//验证2.4G Password是否有双字节
+			{
+				if(!isKeyboardInput(wifi2GPasswordValue))
+				{
+					showErr("error_2","errorinfo_2",I18N("j","Err_Wireless_Pwd2GInvalid"));//存在非键盘输入字符
+					return false;
+				}
+				if(ERR_INPUT_INVALID == checkInputStr(wifi2GPasswordValue))
+				{
+					showErr("error_2","errorinfo_2",I18N("j","Err_Wireless_Pwd2GSpace"));//存在空格
+					return false;
+				}
+				if(!checkInputLength(wifi2GPasswordValue,8,63))
+				{
+					showErr("error_2","errorinfo_2",I18N("j","Err_Wireless_Pwd2GLength"));//2.4G密码长度错误
+					return false;
+				}
+			}
+			else 
+			{
+				showErr("error_2","errorinfo_2",I18N("j","Err_Wireless_Pwd2GInvalid"));//存在双字节字符
+				return false;
+			}			
+		}
+	}
+	
+	if(document.getElementById("wifienable_5").checked==true)
+	{
+		switch(result5GSSID)//// 5G SSID
+		{
+			case ERR_SSID_NULL:
+				showErr("error_3","errorinfo_3",I18N("j","Err_Wireless_Name5GEmpty"));
+				return false;
+			case ERR_SSID_SPACE:
+				showErr("error_3","errorinfo_3",I18N("j","Err_Wireless_Name5GSpace"));
+				return false;
+			case ERR_SSID_IVALID:
+				showErr("error_3","errorinfo_3",I18N("j","Err_Wireless_Name5GInvalid"));
+				return false;
+			case ERR_SSID_LEN:
+				showErr("error_3","errorinfo_3",I18N("j","Err_Wireless_Name5GLength"));
+				return false;
+			default:
+				if(Guest2G_SSID == wifi5GNameValue || Guest5G_SSID == wifi5GNameValue)
+				{
+					showErr("error_3","errorinfo_3",I18N("j","Err_Wireless_Name5GSameGuest"));
+					return false;
+				}
+				/*//允许2.4G和5G一样ssid
+				if(wifi5GNameValue == wifi2GNameValue)
+				{
+					showErr("error_3","errorinfo_3",I18N("j","Err_Wireless_Name2GSame5G"));
+					return false;
+				}
+				*/
+				new_wifiName_5=wifi5GNameValue;
+				break;
+		}
+		
+		if(""!=wifi5GPasswordValue)//5G 密码
+		{
+			if(!checkDoubleByteStr(wifi5GPasswordValue))//验证5G Password是否有双字节
+			{
+				if(!isKeyboardInput(wifi5GPasswordValue))
+				{
+					showErr("error_4","errorinfo_4",I18N("j","Err_Wireless_Pwd5GInvalid"));//存在非键盘输入字符
+					return false;
+				}
+				if(ERR_INPUT_INVALID == checkInputStr(wifi5GPasswordValue))
+				{
+					showErr("error_4","errorinfo_4",I18N("j","Err_Wireless_Pwd5GSpace"));//存在空格
+					return false;
+				}
+				if(!checkInputLength(wifi5GPasswordValue,8,63))
+				{
+					showErr("error_4","errorinfo_4",I18N("j","Err_Wireless_Pwd5GLength"));//5G密码长度错误
+					return false;
+				}
+			}
+			else 
+			{
+				showErr("error_4","errorinfo_4",I18N("j","Err_Wireless_Pwd5GInvalid"));//存在双字节字符
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+//Wifi双频合一
+function unityverifyWirelessSet()//验证用户输入设置
+{
+	hideAllUnityErrorInfo();
+	var wifi2GNameValue=$("#wifiName_unity").val();
+	var wifi2GPasswordValue=$("#password1_unity").val();
+	var result2GSSID=verifySSID(wifi2GNameValue);//验证双频合一SSID
+	switch(result2GSSID)////SSID
+	{
+		case ERR_SSID_NULL:
+			showErr("error_unity_1","errorinfo_unity_1",I18N("j","Err_Wireless_UnityNameEmpty"));
+			return false;
+		case ERR_SSID_SPACE:
+			showErr("error_unity_1","errorinfo_unity_1",I18N("j","Err_Wireless_UnityNameSpace"));
+			return false;
+		case ERR_SSID_IVALID:
+			showErr("error_unity_1","errorinfo_unity_1",I18N("j","Err_Wireless_UnityNameInvalid"));
+			return false;
+		case ERR_SSID_LEN:
+			showErr("error_unity_1","errorinfo_unity_1",I18N("j","Err_Wireless_UnityNameLength"));
+			return false;
+		default:
+			if(Guest2G_SSID == wifi2GNameValue || Guest5G_SSID == wifi2GNameValue)
+			{
+				showErr("error_unity_1","errorinfo_unity_1",I18N("j","Err_Wireless_UnityNameSameGuest"));
+				return false;
+			}
+			break;
+	}
+	if(""!=wifi2GPasswordValue)
+	{
+		if(!checkDoubleByteStr(wifi2GPasswordValue))//验证双频合一Password是否有双字节
+		{
+			if(CORRECT!=checkInputStr(wifi2GPasswordValue) || !isKeyboardInput(wifi2GPasswordValue))
+			{
+				showErr("error_unity_2","errorinfo_unity_2",I18N("j","Err_Wireless_UnityPwdInvalid"));//存在非键盘输入字符和空格符
+				return false;
+			}
+			if(!checkInputLength(wifi2GPasswordValue,8,63))
+			{
+				showErr("error_unity_2","errorinfo_unity_2",I18N("j","Err_Wireless_UnityPwdLength"));//密码长度错误
+				return false;
+			}
+		}
+		else 
+		{
+			showErr("error_unity_2","errorinfo_unity_2",I18N("j","Err_Wireless_UnityPwdInvalid"));//存在双字节字符
+			return false;
+		}			
+	}
+
+	return true;
+}
+function saveBtn() {
+
+	if(document.getElementById("wifiunityenable").checked == true)
+	{
+		if(!unityverifyWirelessSet())
+			return false;
+		document.getElementById("CreatePopAlertMessage").style.display = ""; 
+		/*if(document.getElementById("wifienable_unity").checked == false)
+		{
+			document.getElementById("waitCloseConfirm").style.display = ""; 
+		}
+		else
+		{
+			document.getElementById("waitSaveConfirm").style.display = ""; 
+		}*/
+		document.getElementById("waitSaveConfirm").style.display = ""; 
+	}
+	else
+	{
+		if(!verifyWirelessSet())
+			return false;
+		document.getElementById("CreatePopAlertMessage").style.display = ""; 
+		//if(
+		//	(cur_connect == "2.4G" && document.getElementById("wifienable_24").checked == false )
+		//	|| (cur_connect == "5G" && document.getElementById("wifienable_5").checked == false)
+		//	)
+		if(0)
+		{
+			document.getElementById("waitCloseConfirm").style.display = ""; 
+		}
+		else
+		{
+			document.getElementById("waitSaveConfirm").style.display = ""; 
+		}
+	}
+		
+}
+function SetXML() {
+	
+	 return SetResult_1st();
+}
+
+function SetResult_Masterwlan_1st() {
+	
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		//result_xml.Set("SetMasterWLanSettings/wl(0)_bandsteering", "0");	
+		//result_xml.Set("SetMasterWLanSettings/wl(1)_bandsteering", "0");
+		var ssid24 = document.getElementById("wifiName_24").value;
+		var key24 = document.getElementById("password1_24").value;
+		// Enable 2.4G
+		if (document.getElementById("wifienable_24").checked == "1"){	
+			result_xml.Set("SetMasterWLanSettings/wl(0).(0)_enable", "1");	
+		}
+		else{	
+			result_xml.Set("SetMasterWLanSettings/wl(0).(0)_enable", "0");	
+			ssid24 = wifiName_24;
+			key24 =wireless_passwd_24;
+		}
+		// 2.4G SSID
+		result_xml.Set("SetMasterWLanSettings/wl(0).(0)_ssid", ssid24);
+		
+		//2.4G key
+		result_xml.Set("SetMasterWLanSettings/wl(0).(0)_preshared_key", AES_Encrypt128(key24));
+		
+		//2.4G enc
+		if (key24.length == 0) {
+			result_xml.Set("SetMasterWLanSettings/wl(0).(0)_crypto", "none");
+		} else {
+			result_xml.Set("SetMasterWLanSettings/wl(0).(0)_crypto", "aestkip");
+		}
+		
+		var ssid5 = document.getElementById("wifiName_5").value;
+		var key5 = document.getElementById("password1_5").value;
+		
+		// Enable 5G
+		if (document.getElementById("wifienable_5").checked == "1")	{	
+			result_xml.Set("SetMasterWLanSettings/wl(1).(0)_enable", "1");	
+		}
+		else{
+			result_xml.Set("SetMasterWLanSettings/wl(1).(0)_enable", "0");	
+			ssid5 = wifiName_5;
+			key5 = wireless_passwd_5;
+		}
+		// 5G SSID
+		result_xml.Set("SetMasterWLanSettings/wl(1).(0)_ssid", ssid5);
+		//5G key
+		result_xml.Set("SetMasterWLanSettings/wl(1).(0)_preshared_key", AES_Encrypt128(key5));
+		//5G enc
+		if (key5.length == 0) {
+			result_xml.Set("SetMasterWLanSettings/wl(1).(0)_crypto", "none");
+		} else {
+			result_xml.Set("SetMasterWLanSettings/wl(1).(0)_crypto", "aestkip");
+		}
+		
+		//字符编码
+		if(document.getElementById("for_gb2312_24").src.indexOf("/image/mobile/but_radio_pre.png") >0) {
+			result_xml.Set("SetMasterWLanSettings/wl(0).(0)_charCode", "gb2312");
+		} else {
+			result_xml.Set("SetMasterWLanSettings/wl(0).(0)_charCode", "utf-8");
+		}
+		if(document.getElementById("for_gb2312_5").src.indexOf("/image/mobile/but_radio_pre.png") >0) {
+			result_xml.Set("SetMasterWLanSettings/wl(1).(0)_charCode", "gb2312");
+		} else {
+			result_xml.Set("SetMasterWLanSettings/wl(1).(0)_charCode", "utf-8");
+		}
+
+		// Send HNAP to DUT
+		HNAP.SetXMLAsync("SetMasterWLanSettings", result_xml, function(xml)	{	SetResult_2nd(xml);	});
+		
+		return true;
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetResult_1st");	
+		}
+		return false;
+	}
+	
+}
+function SetResult_2nd(result_xml)
+{
+	;
+}
+function Save_ok()
+{
+	if(document.getElementById("wifiunityenable").checked)
+	{
+		document.getElementById("newssid_unity").innerHTML = document.getElementById("wifiName_unity").value;
+		document.getElementById("newssid_unity").style.display = "";
+		document.getElementById("newssid_2").style.display = "none";
+		document.getElementById("newssid_5").style.display = "none";
+	}
+	else
+	{
+		document.getElementById("newssid_2").innerHTML = new_wifiName_24;
+		document.getElementById("newssid_5").innerHTML = new_wifiName_5;
+		document.getElementById("newssid_unity").style.display = "none";
+		document.getElementById("newssid_2").style.display = "";
+		document.getElementById("newssid_5").style.display = "";
+	}
+	document.getElementById("waitReboot").style.display="none";
+	document.getElementById("Save_ok").style.display="";
+}
+function CloseOk()
+{
+	document.getElementById("newssid_2").innerHTML = document.getElementById("wifiName_24").value;
+	document.getElementById("newssid_5").innerHTML = document.getElementById("wifiName_5").value;
+	document.getElementById("waitClose").style.display="none";
+	document.getElementById("CloseOk").style.display="";
+	
+}
+
+$(document).ready( function() {
+	GetXML();
+	checkTimeout();
+	document.title=I18N("j","Commom_Wireless_Settings");//标题 无线设置
+	document.getElementById("password1_unity").placeholder = I18N("j","Wizard_Set_Password");//请设置密码
+	document.getElementById("password2_unity").placeholder = I18N("j","Wizard_Set_Password");//请设置密码
+	document.getElementById("password1_24").placeholder = I18N("j","Wizard_Set_Password");//请设置密码
+	document.getElementById("password2_24").placeholder = I18N("j","Wizard_Set_Password");//请设置密码
+	document.getElementById("password1_5").placeholder = I18N("j","Wizard_Set_Password");//请设置密码
+	document.getElementById("password2_5").placeholder = I18N("j","Wizard_Set_Password");//请设置密码
+	document.getElementById("savebutton").value = I18N("j","Commom_Save");//保存
+	document.getElementById("btn_close_cancel").value = I18N("j","Commom_Cancel");//取消
+	document.getElementById("btn_close_confirm").value = I18N("j","Commom_Confirm");//确认
+	document.getElementById("btn_save_cancel").value = I18N("j","Commom_Cancel");//取消
+	document.getElementById("btn_save_confirm").value = I18N("j","Commom_Confirm");//确认
+	document.getElementById("btn_retry").value = I18N("j","Commom_Retry");//重试
+	GetLanguage();
+});
+
+//根据语言修改样式
+function GetLanguage()
+{
+	if(G_Language == "en-us")
+	{
+		$("#save_wifi_head").css({"height":"52px","line-height":"20px"});
+		$("#close_wifi_tips").css({"padding-top":"0px","text-align":"left"});
+		$("#save_settings_tips").css({"padding-top":"0px","text-align":"left"});
+		$("#wifi_rebooting").css({"line-height":"20px"});
+	}
+}
+
+function input_change()
+{
+	/*
+	if(cur_ssid == document.getElementById("wifiName_24").value && cur_passwd == document.getElementById("password1_24").value)
+		document.getElementById("savebutton").style.display = "none";
+	else
+		document.getElementById("savebutton").style.display = "";
+	*/
+}
+function passwordType()
+{
+	
+	if(document.getElementById("offline_ppp_eye_img").className == "imgrighteye_hide" )
+	{
+		document.getElementById("offline_ppp_eye_img").src="/image/mobile/icon_xianshi.png";
+		document.getElementById("password1_24").style.display="none";
+		document.getElementById('password2_24').style.display="";
+		document.getElementById("offline_ppp_eye_img").className = "imgrighteye_show";
+	}
+	else
+	{
+		document.getElementById("offline_ppp_eye_img").src="/image/mobile/icon_yingcang.png";
+		document.getElementById("password1_24").style.display="";
+		document.getElementById('password2_24').style.display="none";
+		document.getElementById("offline_ppp_eye_img").className = "imgrighteye_hide";
+	}
+	
+}
+function passwordType_5G()
+{
+	if(document.getElementById("offline_ppp_eye_img_5").className == "imgrighteye_hide" )
+	{
+		document.getElementById("offline_ppp_eye_img_5").src="/image/mobile/icon_xianshi.png";
+		document.getElementById("password1_5").style.display="none";
+		document.getElementById('password2_5').style.display="";
+		document.getElementById("offline_ppp_eye_img_5").className = "imgrighteye_show";
+	}
+	else
+	{
+		document.getElementById("offline_ppp_eye_img_5").src="/image/mobile/icon_yingcang.png";
+		document.getElementById("password1_5").style.display="";
+		document.getElementById('password2_5').style.display="none";
+		document.getElementById("offline_ppp_eye_img_5").className = "imgrighteye_hide";
+	}
+}
+function passwordType_unity()
+{
+	if(document.getElementById("offline_ppp_eye_img_unity").className == "imgrighteye_hide" )
+	{
+		document.getElementById("offline_ppp_eye_img_unity").src="/image/mobile/icon_xianshi.png";
+		document.getElementById("password1_unity").style.display="none";
+		document.getElementById('password2_unity').style.display="";
+		document.getElementById("offline_ppp_eye_img_unity").className = "imgrighteye_show";
+	}
+	else
+	{
+		document.getElementById("offline_ppp_eye_img_unity").src="/image/mobile/icon_yingcang.png";
+		document.getElementById("password1_unity").style.display="";
+		document.getElementById('password2_unity').style.display="none";
+		document.getElementById("offline_ppp_eye_img_unity").className = "imgrighteye_hide";
+	}
+}
+function changecheckbox(checkbox_on_off_id,checkbox_id,type)
+{
+	$("#tabletitle_"+type).removeClass("interval");
+	var a = document.getElementById(checkbox_id).checked;
+	if(a)//close
+	{
+		document.getElementById(checkbox_id).checked = false;
+		document.getElementById(checkbox_on_off_id).src = "image/mobile/icon_chosse_guan.png";
+		
+		$("#tabletitle_"+type).addClass("interval");
+		document.getElementById('wireless_name_'+type).style.display = "none";
+		document.getElementById('wireless_passwd_'+type).style.display = "none";
+		document.getElementById('wireless_encoding_'+type).style.display = "none";
+	}
+	else
+	{
+		document.getElementById(checkbox_id).checked = true; 
+		document.getElementById(checkbox_on_off_id).src = "image/mobile/icon_chosse_kai.png";
+
+		document.getElementById('wireless_name_'+type).style.display = "";
+		document.getElementById('wireless_passwd_'+type).style.display = "";
+		document.getElementById('wireless_encoding_'+type).style.display = "";
+	}
+	
+}
+function saveEnable()
+{
+	
+	if(
+		(cur_connect == "2.4G" && document.getElementById("wifienable_24").checked == false ) ||
+		(cur_connect == "5G" && document.getElementById("wifienable_5").checked == false)
+	)//关闭了当前使用的频段，提醒用户确认
+	{
+		document.getElementById("CreatePopAlertMessage").style.display = ""; 
+		document.getElementById("waitCloseConfirm").style.display = ""; //
+	}
+	else//关闭了非当前使用的频段
+	{
+		//document.getElementById("waitSaveConfirm").style.display = ""; 
+		//SetResult_Masterwlan_1st();
+		CheckConnectionStatus_Close();
+	}
+}
+function ChangewlanStatus()
+{
+	changecheckbox("wlan_statue","wifienable_24","24");
+	hideAll2GErrorInfo();
+	input_change();
+	
+	saveEnable();
+}	
+function ChangewlanStatus5()
+{
+	changecheckbox("wlan_statue_5","wifienable_5","5");
+	hideAll5GErrorInfo();
+	input_change();
+	
+	saveEnable();
+}
+function ChangeUnityStatus()
+{
+	var a = document.getElementById("wifiunityenable").checked;
+	
+	if(a)//关闭
+	{
+		document.getElementById("wlan_unity").src = "/image/mobile/icon_chosse_guan.png";
+		document.getElementById("wifiunityenable").checked = false;
+		document.getElementById('unity_DIV').style.display = "none";
+		document.getElementById('separateDIV').style.display = "";
+		hideAllUnityErrorInfo();
+		
+		SetResult_Bandsteering_1st();
+	}
+	else//开启
+	{
+		document.getElementById("wlan_unity").src = "/image/mobile/icon_chosse_kai.png";
+		document.getElementById("wifiunityenable").checked = true;
+		document.getElementById('unity_DIV').style.display = "";
+		document.getElementById('separateDIV').style.display = "none";
+		//hideAll2GErrorInfo()
+		//hideAll5GErrorInfo()
+	}
+	
+	input_change();
+	
+}
+function hideAllUnityErrorInfo()
+{
+	document.getElementById("error_unity_1").style.display = "none"; 
+	document.getElementById("error_unity_2").style.display = "none";
+}
+function ChangewlanStatus_Unity()
+{
+	var a = document.getElementById("wifienable_unity").checked;
+	
+	if(a)//关闭
+	{
+		document.getElementById("wlan_unitystatus").src = "/image/mobile/icon_chosse_guan.png";
+		document.getElementById("wifienable_unity").checked = false;
+		hideAllUnityErrorInfo();
+	}
+	else//开启
+	{
+		document.getElementById("wlan_unitystatus").src = "/image/mobile/icon_chosse_kai.png";
+		document.getElementById("wifienable_unity").checked = true;
+		//hideAll2GErrorInfo()
+		//hideAll5GErrorInfo()
+	}
+	
+	input_change();
+	//SetUnityXML();
+}
+function gotoIndex()
+{
+	window.location.href = "MobileIndex.html";
+}
+function cancel()
+{
+	//document.getElementById("wlan_statue").className = "checkbox_switch";
+	//document.getElementById("wlan_statue").src = "/image/mobile/icon_chosse_kai.png";
+	//document.getElementById("wifienable_24").checked = true; 
+
+	//document.getElementById('wireless_name_24').style.display = "";
+	//document.getElementById('wireless_passwd_24').style.display = "";
+	
+	document.getElementById('CreatePopAlertMessage').style.display = "none";
+	document.getElementById('waitReboot').style.display = "none";
+	document.getElementById('waitSaveConfirm').style.display = "none";
+	document.getElementById('waitCloseConfirm').style.display = "none";
+	document.getElementById('CloseOk').style.display = "none";
+
+}
+function cancelClose()
+{
+	if(cur_connect == "2.4G")
+	{
+		$("#tabletitle_24").removeClass("interval");
+		document.getElementById('wireless_name_24').style.display = "";
+		document.getElementById('wireless_passwd_24').style.display = "";
+		document.getElementById('wireless_encoding_24').style.display = "";
+		document.getElementById("wlan_statue").src = "image/mobile/icon_chosse_kai.png";
+		document.getElementById("wifienable_24").checked = true; 
+	}
+	else
+	{
+		$("#tabletitle_5").removeClass("interval");
+		document.getElementById('wireless_name_5').style.display = "";
+		document.getElementById('wireless_passwd_5').style.display = "";
+		document.getElementById('wireless_encoding_5').style.display = "";
+		document.getElementById("wlan_statue_5").src = "image/mobile/icon_chosse_kai.png";
+		document.getElementById("wifienable_5").checked = true;
+	}
+	document.getElementById('CreatePopAlertMessage').style.display = "none";
+	document.getElementById('waitCloseConfirm').style.display = "none";
+
+}
+function confirmSave()
+{
+	document.getElementById('CreatePopAlertMessage').style.display = "";
+	document.getElementById('waitSaveConfirm').style.display = "none";
+	//document.getElementById('Save_ok').style.display = "none";
+	document.getElementById('waitReboot').style.display = "";
+	$.ajax({
+		cache: false,
+		url: "./js/CheckConnection",
+		timeout: 5000,
+		type: "GET",
+		success: function(data) {
+			if(document.getElementById("wifiunityenable").checked == true)//双频合一打开 保存
+			{	
+				SetResult_Bandsteering_1st();
+				setTimeout("Save_ok()",40*1000);
+			}
+			else//双频合一关闭 保存
+			{
+				SetResult_Masterwlan_1st();
+				setTimeout("Save_ok()",40*1000);
+			}
+		},
+		error: function() {
+		  //document.getElementById("DetectRouterConnection").style.display = "inline";
+		}
+	});
+	//if(SetXML() == true)
+		//setTimeout("Save_ok()",10*1000);
+}
+function confirmClose()
+{
+	document.getElementById('CreatePopAlertMessage').style.display = "";
+	document.getElementById('waitCloseConfirm').style.display = "none";
+	document.getElementById('waitClose').style.display = "";
+	$.ajax({
+		cache: false,
+		url: "./js/CheckConnection",
+		timeout: 5000,
+		type: "GET",
+		success: function(data) {
+		
+		//SetResult_Masterwlan_1st();
+		SetXML_Close();
+		setTimeout("CloseOk()",5*1000);
+		},
+		error: function() {
+		  //document.getElementById("DetectRouterConnection").style.display = "inline";
+		}
+	});
+	
+}
+
+function SetResult_uinity_1st(result_xml)
+{
+	var SetResult_1st = result_xml.Get("SetBandSteeringResponse/SetBandSteeringResult");
+	if (SetResult_1st == "OK") {
+		SetResult_uinity_2st();
+		if(document.getElementById("wifiunityenable").checked == true)
+		{
+		
+			if(document.getElementById("wifienable_unity").checked == false)
+			{
+				setTimeout("CloseOk()",25*1000);
+			}
+			else
+			{
+				setTimeout("Save_ok()",25*1000);
+			}
+		}
+		else
+		{
+			if(
+				(cur_connect == "2.4G" && document.getElementById("wifienable_24").checked == false )
+				|| (cur_connect == "5G" && document.getElementById("wifienable_5").checked == false)
+				)
+			{
+				setTimeout("CloseOk()",25*1000);
+			}
+			else
+			{
+				setTimeout("Save_ok()",25*1000);
+			}
+		}
+	} 
+	else {
+		if (DebugMode == 1) {
+		alert("[!!SetXML Error!!] Function: SetResult_uinity_1nd");
+		}
+		window.location.reload();
+	}
+}
+function SetResult_Bandsteering_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		
+		var a = document.getElementById("wifiunityenable").checked;
+		var unity_enable = document.getElementById("wifienable_unity").checked;
+		var wifiNameUnity = document.getElementById("wifiName_unity").value;
+		var wifiPasswdUnity = document.getElementById("password1_unity").value;
+		if(a)//双频合一打开
+		{ 
+			result_xml.Set("SetBandSteering/wl(0)_bandsteering", a ? "1":"0");	
+			result_xml.Set("SetBandSteering/wl(1)_bandsteering", a ? "1":"0");	
+			
+			result_xml.Set("SetBandSteering/wl(0).(0)_enable", unity_enable ? "1":"0");	
+			result_xml.Set("SetBandSteering/wl(1).(0)_enable", unity_enable ? "1":"0");	
+			result_xml.Set("SetBandSteering/wl(0).(0)_ssid", wifiNameUnity);
+			result_xml.Set("SetBandSteering/wl(1).(0)_ssid", wifiNameUnity);
+			if(wifiPasswdUnity.length==0)
+			{
+				result_xml.Set("SetBandSteering/wl(0).(0)_crypto", "none");
+				result_xml.Set("SetBandSteering/wl(1).(0)_crypto", "none");
+			}
+			else
+			{
+				result_xml.Set("SetBandSteering/wl(0).(0)_crypto", "aestkip");
+				result_xml.Set("SetBandSteering/wl(1).(0)_crypto", "aestkip");		  
+			}
+
+			result_xml.Set("SetBandSteering/wl(0).(0)_preshared_key", AES_Encrypt128(wifiPasswdUnity));
+			result_xml.Set("SetBandSteering/wl(1).(0)_preshared_key", AES_Encrypt128(wifiPasswdUnity));
+		
+		}
+		
+		else
+		{
+		
+			result_xml.Set("SetBandSteering/wl(0)_bandsteering", a ? "1":"0");	
+			result_xml.Set("SetBandSteering/wl(1)_bandsteering", a ? "1":"0");	
+			
+			result_xml.Set("SetBandSteering/wl(0).(0)_enable", wifi24_enable);	
+			result_xml.Set("SetBandSteering/wl(1).(0)_enable", wifi5_enable);	
+			result_xml.Set("SetBandSteering/wl(0).(0)_ssid", wifiName_24);
+			result_xml.Set("SetBandSteering/wl(1).(0)_ssid", wifiName_5);
+			
+			result_xml.Set("SetBandSteering/wl(0).(0)_crypto", wireless_crypto_24);
+			result_xml.Set("SetBandSteering/wl(1).(0)_crypto", wireless_crypto_5);
+
+			result_xml.Set("SetBandSteering/wl(0).(0)_preshared_key", AES_Encrypt128(wireless_passwd_24));
+			result_xml.Set("SetBandSteering/wl(1).(0)_preshared_key", AES_Encrypt128(wireless_passwd_5));
+		}
+		result_xml.Set("SetBandSteering/wl(0).(1)_enable", Guest2G_enable);
+		result_xml.Set("SetBandSteering/wl(0).(1)_ssid", Guest2G_SSID);
+		result_xml.Set("SetBandSteering/wl(0).(1)_preshared_key", Guest2G_passwd);
+		result_xml.Set("SetBandSteering/wl(0).(1)_crypto", Guest2G_crypto);
+		result_xml.Set("SetBandSteering/wl(1).(1)_enable", Guest5G_enable);
+		result_xml.Set("SetBandSteering/wl(1).(1)_ssid", Guest5G_SSID);
+		result_xml.Set("SetBandSteering/wl(1).(1)_preshared_key", Guest2G_passwd);
+		result_xml.Set("SetBandSteering/wl(1).(1)_crypto", Guest2G_crypto);
+		
+		HNAP.SetXMLAsync("SetBandSteering", result_xml, function(xml)	{	SetResult_Bandsteering_2nd(xml);	});
+	}
+	
+	else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetResult_uinity_2st");	
+		}	
+	}
+}
+function SetResult_Bandsteering_2nd(){
+	;
+}
+function hideClearImg()
+{
+	document.getElementById("clear_wifiName_24").style.display = "none"; 
+	document.getElementById("clear_wifiName_5").style.display = "none"; 
+	document.getElementById("clear_wifiName_unity").style.display = "none"; 
+	
+	input_change();
+}
+function clearInput(inputId)
+{
+	document.getElementById(inputId).style.display = "none";
+	document.getElementById(inputId.substring(6)).value = ""; 
+}
+function changeinput(inputId)
+{
+	document.getElementById("clear_wifiName_24").style.display = "none"; 
+	document.getElementById("clear_wifiName_5").style.display = "none"; 
+	document.getElementById("clear_wifiName_unity").style.display = "none"; 
+	
+	if(document.getElementById(inputId).value != "")
+		document.getElementById("clear_"+inputId).style.display="";
+	else
+		document.getElementById("clear_"+inputId).style.display="none";
+		
+	input_change();
+	
+}
+
+//点击按钮关闭2.4G和5G无线网络的下发数据方法
+function CheckConnectionStatus_Close() 
+{
+	$.ajax({
+		cache: false,
+		url: "./js/CheckConnection",
+		timeout: 5000,
+		type: "GET",
+		success: function(data) {
+		SetXML_Close();
+		},
+		error: function() {
+		  //document.getElementById("DetectRouterConnection").style.display = "inline";
+		}
+	});
+
+}
+function SetXML_Close() {
+	//document.getElementById("CreatePopAlertMessage").style.display = "inline";
+	SetResult_1st_Close();
+}
+function SetResult_1st_Close() {
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		var ssid24 = wifiName_24;
+		// Enable 2.4G
+		if (document.getElementById("wifienable_24").checked == "1"){	result_xml.Set("SetMasterWLanSettings/wl(0).(0)_enable", "1");	}
+		else													
+		{	
+			result_xml.Set("SetMasterWLanSettings/wl(0).(0)_enable", "0");
+			document.getElementById("wifiName_24").value = wifiName_24;
+			document.getElementById("password1_24").value = wireless_passwd_24;
+			document.getElementById("password2_24").value = wireless_passwd_24;
+		}
+		// 2.4G SSID
+		
+		result_xml.Set("SetMasterWLanSettings/wl(0).(0)_ssid", ssid24);
+		//2.4G key
+		var key24 = wireless_passwd_24;
+		
+		//2.4G enc
+		if (key24.length == 0) {
+			result_xml.Set("SetMasterWLanSettings/wl(0).(0)_crypto", "none");
+		} else {
+			result_xml.Set("SetMasterWLanSettings/wl(0).(0)_crypto", "aestkip");
+		}
+		
+		key24 = AES_Encrypt128(key24);
+		result_xml.Set("SetMasterWLanSettings/wl(0).(0)_preshared_key", key24);
+		
+
+		var ssid5 = wifiName_5;
+		// Enable 5G
+		if (document.getElementById("wifienable_5").checked == "1")	{	result_xml.Set("SetMasterWLanSettings/wl(1).(0)_enable", "1");	}
+		else
+		{	
+			result_xml.Set("SetMasterWLanSettings/wl(1).(0)_enable", "0");
+			document.getElementById("wifiName_5").value = wifiName_5;
+			document.getElementById("password1_5").value = wireless_passwd_5;
+			document.getElementById("password2_5").value = wireless_passwd_5;
+		}
+		// 5G SSID
+		
+		result_xml.Set("SetMasterWLanSettings/wl(1).(0)_ssid", ssid5);
+		//5G key
+		var key5 = wireless_passwd_5;
+		aeskey24 = AES_Encrypt128(key5);
+		result_xml.Set("SetMasterWLanSettings/wl(1).(0)_preshared_key", aeskey24);
+		//5G enc
+		if (key5.length == 0) {
+			result_xml.Set("SetMasterWLanSettings/wl(1).(0)_crypto", "none");
+		} else {
+			result_xml.Set("SetMasterWLanSettings/wl(1).(0)_crypto", "aestkip");
+		}
+
+		//字符编码
+		result_xml.Set("SetMasterWLanSettings/wl(0).(0)_charCode", encodingvalue_24);
+		result_xml.Set("SetMasterWLanSettings/wl(1).(0)_charCode", encodingvalue_5);
+
+		// Send HNAP to DUT
+		HNAP.SetXMLAsync("SetMasterWLanSettings", result_xml, function(xml)	{	SetResult_2nd(xml);	});
+		
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetResult_1st_Close");	
+		}	
+	}
+}
+
+function CharacterEncodingSelect(tag,id)
+{
+	if(tag == 0)
+	{
+		document.getElementById("for_utf8_"+id).src = "/image/mobile/but_radio_pre.png";
+		document.getElementById("for_gb2312_"+id).src = "/image/mobile/but_radio.png";
+	}
+	else if(tag==1)
+	{
+		document.getElementById("for_utf8_"+id).src = "/image/mobile/but_radio.png";
+		document.getElementById("for_gb2312_"+id).src = "/image/mobile/but_radio_pre.png";
+	}
+}
+</script>
+</head>
+
+<body data-spy="scroll" data-target=".bs-docs-sidebar" style="background-color:#edeff2">
+<!-------------------- Logo menu------------------------->
+<div class="clearboth" align="center" id="content">
+	<div style="padding:0 3%;text-align: center;background-color:#4598aa;" class="headerline" align="center"><script>I18N("h","Commom_Wireless_Settings");</script><!-- 无线设置 -->
+	<img class="clearboth" onclick="gotoIndex();" style="padding-top:13px;width:23px;float:left" src="/image/mobile/icon_back.png" align="left">
+		<div style="float:right;width:23px;height:1px;visibility:hidden"><script>I18N("h","Commom_Save");</script><!-- 保存 -->
+		</div>
+	</div>
+	<div>
+		<div style="background-color:#edeff2;padding-left:3.33%">
+			<div style="height:3px">
+			</div>
+			<div id="save_wifi_head" align="center" style="height:33px;line-height:33px;color:#666666;font-size:1.2em;text-align:left">
+				<script>I18N("h","MobileWireless_Reconnect_WiFi");</script><!-- 修改无线SSID或密码后，需要重新连接WiFi -->
+			</div>
+		</div>
+	</div>
+	<div class="tabletitle" style="display:none">
+		<div class="frequInfo" ><script>I18N("h","Wireless_Unity");</script><!-- WiFi双频合一 -->
+		</div>
+		<div class="enable_switch" align="right">
+			<div onclick="ChangeUnityStatus()" >
+			<img id="wlan_unity" class="checkbox_switch" src="/image/mobile/icon_chosse_guan.png" align="right"></img>
+			<input type="checkbox" id="wifiunityenable" name="wifiunityenable" style="display:none">
+			</div>
+		</div>
+	</div>
+	<div id="unity_DIV" style="display:none">
+		<div style="background-color:#edeff2;height:9px"></div>
+		<div class="tabletitle" >
+			<div class="frequInfo" ><script>I18N("h","Wireless_Function");</script><!-- 无线功能 -->
+			</div>
+			<div class="enable_switch" align="right">
+				<div onclick="ChangewlanStatus_Unity()" >
+				<img id="wlan_unitystatus" class="checkbox_switch" src="/image/mobile/icon_chosse_kai.png" align="right"></img>
+				<input type="checkbox" id="wifienable_unity" checked name="wifienable_unity" style="display:none">
+				</div>
+			</div>
+		</div>
+		<div id="wireless_name_unity" class="input_div" style="">
+			<div class="leftth"><script>I18N("h","MobileWireless_Name");</script><!-- 无线名称 -->
+			</div>
+			<div style="float:left;width:55%" align="left">
+			<input type="text" id="wifiName_unity" size="27" maxlength="32" name="wifiName_unity" class="styled-text"  placeholder="" onfocus="changeinput(this.id);" onkeyup="changeinput(this.id);">
+			</div>
+			<div id="clear_wifiName_unity" style="float:right;padding-right:14px;display:none;" onClick="clearInput(this.id);">
+				<div style="vertical-align:middle;">
+				<img src="/image/mobile/icon_all-del.png" class="input_del_img">
+				</div>
+			</div>
+		</div>
+		<div id="error_unity_1" class="errordiv">
+			<div class="errorimg">
+				<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+			</div>
+			<div id="errorinfo_unity_1" class="errorinfo">
+			</div>
+		</div>
+		<div id="wireless_passwd_unity" class="input_div" style="">
+			<div class="leftth"><script>I18N("h","MobileWireless_Password");</script><!-- 无线密码 -->
+			</div>
+			<div style="float:left;width:55%" align="left">
+			<input type="password" id="password1_unity" size="30" maxlength="63" name="password1_unity" class="styled-text"  placeholder="" onblur="password2_unity.value=this.value;" onfocus="hideClearImg();">
+			<input type="text" id="password2_unity" size="30" maxlength="63" name="password2_unity" class="styled-text"  placeholder="" onblur="password1_unity.value=this.value;" style="display:none;" onfocus="hideClearImg();">
+			</div>
+			<div onClick="passwordType_unity();" style="float:right;padding-right:14px;">
+				<div style="vertical-align:middle;">
+				<img id="offline_ppp_eye_img_unity" src="/image/mobile/icon_yingcang.png" class="imgrighteye_hide">
+				</div>
+			</div>
+		</div>
+		<div id="error_unity_2" class="errordiv">
+			<div class="errorimg">
+				<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+			</div>
+			<div id="errorinfo_unity_2" class="errorinfo">
+			</div>
+		</div>
+		<div style="background-color:#edeff2;height:12px"></div>
+	</div><!------ unity_DIV ------>
+	
+	<div id="separateDIV" style="display:none">
+		<div class="tabletitle" id="tabletitle_24" >
+			<div class="frequInfo" ><script>I18N("h","Wireless_24G_Network");</script><!-- 2.4G无线网络 --><span class="select"><script>I18N("h","MobileWireless_Mobile_Preferred");</script><!-- (移动用户首选) --></span>
+			</div>
+			<div class="enable_switch" align="right">
+				<div onclick="ChangewlanStatus()" >
+				<img id="wlan_statue" class="checkbox_switch" src="/image/mobile/icon_chosse_kai.png" align="right"></img>
+				<input type="checkbox" id="wifienable_24" checked name="wifienable_24" style="display:none">
+				</div>
+			</div>
+		</div>
+		<div id="wireless_name_24" class="input_div" style="">
+			<div class="leftth"><script>I18N("h","MobileWireless_Name");</script><!-- 无线名称 -->
+			</div>
+			<div style="float:left;width:55%" align="left">
+			<input type="text" id="wifiName_24" size="27" maxlength="32" name="wifiName_24" class="styled-text"  placeholder="" onfocus="changeinput(this.id);" onkeyup="changeinput(this.id);">
+			</div>
+			<div id="clear_wifiName_24" style="float:right;padding-right:14px;display:none;" onClick="clearInput(this.id);">
+				<div style="vertical-align:middle;">
+				<img src="/image/mobile/icon_all-del.png" class="input_del_img">
+				</div>
+			</div>
+		</div>
+		<div id="error_1" class="errordiv">
+			<div class="errorimg">
+				<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+			</div>
+			<div id="errorinfo_1" class="errorinfo">
+			</div>
+		</div>
+		<div id="wireless_encoding_24" style="width:93.33%;padding:5px 0px;color:#666666;font-size:1.4em;text-align:left;">
+			<span style="padding-left:14px;padding-right:26px;"><script>I18N("h","Commom_Character_Encoding");</script></span>
+			<img id="for_utf8_24" onclick="CharacterEncodingSelect(0,'24')" width="14" height="14" src="/image/mobile/but_radio_pre.png" style="margin:0 4px 2px 8px;vertical-align:middle;"/>
+			<span><script>I18N("h","Commom_Character_UTF8");</script></span>
+			<img id="for_gb2312_24" onclick="CharacterEncodingSelect(1,'24')" width="14" height="14" src="/image/mobile/but_radio.png" style="margin:0 4px 2px 20px;vertical-align:middle;"/>
+			<span><script>I18N("h","Commom_Character_GB");</script></span>
+		</div>
+		<div id="wireless_passwd_24" class="input_div" style="">
+			<div class="leftth"><script>I18N("h","MobileWireless_Password");</script><!-- 无线密码 -->
+			</div>
+			<div style="float:left;width:55%" align="left">
+			<input type="password" id="password1_24" size="30" maxlength="63" name="password1_24" class="styled-text"  placeholder="" onblur="password2_24.value=this.value;" onfocus="hideClearImg();">
+			<input type="text" id="password2_24" size="30" maxlength="63" name="password2_24" class="styled-text"  placeholder="" onblur="password1_24.value=this.value;" style="display:none;" onfocus="hideClearImg();">
+			</div>
+			<div onClick="passwordType();" style="float:right;padding-right:14px;">
+				<div style="vertical-align:middle;">
+				<img id="offline_ppp_eye_img" src="/image/mobile/icon_yingcang.png" class="imgrighteye_hide">
+				</div>
+			</div>
+		</div>
+		<div id="error_2" class="errordiv">
+			<div class="errorimg">
+				<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+			</div>
+			<div id="errorinfo_2" class="errorinfo">
+			</div>
+		</div>
+		<div style="background-color:#edeff2;height:9px"></div>
+		<div class="tabletitle" id="tabletitle_5" >
+			<div class="frequInfo" ><script>I18N("h","Wireless_5G_Network");</script><!-- 5G无线网络 --><span class="select"><script>I18N("h","MobileWireless_TV_Preferred");</script><!-- (TV用户首选) --></span>
+			</div>
+			<div class="enable_switch" align="right">
+				<div onclick="ChangewlanStatus5()" >
+				<img id="wlan_statue_5" class="checkbox_switch" src="/image/mobile/icon_chosse_kai.png" align="right"></img>
+				<input type="checkbox" id="wifienable_5" checked name="wifienable_5" style="display:none">
+				</div>
+			</div>
+		</div>
+		<div id="wireless_name_5" class="input_div" style="">
+			<div class="leftth"><script>I18N("h","MobileWireless_Name");</script><!-- 无线名称 -->
+			</div>
+			<div style="float:left;width:55%" align="left">
+			<input type="text" id="wifiName_5" size="27" maxlength="32" name="wifiName_5" class="styled-text"  placeholder="" onfocus="changeinput(this.id);" onkeyup="changeinput(this.id);">
+			</div>
+			<div id="clear_wifiName_5" style="float:right;padding-right:14px;display:none;" onClick="clearInput(this.id);">
+				<div style="vertical-align:middle;">
+				<img src="/image/mobile/icon_all-del.png" class="input_del_img">
+				</div>
+			</div>
+		</div>
+			<div id="error_3" class="errordiv">
+				<div class="errorimg">
+					<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+				</div>
+				<div id="errorinfo_3" class="errorinfo">
+				</div>
+			</div>
+			<div id="wireless_encoding_5" style="width:93.33%;padding:5px 0px;color:#666666;font-size:1.4em;text-align:left;">
+				<span style="padding-left:14px;padding-right:26px;"><script>I18N("h","Commom_Character_Encoding");</script></span>
+				<img id="for_utf8_5" onclick="CharacterEncodingSelect(0,'5')" width="14" height="14" src="/image/mobile/but_radio_pre.png" style="margin:0 4px 2px 8px;vertical-align:middle;"/>
+				<span><script>I18N("h","Commom_Character_UTF8");</script></span>
+				<img id="for_gb2312_5" onclick="CharacterEncodingSelect(1,'5')" width="14" height="14" src="/image/mobile/but_radio.png" style="margin:0 4px 2px 20px;vertical-align:middle;"/>
+				<span><script>I18N("h","Commom_Character_GB");</script></span>
+			</div>
+			<div id="wireless_passwd_5" class="input_div" style="">
+				<div class="leftth"><script>I18N("h","MobileWireless_Password");</script><!-- 无线密码 -->
+				</div>
+				<div style="float:left;width:55%" align="left">
+				<input type="password" id="password1_5" size="30" maxlength="63" name="password1_5" class="styled-text"  placeholder="" onblur="password2_5.value=this.value;" onfocus="hideClearImg();">
+				<input type="text" id="password2_5" size="30" maxlength="63" name="password2_5" class="styled-text"  placeholder="" onblur="password1_5.value=this.value;" style="display:none;" onfocus="hideClearImg();">
+				</div>
+				<div onClick="passwordType_5G();" style="float:right;padding-right:14px;">
+					<div style="vertical-align:middle;">
+					<img id="offline_ppp_eye_img_5" src="/image/mobile/icon_yingcang.png" class="imgrighteye_hide">
+					</div>
+				</div>
+			</div>
+			<div id="error_4" class="errordiv">
+				<div class="errorimg">
+					<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+				</div>
+				<div id="errorinfo_4" class="errorinfo">
+				</div>
+			</div>
+		<div style="background-color:#edeff2;height:9px"></div>
+	</div><!--end  separateDIV-->
+	<div align="center" style="background-color:#edeff2;padding:33px 0 24px;">
+			<!-- <input type="button" value="保存" id="savebutton" style="display:" class="styled_button_s" onClick="saveBtn();"> -->
+			<input type="button" value="" id="savebutton" style="display:" class="styled_button_s" onClick="saveBtn();">
+	</div>
+	<div id="CreatePopAlertMessage" style="display:none">
+	  <div id="AlertPopRect">
+	  
+		<div id="AlertPopBody">
+			<img class="loading_big" src="/image/mobile/white_background.png"></img>
+			<div class="myAlertPop_div_b" id="waitCloseConfirm" style="display:none">
+			
+			  <center style="font-size: 1.4em;height:97px;padding:0 33px;">
+				<div id="close_wifi_tips" style="padding-top:11px">
+					<script>I18N("h","MobileWireless_Confirm1");</script><!-- 您的设置将会使您失去对设备 -->
+				</div>
+				<div align="left" style="padding-top:7px">
+					<script>I18N("h","MobileWireless_Confirm2");</script><!-- 的连接,确认关闭？ -->
+				</div>
+				<div >
+					
+				</div>
+			  </center>
+				<div style="height:44px;" align="center">
+				 <!-- <span style="width:50%"><input type="button" value="取消" class="styled_button_left" style="" onClick="cancelClose();"></span><span><input type="button" value="确认" class="styled_button_right" onClick="confirmClose();"></span> -->
+				 <span style="width:50%"><input type="button" id="btn_close_cancel" value="" class="styled_button_left" style="" onClick="cancelClose();"></span><span><input type="button" id="btn_close_confirm" value="" class="styled_button_right" onClick="confirmClose();"></span>
+				
+				</div>
+			</div>
+			<div id="CloseOk" class="myAlertPop_table_b" style="display:none;">
+				<script>I18N("h","MobileWireless_Saved_Successfully");</script><!-- 设置保存成功 -->
+			</div>
+			<div class="myAlertPop_div_b" id="waitSaveConfirm" style="display:none">
+			
+			  <center style="font-size: 1.4em;height:97px;padding:0 33px;">
+				<div id="save_settings_tips" style="padding-top:3px;line-height:22px;text-align:left">
+					<script>I18N("h","MobileWireless_Change_SSID_Reconnect1");</script><!-- 如果您修改了SSID或密码，您需要使用新的SSID和密码重新连接设备 -->
+				</div>
+			  </center>
+				<div style="height:44px;" align="center">
+				 <!-- <span style="width:50%"><input type="button" value="取消" class="styled_button_left" style="" onClick="cancel();"></span><span><input type="button" value="确认" class="styled_button_right" onClick="confirmSave();"></span> -->
+				 <span style="width:50%"><input type="button" id="btn_save_cancel" value="" class="styled_button_left" style="" onClick="cancel();"></span><span><input type="button" id="btn_save_confirm" value="" class="styled_button_right" onClick="confirmSave();"></span>
+				
+				</div>
+			</div>
+		   <div class="myAlertPop_div_b" id="waitReboot" border="0" cellspacing="0" style="font-size: 1.4em;color:#bdbdbd;display:none">
+				  <center>
+					<div>
+						<img style="padding-top:6px;width:43px;height:43px" src="/image/mobile/Wait.gif"></img>
+					</div>
+					<div id="wifi_rebooting" style="line-height:14px;padding:13px 33px 0">
+						<script>I18N("h","MobileWireless_Rebooting_WiFi1");</script><!-- 设置更改成功，正在为您重启 -->
+					</div>
+					<div align="left" style="line-height:14px;margin:7px 33px 0 ">
+						<script>I18N("h","MobileWireless_Rebooting_WiFi2");</script><!-- WiFi，请稍后... -->
+					</div>
+				  </center>
+				
+			</div>
+			<div align="center" class="myAlertPop_div_b" id="Save_ok" border="0" cellspacing="0" style="top:35px;display:none">
+				<div height=63px>
+				<div style="line-height:21px;font-size:1.4em;color:#333333;padding:0px 33px;text-align:left"><script>I18N("h","MobileWireless_Reboot_Complete_Reconnect_WiFi");</script><!-- WiFi重启完成，您需要重新连接WiFi才能继续对路由器进行管理。新的Wi-Fi名称为 -->
+				</div>
+				</div>
+				<div id="newssid_2" class="div_new_ssid" style="font-size:1.4em;text-align:center;padding-top:5px;line-height:21px;color:#666666">
+					D-Link_DIR-822+
+				</div>
+				<div id="newssid_5" class="div_new_ssid" style="font-size:1.4em;line-height:21px;text-align:center;color:#666666">
+					D-Link_DIR-822+_5GHz
+				</div>
+				<div id="newssid_unity" class="div_new_ssid" style="font-size:1.4em;line-height:40px;text-align:center;color:#666666">
+					D-Link_DIR-822+
+				</div>
+			</div>
+			<div class="myAlertPop_div_b" width=100% height=100%  id="waitClose" style="display:none">
+			
+				<center>
+					<div>
+						<img style="padding-top:20px;width:43px;height:43px" src="/image/mobile/Wait.gif"></img>
+					</div>
+					<div style="line-height:14px;padding:13px 33px 0;font-size:1.4em;">
+						<script>I18N("h","MobileNetwork_Settings_Saving");</script><!-- 正在保存设置 -->
+					</div>
+				</center>
+			</div>
+		</div>
+	  </div>
+	</div>
+	<!-- Detect Router Connection, Timmy Add 2013/08/15 -->
+	<div style="display:none" id="DetectRouterConnection">
+		<div id="AlertPopRect">
+			<div id="AlertPopBody">
+				<img class="loading_big" src="/image/mobile/white_background.png">
+				<div class="myAlertPop_div_b">
+			
+					<div style="height:62px;padding:17px 18px;text-align:left">
+					<div>
+						<script>I18N("h","MobileNetwork_Router_not_Connected1");</script><!-- 当前没有连接上路由器，或路由器 -->
+					</div>
+					<div align="left" style="padding-top:7px">
+						<script>I18N("h","MobileNetwork_Router_not_Connected2");</script><!-- 的WEB SERVER异常,保存失败 -->
+					</div>
+					
+					</div>
+					<div style="height:44px;" align="center">
+					 <!-- <span><input type="button" value="重试" class="styled_button_retry" onClick="SaveData();"></span> -->
+					 <span><input type="button" id="btn_retry" value="" class="styled_button_retry" onClick="SaveData();"></span>
+					
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>	
+</body>
+</html>

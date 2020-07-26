@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html id="html">
+<head>
+<meta name="viewport" content="width=1200">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<link rel=stylesheet type="text/css" href="css/jquery.selectbox.css" media="all" />
+<link href="css/stylish-select.css" type="text/css" rel="stylesheet" />
+<link href="css/style_page.css" type="text/css" rel="stylesheet" />
+<title></title>
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/header.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.selectbox-0.2_new.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<script type="text/javascript">
+
+//xframeoption
+if(top!=self){top.location=self.location;}
+
+var HNAP = new HNAP_XML();
+var firewallenable="";
+var spienable="";
+var dosenable="";
+var pingenable="";
+function Load_HTML()	
+{	
+	MoreContainMiniheight();
+}
+function GetXML()	
+{	
+	GetResult_1st();
+}
+
+function GetResult_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetMultipleHNAPs/GetSPIFirewallSettings");
+		result_xml.Set("GetMultipleHNAPs/GetDOSSettings");
+		result_xml.Set("GetMultipleHNAPs/GetWANPingSettings");
+		HNAP.SetXMLAsync("GetMultipleHNAPs", result_xml, function(xml)	{	GetResult_2nd(xml);	});
+	}
+	else	{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetResult_1st");	}	}
+}
+
+function GetResult_2nd(result_xml)
+{
+	var GetResult_2nd = result_xml.Get("GetMultipleHNAPsResponse/GetMultipleHNAPsResult");
+	if (GetResult_2nd == "OK"){
+		spienable = result_xml.Get("GetMultipleHNAPsResponse/GetSPIFirewallSettingsResponse/firewall_spi_enable");
+		dosenable= result_xml.Get("GetMultipleHNAPsResponse/GetDOSSettingsResponse/antiattack_antidos_enable");
+		pingenable = result_xml.Get("GetMultipleHNAPsResponse/GetWANPingSettingsResponse/acl_wan_ping_enable");
+
+		if(spienable=="1")
+		{
+			document.getElementById("spi_enable").checked = true;
+			document.getElementById("spi_statue").className = "checkbox_on";
+		}
+		else
+		{
+			document.getElementById("spi_enable").checked = false;
+			document.getElementById("spi_statue").className = "checkbox_off";
+		}
+		if(dosenable=="1")
+		{
+			document.getElementById("dos_enable").checked = true;
+			document.getElementById("dos_statue").className = "checkbox_on";
+		}
+		else
+		{
+			document.getElementById("dos_enable").checked = false;
+			document.getElementById("dos_statue").className = "checkbox_off";
+		}
+		if(pingenable=="1")
+		{
+			document.getElementById("ping_enable").checked = true;
+			document.getElementById("ping_statue").className = "checkbox_on";
+		}
+		else
+		{
+			document.getElementById("ping_enable").checked = false;
+			document.getElementById("ping_statue").className = "checkbox_off";
+		}
+		document.getElementById("right_content").style.display="";
+		document.getElementById("CreateOnloadMessage").style.display="none";		
+	} else {	
+		document.getElementById("right_content").style.display="";
+		document.getElementById("CreateOnloadMessage").style.display="none";		
+		if (DebugMode == 1)	{	
+			alert("[!!GetXML Error!!] Function: GetResult_2nd");
+		}
+	}
+}
+
+
+$(document).ready( function() {
+	document.getElementById("right_content").style.display="none";
+	document.getElementById("CreateOnloadMessage").style.display="";
+	Load_HTML();
+	GetXML();
+	checkTimeout();
+});
+
+
+function waitSettingFinished() 
+{
+	window.location.reload();
+}	
+
+function ChangspiStatus()
+{ 
+	var a = document.getElementById("spi_enable").checked;
+	
+	if(a)
+	{
+		document.getElementById("spi_statue").className = "checkbox_off";
+		document.getElementById("spi_enable").checked=false;
+
+	}
+	else
+	{
+		document.getElementById("spi_statue").className = "checkbox_on";
+		document.getElementById("spi_enable").checked=true;  
+
+	}
+	
+	$.ajax({
+			cache: false,
+			url: "./js/CheckConnection",
+			timeout: 5000,
+			type: "GET",
+			success: function(data) {
+				SetXML1();
+			},
+			error: function() {
+				document.getElementById("DetectRouterConnection").style.display = "inline";
+			}
+		});			
+}
+
+function SetXML1() {
+	document.getElementById("CreatePopAlertMessage").style.display = "inline";
+	document.getElementById("waitSettingFinish").style.display = "inline";
+	SetResult_1st();
+}
+
+function SetResult_1st() {
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		result_xml.Set("SetSPIFirewallSettings/firewall_spi_enable", document.getElementById("spi_enable").checked==true?"1":"0");
+
+
+		HNAP.SetXMLAsync("SetSPIFirewallSettings", result_xml, function(xml)	{	SetResult_2nd(xml);	});
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetResult_1st");	
+		}	
+	}
+}
+
+function SetResult_2nd(result_xml) {
+	var SetResult_2st = result_xml.Get("SetSPIFirewallSettingsResponse/SetSPIFirewallSettingsResult");
+	if (SetResult_2st == "OK") {
+		setTimeout("waitSettingFinished()", 1000);
+	}
+	if (SetResult_2st == "ERROR") {
+		if (DebugMode == 1) {
+		alert("[!!SetXML Error!!] Function: SetResult_2nd");
+		}
+		window.location.reload();
+	}
+}
+
+function ChangdosStatus()
+{ 
+	var a = document.getElementById("dos_enable").checked;
+	
+	if(a)
+	{
+		document.getElementById("dos_statue").className = "checkbox_off";
+		document.getElementById("dos_enable").checked=false;
+
+	}
+	else
+	{
+		document.getElementById("dos_statue").className = "checkbox_on";
+		document.getElementById("dos_enable").checked=true;  
+
+	}
+	$.ajax({
+			cache: false,
+			url: "./js/CheckConnection",
+			timeout: 5000,
+			type: "GET",
+			success: function(data) {
+				SetXML2();
+			},
+			error: function() {
+				document.getElementById("DetectRouterConnection").style.display = "inline";
+			}
+		});				
+}
+
+function SetXML2() {
+	document.getElementById("CreatePopAlertMessage").style.display = "inline";
+	document.getElementById("waitSettingFinish").style.display = "inline";
+	SetResult_2st();
+}
+
+function SetResult_2st() {
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		result_xml.Set("SetDOSSettings/antiattack_antidos_enable", document.getElementById("dos_enable").checked==true?"1":"0");
+
+
+		HNAP.SetXMLAsync("SetDOSSettings", result_xml, function(xml)	{	SetResult_3nd(xml);	});
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetResult_2st");	
+		}	
+	}
+}
+
+function SetResult_3nd(result_xml) {
+	var SetResult_1st = result_xml.Get("SetDOSSettingsResponse/SetDOSSettingsResult");
+	if (SetResult_1st == "OK") {
+		setTimeout("waitSettingFinished()", 1000);
+	}
+	if (SetResult_1st == "ERROR") {
+		if (DebugMode == 1) {
+		alert("[!!SetXML Error!!] Function: SetResult_3nd");
+		}
+		window.location.reload();
+	}
+}
+
+function ChangpingStatus()
+{ 
+	var a = document.getElementById("ping_enable").checked;
+	
+	if(a)
+	{
+		document.getElementById("ping_statue").className = "checkbox_off";
+		document.getElementById("ping_enable").checked=false;
+
+	}
+	else
+	{
+		document.getElementById("ping_statue").className = "checkbox_on";
+		document.getElementById("ping_enable").checked=true;  
+
+	}
+	
+		$.ajax({
+			cache: false,
+			url: "./js/CheckConnection",
+			timeout: 5000,
+			type: "GET",
+			success: function(data) {
+				SetXML3();
+			},
+			error: function() {
+				document.getElementById("DetectRouterConnection").style.display = "inline";
+			}
+		});			
+}
+
+function SetXML3() {
+	document.getElementById("CreatePopAlertMessage").style.display = "inline";
+	document.getElementById("waitSettingFinish").style.display = "inline";
+	SetResult_3st();
+}
+
+function SetResult_3st() {
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		result_xml.Set("SetWANPingSettings/acl_wan_ping_enable", document.getElementById("ping_enable").checked==true?"1":"0");
+
+
+		HNAP.SetXMLAsync("SetWANPingSettings", result_xml, function(xml)	{	SetResult_4nd(xml);	});
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetResult_3st");	
+		}	
+	}
+}
+
+function SetResult_4nd(result_xml) {
+	var SetResult_1st = result_xml.Get("SetWANPingSettingsResponse/SetWANPingSettingsResult");
+	if (SetResult_1st == "OK") {
+		setTimeout("waitSettingFinished()", 1000);
+	}
+	if (SetResult_1st == "ERROR") {
+		if (DebugMode == 1) {
+		alert("[!!SetXML Error!!] Function: SetResult_4nd");
+		}
+		window.location.reload();
+	}
+}
+</script>
+</head>
+
+<body>
+<!-------------------- Logo menu------------------------->
+	<div class="wrapper">  
+		<div id="header"></div>
+		<div class="clearboth" align="center" id="content">
+			<div class="morecontent" align="center" id="basiccontent">
+		 		<div class="pull-left" id="sub_menu_container"> 
+				<script>initialLeftMenu();</script>
+				</div>
+				<div id="right_content"  class="pull-left" style="display:none; ">
+					<table border="0"  class="tablemoreheader clearboth" cellpadding="0" cellspacing="0" align="left">
+						<tr>
+							<th><script>I18N("h","Firewall_Enable");</script><!-- 防火墙 --> </th>
+						</tr>
+					</table>
+					<div class="moreline1 clearboth"></div>
+					<div id="firewallcontent">
+					<div class="moredescription"><span class="inlineblock"><script>I18N("h","Firewall_Headline");</script><!-- 防火墙保护您的内部网络不被黑客入侵。防火墙可根据绑定过滤传送或接收的封包。 --></span></div>
+					 <table border="0" class="clearboth block" cellpadding="0" cellspacing="0" align="left" style="margin-top:36px;">
+					 	<tbody>
+						  <tr>
+							<th><script>I18N("h","Firewall_SPI");</script><!-- SPI防火墙 --></th>
+							<td class="tdcheckbox">
+								 <div id="spi_statue" class="checkbox_off" onclick="ChangspiStatus()">
+                       				 <input type="checkbox" id="spi_enable" name="spi_enable">
+                      			</div>
+							</td>
+						  </tr>
+						<tr class="space1"></tr>
+						  <tr>
+							<th><script>I18N("h","Firewall_DoS");</script><!-- 启用DoS防护 --></th>
+							<td class="tdcheckbox">
+								 <div id="dos_statue" class="checkbox_off" onclick="ChangdosStatus()">
+                       				 <input type="checkbox" id="dos_enable" name="dos_enable">
+                      			</div>
+							</td>
+						  </tr>
+						<tr class="space1"></tr>
+						<tr>
+						  <th>
+						   <script>I18N("h","Firewall_PING");</script><!-- 响应PING要求 -->
+						  </th>
+						  <td class="tdcheckbox">
+								 <div id="ping_statue" class="checkbox_off" onclick="ChangpingStatus()">
+                       				 <input type="checkbox" id="ping_enable" name="ping_enable">
+                      			</div>						 
+						 </td>
+						</tr>			
+					 </tbody>	
+					 </table>
+				</div>
+				</div><!--end right_content -->
+			</div>
+	   </div>
+ 	   <div class="footer_placeholder"></div>  
+   </div>
+	
+	<div id="footer"></div>
+	<div id="CreatePopAlertMessage" style=" display:none;"></div>
+	<div style=" display:none;" id="DetectRouterConnection"></div>
+	<div id="CreateOnloadMessage" style="display:none;"><div class="OnLoadPopRect"><img src="/image/submit.gif" width="58" height="58"></div></div>
+</body>
+<script type="text/javascript">
+Initial();
+</script>
+</html>

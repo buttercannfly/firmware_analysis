@@ -1,0 +1,82 @@
+config defaults
+	option syn_flood	0
+	option input		ACCEPT
+	option output		ACCEPT
+	option forward		DROP
+# Uncomment this line to disable ipv6 rules
+	option disable_ipv6	1
+
+#IP过滤是否启用开关
+	option firewall_filter_enable 'off'
+#IP过滤的模式，黑白名单
+	option firewall_filter_mode 'deny'
+	option firewall_version '2'
+
+config zone
+	option name		lan
+	list   network		'lan'
+	option input		ACCEPT
+	option output		ACCEPT
+	option forward		ACCEPT
+
+config zone
+        option name             guest
+        option network          guest
+        option input            ACCEPT
+        option forward          REJECT
+        option output           ACCEPT
+
+
+config zone
+	option name		wan
+	list   network		'wan'
+#	list   network		'wan6'
+	option input		DROP
+	option output		ACCEPT
+	option forward		REJECT
+	option masq		1
+	option mtu_fix		1
+
+config forwarding
+	option src		lan
+	option dest		wan
+
+config forwarding
+        option src              guest
+        option dest             wan
+
+
+# We need to accept udp packets on port 68,
+# see https://dev.openwrt.org/ticket/4108
+config rule
+	option name		Allow-DHCP-Renew
+	option src		wan
+	option proto		udp
+	option dest_port	68
+	option target		ACCEPT
+	option family		ipv4
+
+# include a file with users custom iptables rules
+config include
+	option path /etc/firewall.adv
+	option reload 1
+
+config include 'portal'    
+        option path '/etc/firewall.portal'
+        option reload '1'     
+        option enabled '1'
+
+config include 'guest'
+        option path '/etc/firewall.guest'
+        option reload '1'
+        option enabled '1'
+
+config include 'parentcontrol'
+        option path '/etc/firewall.parentcontrol'
+        option reload '0'
+        option enabled '1'
+
+config include 'acl'
+	option path '/etc/firewall.acl'
+	option reload '0'
+	option enabled '1'

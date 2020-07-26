@@ -1,0 +1,17 @@
+config wan_acl wan_acl
+	option ping_enable '0'
+	option web_enable  '0'
+	option telnet_enable '0'
+	option https_enable '0'
+
+config guest_acl guest_acl
+	option ping_enable '1'
+        option web_enable  '0'
+        option telnet_enable '0'
+        option https_enable '0'
+
+config lan_acl lan_acl
+	option ping_enable '1'
+        option web_enable  '1'
+        option telnet_enable '1'
+        option https_enable '1' 

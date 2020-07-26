@@ -1,0 +1,8 @@
+Package: speedtest
+Version: 1-r86157
+Depends: libc, lua, libubus-lua, luci-lib-nixio
+Source: package/tw-prog.priv/speedtest
+Section: net
+Architecture: ramips_24kec
+Installed-Size: 40927
+Description:  This package contains files and system scripts for speed test.

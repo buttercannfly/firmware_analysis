@@ -1,0 +1,27 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006-2011 OpenWrt.org
+
+SERVICE_USE_PID=1
+USE_PROCD=1
+START=101
+STOP=103
+PROG=/usr/sbin/scopd
+CONFIGFILE=/etc/scopd.conf
+
+
+start_service()
+{
+        echo "start_service : scopd"
+        procd_open_instance
+        procd_set_param command $PROG
+        procd_append_param command -f "${CONFIGFILE}"
+        procd_append_param command -n
+        procd_append_param command -d
+        procd_set_param respawn
+        procd_close_instance
+}
+
+stop_service() {
+        echo "service_stop : scopd"
+        service_stop  $PROG
+}

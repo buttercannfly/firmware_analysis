@@ -1,0 +1,8 @@
+config reptd
+	option enabled "0"
+
+config policy "behvLog"
+	option log_max "100"
+	option time_interval "86400"
+	option upload_url "-1"
+	option compress_en "1"

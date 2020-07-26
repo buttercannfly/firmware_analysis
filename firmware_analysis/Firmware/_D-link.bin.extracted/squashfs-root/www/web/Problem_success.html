@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html id="html">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<link href="css/style_page.css" type="text/css" rel="stylesheet" />
+<!-- <title>网络连接成功</title> -->
+<title></title>
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<style>
+.problemcontent 
+{ 
+position:absolute; 
+width:220px; 
+top:50%; 
+left:50%; 
+margin-left:-110px; 
+margin-top: -150px;
+z-index:1000; 
+}
+
+</style>
+<script type="text/javascript">
+$(document).ready( function() {
+	//xframeoption
+	//if(top!=self){top.location=self.location;}
+
+	document.title=I18N("j","Problem_Network_Connected");//标题 网络连接成功
+});
+</script>
+</head>
+
+<body data-spy="scroll" data-target=".bs-docs-sidebar" style="background-color:white;">
+<!-------------------- Logo menu------------------------->
+		<div style="width:100%; height:100%;">
+		<div class="problemcontent">
+			<div align="center"><img src="/image/icon_connect_succeed.png" width="118" height="118"></div>
+			<div style="margin-top:28px;width:225px;" class="words1" align="center"><script>I18N("h","Problem_Internet_Connected");</script><!-- 网络连接成功，可以正常上网。 --></div>
+		</div>
+		</div> 
+</body>
+</html>

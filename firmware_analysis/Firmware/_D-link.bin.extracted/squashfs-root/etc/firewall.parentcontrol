@@ -1,0 +1,102 @@
+#!/bin/sh
+
+. $IPKG_INSTROOT/lib/functions.sh
+
+parent_rule_add() {
+	echo "enter_parent_rule_add" > /dev/console
+	local enabled src_mac url_enable url start_time stop_time weekdays
+	local mac_addr
+
+	#get enabled
+	config_get enabled $1 enabled 
+	echo $enabled > /dev/console
+	if [ $enabled = "0" ]
+	then
+		return
+	fi
+
+	#get src_mac
+	config_get src_mac $1 src_mac 
+	echo $src_mac > /dev/console
+
+	for dev_mac in $src_mac
+	do 
+		mac_addr=`echo $dev_mac|sed s/://g`
+		echo $mac_addr > /dev/console
+
+		#Detects the presence of this device's child chain
+		iptables -w -t filter -C parent_control_forward -m mac --mac-source $dev_mac -j "dev_""$mac_addr""_forward"
+		if [ $? != "0" ]
+		then
+			echo rule_not_exist > /dev/console
+		
+			#create a child chain for this device
+			iptables -w -t filter -N "dev_""$mac_addr""_forward"
+			
+			#append this chain to parent control main chain
+			iptables -w -t filter -A parent_control_forward -m mac --mac-source $dev_mac -j "dev_""$mac_addr""_forward"
+
+			#create rule chain for this device
+			iptables -w -t filter -N "dev_""$mac_addr""_fwd_rule"
+
+			#append device rule chain to device's child chain
+			iptables -w -t filter -A "dev_""$mac_addr""_forward" -j "dev_""$mac_addr""_fwd_rule"
+
+			#append default policy to device's child chain
+			iptables -w -t filter -A "dev_""$mac_addr""_forward" -j DROP
+		else
+			echo rule_exit
+		fi
+
+		#get other options
+		config_get url_enable $1 url_enable 
+		config_get url $1 url 
+		config_get start_time $1 start_time 
+		config_get stop_time $1 stop_time 
+		config_get weekdays $1 weekdays 
+
+		#check url is enable
+		if [ $url_enable = "1" ]
+		then
+			#accept all dns packet
+			iptables -w -t filter -A "dev_""$mac_addr""_fwd_rule" -p udp --dport 53 -m time --timestart $start_time --timestop $stop_time --weekdays $weekdays --kerneltz -j ACCEPT
+			iptables -w -t filter -A "dev_""$mac_addr""_fwd_rule" -p tcp --dport 53 -m time --timestart $start_time --timestop $stop_time --weekdays $weekdays --kerneltz -j ACCEPT
+
+			#accept all ICMP packet
+			iptables -w -t filter -A "dev_""$mac_addr""_fwd_rule" -p ICMP -m time --timestart $start_time --timestop $stop_time --weekdays $weekdays --kerneltz -j ACCEPT
+
+			#accept all https packet
+			iptables -w -t filter -A "dev_""$mac_addr""_fwd_rule" -p tcp --dport 443 -m time --timestart $start_time --timestop $stop_time --weekdays $weekdays --kerneltz -j ACCEPT
+
+			#accept expected http packet
+			for per_url in $url
+			do
+				iptables -w -t filter -A "dev_""$mac_addr""_fwd_rule" -p tcp --dport 80 -m weburl --contains $per_url -m time --timestart $start_time --timestop $stop_time --weekdays $weekdays --kerneltz -j ACCEPT
+			done
+			
+			#drop unexpected http packet
+			iptables -w -t filter -A "dev_""$mac_addr""_fwd_rule" -p tcp --dport 80 -m string --string HTTP --algo bm -m time --timestart $start_time --timestop $stop_time --weekdays $weekdays --kerneltz -j DROP
+
+			#accept dport 80 packets, so the syn and other tcp control packets can pass through
+			iptables -w -t filter -A "dev_""$mac_addr""_fwd_rule" -p tcp --dport 80 -m time --timestart $start_time --timestop $stop_time --weekdays $weekdays --kerneltz -j ACCEPT
+		
+		else
+			iptables -w -t filter -A "dev_""$mac_addr""_fwd_rule" -m time --timestart $start_time --timestop $stop_time --weekdays $weekdays --kerneltz -j ACCEPT
+		fi
+	done
+
+
+	
+}
+
+#create parent control main chain
+iptables -w -t filter -N parent_control_forward
+
+#insert parent control main chain to forwarding_rule chain
+iptables -w -t filter -I forwarding_rule -i br-lan -j parent_control_forward
+
+#load parent control config
+config_load parentcontrol
+
+#foreach parent_control_rule and add rules
+config_foreach parent_rule_add parent_control_rule

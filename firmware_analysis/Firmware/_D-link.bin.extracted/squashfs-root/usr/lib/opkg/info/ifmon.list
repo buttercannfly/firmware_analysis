@@ -1,0 +1,4 @@
+/etc/hotplug.d/iface/25-ntpd
+/etc/version.conf
+/bin/ifmon
+/etc/version_time

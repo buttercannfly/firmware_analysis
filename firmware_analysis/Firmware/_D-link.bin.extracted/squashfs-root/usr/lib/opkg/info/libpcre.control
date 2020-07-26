@@ -1,0 +1,8 @@
+Package: libpcre
+Version: 8.11-2
+Depends: libc
+Source: package/feeds/packages/pcre
+Section: libs
+Architecture: ramips_24kec
+Installed-Size: 74199
+Description:  A Perl Compatible Regular Expression library

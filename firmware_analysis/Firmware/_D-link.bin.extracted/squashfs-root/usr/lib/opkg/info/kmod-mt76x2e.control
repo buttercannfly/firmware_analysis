@@ -1,0 +1,8 @@
+Package: kmod-mt76x2e
+Version: 3.10.14+3.0.4.0-1
+Depends: kernel (=3.10.14-1-dfaf6ac8f16c02ab6e279930227df9e5), kmod-cfg80211
+Source: package/ramips/drivers/mt76x2e
+Section: kernel
+Architecture: ramips_24kec
+Installed-Size: 801951
+Description:  MTK MT76x2e wifi AP driver

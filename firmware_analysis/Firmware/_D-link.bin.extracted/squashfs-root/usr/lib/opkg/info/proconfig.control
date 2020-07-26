@@ -1,0 +1,8 @@
+Package: proconfig
+Version: 1
+Depends: libc, libuci
+Source: package/tw-prog.priv/proconfig
+Section: TW Prog Priv
+Architecture: ramips_24kec
+Installed-Size: 3853
+Description:  WriteMTDflash Tools

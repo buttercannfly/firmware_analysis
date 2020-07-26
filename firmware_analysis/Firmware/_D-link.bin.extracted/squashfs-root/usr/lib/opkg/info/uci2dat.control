@@ -1,0 +1,8 @@
+Package: uci2dat
+Version: 1
+Depends: libc, libuci, libiconv-full
+Source: package/ramips/applications/uci2dat
+Section: MTK Properties
+Architecture: ramips_24kec
+Installed-Size: 14801
+Description:  Translate uci config into ralink wifi dat format

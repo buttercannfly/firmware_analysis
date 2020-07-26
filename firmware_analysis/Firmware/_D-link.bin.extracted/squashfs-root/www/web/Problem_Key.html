@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html id="html">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<link rel=stylesheet type="text/css" href="css/jquery.selectbox.css" media="all" />
+<link href="css/style_page.css?V=E1" type="text/css" rel="stylesheet" />
+<!-- <title>认证失败</title> -->
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.selectbox-0.2_new.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/verify/verify.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/AES.js"></script>
+
+<script type="text/javascript">
+var DebugMode=0;
+var HNAP = new HNAP_XML();
+var G_apc_wifi_ssid="";
+var G_apc_wifi_key="";
+var repeat_timmer=null;
+var repeat_timeout=35*1000;
+var G_wifiName_5="";
+var G_wifiName_24="";
+//页面扩展时加入超时，规避扩展时wifi断开没有收到response
+function ShowRepeateTimmer()
+{
+	document.getElementById("CreatePopAlertMessage").style.display="none";
+	document.getElementById("CreatePopAlert_Timeout").style.display="";
+}
+
+//清除超时的定时器
+function ClearRepeateTimmer()
+{
+	if(repeat_timmer!=null)
+	{
+		clearTimeout(repeat_timmer);
+		repeat_timmer=null;
+	}
+}
+
+//收不到response超时后点击确定
+function TimeoutComfirm()
+{
+	document.getElementById("CreatePopAlert_Timeout").style.display="none";
+}
+
+$(document).ready( function() {
+	GetRepeaterXML();
+	document.title = I18N("j","MobileProblem_Key_Failed");//认证失败
+	document.getElementById("btn_nextstep").value = I18N("j","MobileIndex_Next");//下一步
+	document.getElementById("btn_repeat_timeout_confirm").value = I18N("j","Commom_Apply");//确定
+	document.getElementById("Save_edit_pop_btn").value = I18N("j","Commom_Retry");//重试
+});
+
+//获取中继信息
+function GetRepeaterXML()
+{
+	GetRepeaterXML_1st();
+}
+function GetRepeaterXML_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetApcliAPSettings");
+		HNAP.SetXMLAsync("GetApcliAPSettings", result_xml, function(xml)	{	GetRepeaterXML_2nd(xml);	});
+	}
+	else{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetRepeaterXML_1st");	}	}
+}
+function GetRepeaterXML_2nd(result_xml)
+{
+	var GetResult_xml = result_xml.Get("GetApcliAPSettingsResponse/GetApcliAPSettingsResult");
+	if (GetResult_xml == "OK")
+	{
+		//主路由ssid
+		G_apc_wifi_ssid=result_xml.Get("GetApcliAPSettingsResponse/rootApSsid");
+		G_wifiName_24=result_xml.Get("GetApcliAPSettingsResponse/LocalSsid");
+		G_wifiName_5=result_xml.Get("GetApcliAPSettingsResponse/LocalSsid_5G");
+		$("#div_reinput_password").text(G_apc_wifi_ssid);
+	} 
+	else{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetRepeaterXML_2nd");	}	}
+}
+
+
+//设置扩展的密码
+function SetRepeateData()
+{
+	if(checkInputPassword())
+	{
+		$.ajax({
+			cache: false,
+			url: "./js/CheckConnection",
+			timeout: 5000,
+			type: "GET",
+			success: function(data) {
+				SetdoLogin();
+			},
+			error: function() {
+				document.getElementById("DetectRouterConnection").style.display = "inline";
+			}
+		});
+	}
+}
+function SetXML()
+{
+	document.getElementById("CreatePopAlertMessage").style.display ="";
+	document.getElementById("div_repeatefail_password").style.display="none";
+	SetRepeateDataXML_1st();
+}
+function SetRepeateDataXML_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		
+		G_apc_wifi_key = document.getElementById("mainwireless_password_manual").value;//密钥（无线密码）
+			
+		result_xml.Set("SetWLanRepeaterPwSettings/ApCliKeyStr",AES_Encrypt128(G_apc_wifi_key));//密钥（无线密码）
+		HNAP.SetXMLAsync("SetWLanRepeaterPwSettings", result_xml, function(xml)	{	SetRepeateDataXML_2nd(xml);	});
+		ClearRepeateTimmer();
+		repeat_timmer = setTimeout("ShowRepeateTimmer()",repeat_timeout);
+	} 
+	else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetRepeateDataXML_1st");
+		}
+	}
+}
+function SetRepeateDataXML_2nd(result_xml)
+{
+	ClearRepeateTimmer();
+	var SetResult_1st = result_xml.Get("SetWLanRepeaterPwSettingsResponse/SetWLanRepeaterPwSettingsResult");
+	if (SetResult_1st == "OK")
+	{
+		$("#completessid_24").text(G_wifiName_24);
+		$("#completessid_5").text(G_wifiName_5);
+		document.getElementById("CreatePopAlertMessage").style.display="none";
+		//document.getElementById("problem_part").style.display="none";
+		document.getElementById("repeat_success_content").style.display="";
+	} 
+	else if(SetResult_1st == "PASSWORD_FAILURE")
+	{
+		document.getElementById("CreatePopAlertMessage").style.display="none";
+		showErr("div_repeatefail_password","errorinfo_repeatefai_pwd",I18N("j","Err_Wizard_MainRouterPwdWrong"));
+	}
+	else if(SetResult_1st == "ROOTAP_NOTFOUND")
+	{
+		window.location.href = "Problem_Unknown.html";
+	}
+	else {	if (DebugMode == 1)	{	alert("[!!SetXML Error!!] Function: SetRepeateDataXML_2nd");	}	}
+}
+
+function SetdoLogin()
+{
+	var PrivateKey = null;
+	
+	var loginObj = $.Deferred();
+	
+	var soapAction = new SOAPAction();
+	var setLogin = new SOAPLogin();
+	var getLogin = new SOAPLoginResponse();
+	setLogin.Action = "request";
+	setLogin.Username = "Admin";
+	setLogin.Captcha = "";
+	setLogin.PrivateLogin = "Username";
+	// Login request
+	soapAction.sendSOAPAction("Login", setLogin, getLogin).done(function(obj)
+	{
+		if (obj.Challenge != null || obj.Cookie != null || obj.PublicKey != null)
+		{
+			PrivateKey = hex_hmac_md5(obj.PublicKey + setLogin.Username, obj.Challenge);
+			PrivateKey = PrivateKey.toUpperCase();
+			// Set Cookie
+			$.cookie('uid', obj.Cookie, { path: '/' });
+			// Storage data in DOM
+			
+			/*try {
+              localStorage.setItem("PrivateKey", PrivateKey);
+           } catch (e) {
+              alert("您的浏览器属于无痕浏览模式，无法进行正常配置，请您将您的浏览器切换成非无痕浏览模式再进行登录");
+			  return ;
+           }*/
+		   $.cookie('PrivateKey', PrivateKey, {path: '/' }); 
+			//等待request请求完成之后，再下发set请求
+			SetXML();
+			return ;
+		}
+		else
+		{
+			loginObj.reject();
+		}
+	})
+	.fail(function(){
+		loginObj.reject();
+	});
+	return loginObj.promise();
+}
+
+//验证问题页面的密码输入合法性
+function checkInputPassword()
+{
+	$("#div_repeatefail_password").hide();
+	var passwordstr_manual = $("#mainwireless_password_manual").val();
+	if(passwordstr_manual != "")
+	{
+		if(!checkDoubleByteStr(passwordstr_manual))//验证是否有双字节
+		{
+			if(!isKeyboardInput(passwordstr_manual))//是否只为ASCII码
+			{
+				showErr("div_repeatefail_password","errorinfo_repeatefai_pwd",I18N("j","Err_Wizard_MainRouterPwdInvalid"));
+				return false;
+			}
+			if(!checkInputLength(passwordstr_manual,8,64))
+			{
+				showErr("div_repeatefail_password","errorinfo_repeatefai_pwd",I18N("j","Err_Wizard_MainRouterPwdLength"));
+				return false;
+			}
+		}
+		else
+		{
+			showErr("div_repeatefail_password","errorinfo_repeatefai_pwd",I18N("j","Err_Wizard_MainRouterPwdInvalid"));
+			return false;
+		}
+	}
+	return true;
+}
+</script>
+</head>
+
+<body data-spy="scroll" data-target=".bs-docs-sidebar" style="background-color:white;">
+	
+	<div align="center" id="problem_part">
+		<div class="problemcontent">
+			<div style="position:absolute;top:0px;left:0px;bottom:0px;">
+				<img width="156" height="134" src="image/icon_ap02.png" >
+				<div style="margin-top:18px; color:#999999; font-size:14px;"><script>I18N("h","Home_mainrouter");</script><!-- 主路由器 --></div>
+			</div>
+			<div style="position:absolute;top:40px;left:198px; z-index:1;">
+				<img width="162" height="68" src="/image/pic_fail.png">
+			</div>
+			<div style="position:absolute;top:0px;bottom:0;right:20px;">
+				<img width="172" height="134" src="image/icon_router02.png" >
+				 <div style="margin-top:18px; color:#999999; font-size:14px;"><script>I18N("h","Login_Router_Name");</script></div>
+			</div>
+			<div id="div_expand" style="position:absolute;top:118px;bottom:0;left:192px;">
+				<span style="color:#999999; font-size:14px; "><script>I18N("h","MobileProblem_Key_Status");</script><!-- 无线网络状态： --></span>
+				<span id="expand_status" style="color:#ff4c4c;font-size:14px;"><script>I18N("h","MobileProblem_Key_Failed");</script><!-- 认证失败 --></span>
+			</div>
+		</div>
+		<!-- 中继认证失败:输入密码部分 -->
+		<div id="fail_password_content" align="center" style="margin-top:54px;">
+			<div style="width:768px;border:1px solid #4598aa">
+				<div style="text-align:center;margin-top:40px; color:#333333; font-size:20px; font-weight:bold;"><script>I18N("h","MobileProblem_Key_Repeat_Failed");</script><!-- 中继认证失败 --></div>
+				<div align="left" style="width:445px;margin-top:42px;font-size:14px;color:#333333;">
+					<div style="text-align:left;height:20px; margin-left:60px;">
+						<div class="pull-left"><script>I18N("h","MobileProblem_Key_Reinput1");</script><!-- 请重新输入“ --></div>
+						<div class="pull-left ssid_ellipse" id="div_reinput_password"></div>
+						<div class="pull-left"><script>I18N("h","MobileProblem_Key_Reinput2");</script><!-- ”的密码： --></div>
+					</div>
+					<table class="clearboth block" border="0" cellpadding="0" cellspacing="0" align="center" style="width:445px;margin-top:14px; margin-left:60px;">
+						<tbody>
+							<tr>
+								<th><script>I18N("h","Home_Wireless_Password");</script><!-- 无线密码 --></th>
+								<td><input type="text" maxlength="64" id="mainwireless_password_manual" size="32" name="mainwireless_password_manual" class="styled-text"></td>
+							</tr>
+							<tr id="div_repeatefail_password" style="display:none;">
+								<td>&nbsp;</td>
+								<td class="errorinfo">
+									<table>
+										<tbody>
+											<tr>
+												<td><div class="ic-sign ic"></div></td>
+												<td id="errorinfo_repeatefai_pwd"></td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div align="center" style="margin-top:36px; margin-left:92px; margin-bottom:48px;">
+					<input type="button" value="" id="btn_nextstep" class="styled_button_s" onClick="SetRepeateData();">
+					<!-- <input type="button" value="下一步" id="btn_nextstep" class="styled_button_long_long" onClick="SetRepeateData();"> -->
+				</div>
+			</div>
+		</div>
+    </div>
+	
+    <!-- 中继扩展上行主路由成功部分 -->
+	<div id="repeat_success_content" class="CreateTransparentBg" style="display:none;">
+		<div align="center" class="dialogBox_repeat">
+			<div style="text-align:center;color:#ffffff; font-size:20px; font-weight:bold; background-color:#4598aa; height:68px; line-height:68px;">扩展其他网络</div>
+			<table border="0" cellpadding="0" cellspacing="0" align="center" style="margin-top:48px; ">
+				<tr>
+					<td><img src="image/icon_successful.png" width="24" height="24" /></td>
+					<td><div class="repeate_status_words">扩展上行主路由成功<!-- 扩展上行主路由成功 --></div></td>
+				</tr>
+			</table>
+			<div style="font-size: 14px;color:#999999;margin-bottom:14px; margin-top:26px;text-align: center;">
+				当前路由器的无线名称为：
+			</div>
+ 			<div style="font-size: 14px;color:#333333;margin-bottom:6px;text-align: center; ">
+			  	<span id="completessid_24"></span>
+			</div>
+			<div style="font-size: 14px;color:#333333;margin-bottom:30px;text-align: center; ">
+			  	<span id="completessid_5"></span>
+			</div>
+			<div style="font-size: 14px;color:#999999;margin-bottom:14px;text-align: center;">
+				<script>I18N("h","Wizard_Domain_Name");</script><!-- 当前路由器的域名为 -->
+			</div>
+			<div style="font-size: 14px;color:#4598aa;margin-bottom:0px;text-align: center; ">
+			  	<span id="domain">dlinkrouter.com</span>
+			</div>
+		</div>
+	</div>
+   
+	<div id="CreatePopAlertMessage" style=" display:none;">
+		<div class="AlertPopRect">
+			<div id="waitSettingFinish">
+				<div class="pull-left" style="margin-left:48px;margin-top:37px;">
+					<img src="/image/submit.gif" width="48" height="48" />
+				</div>
+				<div class="pull-left" style="margin-left:30px;font-size:14px;color:#82878d;">
+					<table style="height:126px;width:250px;" align="center">
+						<tr align="left">
+							<td id="dialog_msg_black2"><script>I18N("h","Home_Wireless_Expanding");</script><!-- 无线正在扩展中，请稍候... --></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- 对于扩展过程中wifi断开超时提示 -->
+	<div id="CreatePopAlert_Timeout" class="CreateTransparentBg" style="display:none;">
+		<div align="center" class="AlertPopRect">
+			<table class="errorinfo" style="margin-top:20px;" align="center">
+				<tbody>
+					<tr>
+						<td align="center" style="font-size:14px;">
+							<script>I18N("h","Home_Repeat_Timeout");</script><!-- 扩展结果返回超时，请检查设备与中继的连接状态。 -->
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<div align="center" style="margin-top:20px;">
+				<input type="button" class="styled_button_ss" value="" onclick="TimeoutComfirm()" id="btn_repeat_timeout_confirm">
+				<!-- <input type="button" class="styled_button_ss" value="确定" onclick="TimeoutComfirm()" id="btn_repeat_timeout_confirm"> -->
+			</div>
+		</div>
+	</div>
+	
+	<div id="DetectRouterConnection" style="display:none; ">
+	  <div  class="AlertPopRect">
+		<table style="width:426px; margin-top:20px;" align="center">
+		  <tbody>
+			<tr>
+			  <td align="center" style="font-size:14px;color:#82878d; ">
+				<script>I18N("h","Commom_Router_not_Connected");</script><!-- 当前没有连接上中继，或中继的WEB SERVER异常，保存失败 -->
+			  </td>
+			</tr>
+			<tr style="height:24px; "></tr>
+			<tr>
+			  <td align="center">
+				<input type="button" class="styled_button_ss" id="Save_edit_pop_btn" value="重试" onclick="CheckHTMLStatus('')">
+				<!-- <input type="button" class="styled_button_ss" id="Save_edit_pop_btn" value="重试" onclick="CheckHTMLStatus('')"> -->
+			  </td>
+			</tr>
+		  </tbody>
+		</table>
+	  </div>
+	</div>
+
+</body>
+</html>

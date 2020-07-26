@@ -1,0 +1,8 @@
+Package: bridge-utils
+Version: 1.5-1
+Depends: libc
+Source: package/network/utils/bridge-utils
+Section: net
+Architecture: ramips_24kec
+Installed-Size: 9550
+Description:  Bridge utils

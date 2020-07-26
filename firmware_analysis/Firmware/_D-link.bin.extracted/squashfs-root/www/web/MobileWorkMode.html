@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html id="html">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<link rel=stylesheet type="text/css" href="css/jquery.selectbox.css" media="all" />
+<link href="css/style_mobile.css" type="text/css" rel="stylesheet" />
+<link rel="shortcut icon" href="image/favicon.ico" type="image/x-icon" />
+<title></title>
+
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.selectbox-0.2_new.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/verify/verify.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/AES.js"></script>
+<style>
+.internet_bg {
+    background: rgba(0, 0, 0, 0) url("../image/mobile/icon_hulianwang.png") no-repeat scroll left top;
+    height: 305px;
+    left: 0;
+    position: relative;
+    top: 0;
+	background-size: 364px 305px;
+	width:364px;
+	margin:0 auto;
+	position: relative;
+}
+.styled-text {
+	color: #333333;
+    font-size: 1.6em;
+    height: 32px;
+	padding-left:3.33%;
+    width: 90%;
+	border:0;
+}
+.input_div{
+	height:44px;
+	line-height:44px;
+	width:93.33%;
+	margin:12px 0 9px;
+	text-align:left;
+	border:1px solid #bbbbbb;
+	border-radius:3px;
+}
+
+.mode_select{
+height:28px;
+line-height:28px;
+background-color:#4598aa;
+border-radius:28px;
+color:#ffffff;
+text-align:center;
+font-size:1.4em;
+}
+
+.mode{
+height:28px;
+line-height:28px;
+color:#4598aa;
+font-size:1.4em;
+text-align:center;
+}
+</style>
+<script type="text/javascript">
+var DebugMode=0;
+var HNAP = new HNAP_XML();
+var workmode_value = "router";//工作模式
+var SetDataTimer = null;
+var main_ssid_2g = "";
+var main_ssid_5g = "";
+var domain_name = "mowifi.com";
+var title_word = "";
+var success_word = "";
+
+$(document).ready( function() {
+
+	document.getElementById("savebutton").value = I18N("j","Mode_Switch_Work");//切换
+	document.getElementById("btn_retry").value = I18N("j","Commom_Retry");//重试
+	
+	GetXML();
+	checkTimeout();
+});
+function GetXML()	
+{	
+	GetResult_1st();
+}
+function GetResult_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetMultipleHNAPs/GetNetworkModeSettings");
+		result_xml.Set("GetMultipleHNAPs/GetSysStatus");
+		result_xml.Set("GetMultipleHNAPs/GetDeviceDomainName");
+		HNAP.SetXMLAsync("GetMultipleHNAPs", result_xml, function(xml)	{	GetResult_2nd(xml);	});
+	}
+	else
+	{	
+		if (DebugMode == 1)	{	
+			alert("[!!GetXML Error!!] Function: GetResult_1st");	
+		}	
+	}
+}
+function GetResult_2nd(result_xml)
+{
+	var GetResult_2nd = result_xml.Get("GetMultipleHNAPsResponse/GetMultipleHNAPsResult");
+	if (GetResult_2nd == "OK"){
+		var workmode = result_xml.Get("GetMultipleHNAPsResponse/GetNetworkModeSettingsResponse/global_network_mode");
+		if(workmode == "bridge")
+		{
+			changeBridgeMode();
+		}
+		else if(workmode == "repeater")
+		{
+			changeRepeaterMode();
+		}
+		else
+		{
+			changeRouteMode();
+		}
+		main_ssid_2g = result_xml.Get("GetMultipleHNAPsResponse/GetSysStatusResponse/wl(0).(0)_ssid");
+		main_ssid_5g = result_xml.Get("GetMultipleHNAPsResponse/GetSysStatusResponse/wl(1).(0)_ssid");
+		domain_name = result_xml.Get("GetMultipleHNAPsResponse/GetDeviceDomainNameResponse/device_domain_name");
+	} 
+	else{
+		if (DebugMode == 1)	{
+			alert("[!!GetXML Error!!] Function: GetResult_2nd");
+		}
+	}
+}
+	//点击切换工作模式按钮
+function BtnChangeMode()
+{
+	$.ajax({
+		cache: false,
+		url: "./js/CheckConnection",
+		timeout: 5000,
+		type: "GET",
+		success: function(data) {
+			SetXML();
+		},
+		error: function() {
+			document.getElementById("DetectRouterConnection").style.display = "inline";
+		}
+	});
+}
+
+function SetXML() 
+{
+	document.getElementById("CreatePopAlertMessage").style.display = "inline";
+	SetXML_1st();
+}
+
+function SetXML_1st() {
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		$.cookie('work_mode', workmode_value , { path: '/' });//设置工作模式的cookie
+		result_xml.Set("SetNetworkModeSettings/global_network_mode", workmode_value);
+		HNAP.SetXMLAsync("SetNetworkModeSettings", result_xml, function(xml)	{	SetResult_2nd(xml);	});
+		
+		SetDataTimer = setTimeout("waitSettingFinished()", 30*1000);//设置定时器
+		
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetXML_1st");
+		}	
+	}
+}
+function SetResult_2nd(result_xml) {
+	;
+}
+function waitSettingFinished()
+{
+	document.getElementById("completessid_24").innerHTML = main_ssid_2g;
+	document.getElementById("completessid_5").innerHTML = main_ssid_5g;
+	document.getElementById("domain").innerHTML = domain_name;
+	document.getElementById("savesettings").style.display = "none";
+	document.getElementById("Save_ok").style.display = "";
+	document.getElementById("loading_big").style.height ="250px" ;
+}
+
+//切换成功后点击确定
+function ChangeModeSuccessConfrim()
+{
+	window.location.href = "http://" + domain_name;
+}
+
+function changeRouteMode()
+{
+	workmode_value = "router";
+	$("#router_mode").removeClass("mode_select");
+	$("#repeater_mode").removeClass("mode_select");
+	$("#bridge_mode").removeClass("mode_select");
+	$("#router_mode").removeClass("mode");
+	$("#repeater_mode").removeClass("mode");
+	$("#bridge_mode").removeClass("mode");
+	
+	$("#router_mode").addClass("mode_select");
+	$("#repeater_mode").addClass("mode");
+	$("#bridge_mode").addClass("mode");
+	
+	document.getElementById("router_img").style.display = "";
+	document.getElementById("repeater_img").style.display = "none";
+	document.getElementById("bridge_img").style.display = "none";
+	document.getElementById("curent_select_mode").innerHTML=I18N("j","Mode_Router");
+}
+function changeBridgeMode()
+{
+	workmode_value = "bridge";
+	$("#router_mode").removeClass("mode_select");
+	$("#repeater_mode").removeClass("mode_select");
+	$("#bridge_mode").removeClass("mode_select");
+	$("#router_mode").removeClass("mode");
+	$("#repeater_mode").removeClass("mode");
+	$("#bridge_mode").removeClass("mode");
+	
+	$("#router_mode").addClass("mode");
+	$("#repeater_mode").addClass("mode");
+	$("#bridge_mode").addClass("mode_select");
+	
+	document.getElementById("router_img").style.display = "none";
+	document.getElementById("repeater_img").style.display = "none";
+	document.getElementById("bridge_img").style.display = "";
+	document.getElementById("curent_select_mode").innerHTML=I18N("j","Mode_Bridge");
+	
+}
+function changeRepeaterMode()
+{
+	workmode_value = "repeater";
+	$("#router_mode").removeClass("mode_select");
+	$("#repeater_mode").removeClass("mode_select");
+	$("#bridge_mode").removeClass("mode_select");
+	$("#router_mode").removeClass("mode");
+	$("#repeater_mode").removeClass("mode");
+	$("#bridge_mode").removeClass("mode");
+	
+	$("#router_mode").addClass("mode");
+	$("#repeater_mode").addClass("mode_select");
+	$("#bridge_mode").addClass("mode");
+	
+	document.getElementById("router_img").style.display = "none";
+	document.getElementById("repeater_img").style.display = "";
+	document.getElementById("bridge_img").style.display = "none";
+	document.getElementById("curent_select_mode").innerHTML=I18N("j","Mode_Repeater");
+}
+function gotoIndex()
+{
+	window.location.href = "MobileIndex.html";
+}
+
+</script>
+</head>
+
+<body data-spy="scroll" data-target=".bs-docs-sidebar" style="background-color:white">
+<!-------------------- Logo menu------------------------->
+
+<div align="center" id="content">
+	<div style="padding:0 3.33%;text-align: center;background-color:#4598aa;" class="headerline" align="center">
+		<script>I18N("h","Mode_Switch");</script><!-- 工作模式切换 -->
+		<img class="clearboth" onclick="gotoIndex();" style="padding-top:13px;height:23px;width:23px " src="/image/mobile/icon_back.png" align="left">
+		<div style="float:right;width:23px;height:1px;visibility:hidden"><script>I18N("h","Commom_Save");</script><!-- 保存 -->
+		</div>
+	</div>
+	
+	<div id="main">
+		<div style="padding-left:3.33%; margin-top:24px;">
+			<div align="center" style="color:#999999;font-size:1.4em;text-align:left">
+			在路由模式、无线中继模式与无线AP模式之间进行切换
+			</div>
+		</div>
+		<div style="border:1px solid #4598aa;border-radius:3px; width:93%; margin-top:24px; margin-bottom:24px;" align="center">
+			<div align="center" style="border-bottom:1px solid #4598aa; background-color:#eef6f7;">
+				<table style="width:100%; padding-top:8px; padding-bottom:8px;">
+					<tr>
+						<td width="33.3%" align="center"><div class="mode_select" onclick="changeRouteMode();" id="router_mode">路由模式</div></td>
+						<td width="33.3%" align="center"><div class="mode" onclick="changeRepeaterMode();" id="repeater_mode">无线中继模式</div></td>
+						<td width="33.3%" align="center"><div class="mode" onclick="changeBridgeMode();" id="bridge_mode">无线AP模式</div></td>
+					</tr>
+				</table>
+				
+				
+				
+			</div>
+			<div style="margin-top:11%;  ">
+				<div style="width:21.1%; " align="center" id="router_img"><img src="/image/mobile/pic_ap_gif.gif" width="100%"></div>
+				<div style="width:53.5%; display:none;" align="center" id="repeater_img"><img src="/image/mobile/pic_relay_mode.gif" width="100%"></div>
+				<div style="width:53.5%;display:none; " align="center" id="bridge_img"><img src="/image/mobile/pic_bridging_mode.gif" width="100%"></div>
+			</div>
+			<div style="text-align:center; margin-top:8%;margin-bottom:11%; font-size:1.4em; color:#4598aa;" id="curent_select_mode"></div>
+		</div>
+		 <div align="center" style="margin:31px 0 35px">
+			<input type="button" value="切换" id="savebutton" class="styled_button_s" onClick="BtnChangeMode();">
+		  </div>
+	</div>
+		<div id="CreatePopAlertMessage" style="display:none">
+			<div id="AlertPopRect" style="top:25%;">
+		  
+				<div id="AlertPopBody">
+					<img class="loading_big" id="loading_big" src="/image/mobile/white_background.png"></img>
+					<div class="myAlertPop_div_b" id="savesettings" border="0" cellspacing="0" style="top:45px;display:">
+					  <center>
+						<div>
+							<img style="width:42px;height:42px" src="/image/mobile/Wait.gif"></img>
+						</div>
+						<div style="font-size: 1.4em;padding:18px 33px 0">
+							<script>I18N("h","Mode_Mode_Switching");</script><!-- 正在切换模式 -->
+						</div>
+						
+					  </center>
+				
+					</div>
+					<div align="center" class="myAlertPop_div_b" id="Save_ok" border="0" cellspacing="0" style="top:35px;display:none">
+						<div height=63px>
+						<div style="line-height:21px;font-size:1.4em;color:#333333;padding:0px 33px;text-align:left"><script>I18N("h","Mode_Mode_OK");</script><!-- 您需要重新连接WiFi才能继续对路由器进行管理。您的Wi-Fi名称为 -->
+						</div>
+						</div>
+						<div id="completessid_24" class="div_new_ssid" style="font-size:1.4em;text-align:center;padding-top:5px;line-height:21px;color:#666666">
+							
+						</div>
+						<div id="completessid_5" class="div_new_ssid" style="font-size:1.4em;line-height:21px;text-align:center;color:#666666">
+							
+						</div>
+						<div style="font-size:1.4em;color:#333333;text-align:center;margin-top:22px;">
+							<script>I18N("h","Mode_Domain_Name");</script>
+						</div>
+						<div style="font-size:1.4em;color:#4598aa;margin-top:10px;">
+							<span id="domain">dlinkrouter.com</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	<div style="display:none" id="DetectRouterConnection">
+		<div id="AlertPopRect">
+			<div id="AlertPopBody">
+				<img class="loading_big" src="/image/mobile/white_background.png">
+				<div class="myAlertPop_div_b">
+			
+			  <div style="height:62px;padding:17px 18px;text-align:left;font-size: 1.4em;">
+				<div>
+					<script>I18N("h","MobileNetwork_Router_not_Connected1");</script><!-- 当前没有连接上路由器，或路由器 -->
+				</div>
+				<div align="left" style="padding-top:7px">
+					<script>I18N("h","MobileNetwork_Router_not_Connected2");</script><!-- 的WEB SERVER异常，保存失败 -->
+				</div>
+				
+			  </div>
+				<div style="height:;" align="center">
+				 <!-- <span><input type="button" value="重试" class="styled_button_retry" onClick="SaveWan();"></span> -->
+				 <span><input type="button" id="btn_retry" value="重试" class="styled_button_retry" onClick="CheckHTMLStatus('');"></span>
+				
+				</div>
+			</div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

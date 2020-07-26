@@ -1,0 +1,9 @@
+Package: luci-lib-nixio
+Version: svn-r86181-1
+Depends: libc, luci-base
+Source: package/ramips/ui/luci-mtk
+Section: luci
+Maintainer: LuCI Development Team <luci@lists.subsignal.org>
+Architecture: ramips_24kec
+Installed-Size: 29214
+Description:  NIXIO POSIX library

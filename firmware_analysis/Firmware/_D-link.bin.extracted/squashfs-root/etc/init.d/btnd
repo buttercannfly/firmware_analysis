@@ -1,0 +1,17 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2014 OpenWrt.org
+
+START=60
+USE_PROCD=1
+
+start_service() {
+	btnd reset 5 &
+	plc_product=`uci get plc.config.Enabled`
+	[ -n "$plc_product" ] && btnd plc 14 &
+	btnd wps 4 &	
+	btnd wifi 38 &	
+}
+
+stop_service() {
+	killall -9 btnd
+}

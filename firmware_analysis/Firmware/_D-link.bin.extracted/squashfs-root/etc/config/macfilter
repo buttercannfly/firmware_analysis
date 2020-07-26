@@ -1,0 +1,4 @@
+config globals 'globals'
+	option enabled '0'
+	option mode    'deny'
+	option fixed '0'

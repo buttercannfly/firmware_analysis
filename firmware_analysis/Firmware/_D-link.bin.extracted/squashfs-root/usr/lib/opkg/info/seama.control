@@ -1,0 +1,8 @@
+Package: seama
+Version: 1
+Depends: libc
+Source: package/tw-prog.priv/seama
+Section: TW Prog Priv
+Architecture: ramips_24kec
+Installed-Size: 7116
+Description:  add header Tools

@@ -1,0 +1,33 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006-2011 OpenWrt.org
+
+SERVICE_USE_PID=1
+USE_PROCD=1
+START=50
+STOP=100
+PROG=/usr/sbin/lighttpd
+CONFIGFILE=/etc/lighttpd/lighttpd.conf
+
+start_service()
+{
+        procd_open_instance
+        procd_set_param command $PROG
+        procd_append_param command -f "${CONFIGFILE}"
+        procd_append_param command -D
+        procd_set_param respawn
+        procd_close_instance
+}
+
+#SERVICE_USE_PID=1
+
+#START=50
+
+#start() {
+#	mkdir -m 0755 -p /var/log/lighttpd
+#	service_start /usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf
+#}
+
+stop() {
+	service_stop /usr/sbin/lighttpd
+}
+

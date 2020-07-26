@@ -1,0 +1,2 @@
+iptables -t nat -I delegate_prerouting -i br-lan -p tcp --dport 80 -j REDIRECT --to-ports 80  -m comment --comment "portal_page_rule_lan"
+

@@ -1,0 +1,13 @@
+config FirewallSettings FirewallSettings
+	option SPIIPv4Enable		1
+	option DosEnable		1
+
+#Reserved
+	option AntiSpoofEnable          0
+	option ALGPPTPEnable		1
+	option ALGIPSecEnable		1
+	option ALGRTSPEnable		1
+	option ALGSIPEnable		1
+	
+#	option IPv6SimpleSecurityStatus 	Disable
+#	option IPv6IngressFilteringStatus	Disable

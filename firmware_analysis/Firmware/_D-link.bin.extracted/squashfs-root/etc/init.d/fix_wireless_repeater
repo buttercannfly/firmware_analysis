@@ -1,0 +1,61 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=110
+
+
+DEBUG_MODE="0"
+
+if [ "$DEBUG_MODE" = "1" ]
+then
+	log="/dev/console"
+else
+	log="/dev/null"
+fi
+
+fix_wireless_repeater() {
+	uci add wireless wifi-iface
+	uci rename wireless.@wifi-iface[-1]="apclii0"
+	uci set wireless.apclii0.device="mt7612e"
+	uci set wireless.apclii0.ifname="apclii0"
+	uci set wireless.apclii0.network="lan"
+	uci set wireless.apclii0.mode="sta"
+	uci set wireless.apclii0.disabled="1"
+	uci set wireless.apclii0.apcli_enable="0"
+	uci set wireless.apclii0.rootap_bssid="00:00:00:00:00:00"
+	uci set wireless.apclii0.apcli_authmode="OPEN"
+	uci set wireless.apclii0.apcli_encryptype="NONE"
+	uci set wireless.apclii0.apcli_key1type="1"
+	uci reorder wireless.apclii0=3
+	
+	uci add wireless wifi-iface
+	uci rename wireless.@wifi-iface[-1]="apcli0"
+	uci set wireless.apcli0.device="mt7628"
+	uci set wireless.apcli0.ifname="apcli0"
+	uci set wireless.apcli0.network="lan"
+	uci set wireless.apcli0.mode="sta"
+	uci set wireless.apcli0.disabled="1"
+	uci set wireless.apcli0.apcli_enable="0"
+	uci set wireless.apcli0.rootap_bssid="00:00:00:00:00:00"
+	uci set wireless.apcli0.apcli_authmode="OPEN"
+	uci set wireless.apcli0.apcli_encryptype="NONE"
+	uci set wireless.apcli0.apcli_key1type="1"
+	
+	
+}
+
+
+boot() {
+	#获取无线的配置里面是否存在apcli0接口
+	repeater_apcli0_iface=`uci get wireless.apcli0.ifname`
+	
+	if [ "$repeater_apcli0_iface" = "" ]
+	then
+		echo fix_wireless_repeater################################# > $log
+		fix_wireless_repeater
+		uci commit wireless
+	else
+		echo "do not need fix_wareless_repeater###################" > $log
+	fi
+
+}

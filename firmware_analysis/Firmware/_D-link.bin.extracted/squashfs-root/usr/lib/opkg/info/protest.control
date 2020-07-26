@@ -1,0 +1,8 @@
+Package: protest
+Version: 1
+Depends: libc, libuci, libssl, libcrypto
+Source: package/tw-prog.priv/protest
+Section: TW Prog Priv
+Architecture: ramips_24kec
+Installed-Size: 831378
+Description:  WriteMTDflash Tools

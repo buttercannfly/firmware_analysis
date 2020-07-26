@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html id="html">
+<head>
+<meta content="width=device-width, height=device-height,initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<link href="css/style_mobile.css" type="text/css" rel="stylesheet" />
+<!-- <title>网线没插</title> -->
+<title></title>
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<script type="text/javascript">
+//xframeoption
+//if(top!=self){top.location=self.location;}
+
+var DebugMode=0;
+var HNAP = new HNAP_XML();
+
+$(document).ready( function() {
+	document.title=I18N("j","Problem_Cable");//标题 网线没插
+	document.getElementById("btn_retry").value = I18N("j","Commom_Retry");//重试
+	document.getElementById("btn_set_router").value = I18N("j","Problem_Set_Router");//设置路由器
+});
+
+function getWanStatus()
+{
+	GetResult_1st();
+}
+
+function GetResult_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetWanplugInfo");
+		HNAP.SetXMLAsync("GetWanplugInfo", result_xml, function(xml)	{	GetResult_2nd(xml);	});
+	}
+	else	{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetResult_1st");	}	}
+}
+
+function GetResult_2nd(result_xml)
+{
+	var GetResult_2nd = result_xml.Get("GetWanplugInfoResponse/GetWanplugInfoResult");
+	if (GetResult_2nd == "OK"){
+		//0->正常; 1->没有获取到地址; 2->网线没插; 3->lan/wan ip冲突
+		var wan_status = result_xml.Get("GetWanplugInfoResponse/wan_status");
+		if(wan_status == "0")
+			window.location.href = "MobileProblem_success.html";
+		else if(wan_status == "1")
+			window.location.href = "MobileProblem_WAN.html";
+		else if(wan_status == "3")
+			window.location.href = "MobileProblem_Conflict.html";
+		else
+			window.location.href = "MobileProblem_Cable.html";
+	}
+}
+function SetRouter()
+{
+	window.location.href = "MobileNetwork.html";
+}
+</script>
+</head>
+
+<body style="background-color:#edeff2">
+
+<div style="padding-left:10%; padding-right:10%; padding-top:22%; clear: both;">
+	<div style="width:32%; float:left; padding-top:1%;">
+		<img style="width:100%;" src="/image/mobile/icon_hulianwang_03.png">
+	</div>
+	<div style="width:28%; float:left; padding-left:4%; padding-right:4%; padding-top:7%;"><img style="width:100%;" src="/image/mobile/pic_lianjie_dk.png"></div>
+	<div style="width:32%; float:left;">
+		<img style="width:100%;" src="/image/mobile/icon_router.png">
+	</div>
+	<div style="clear:both; "> </div>
+</div>
+<div style=" padding-left:10%; padding-right:10%; padding-top:3%;">
+	<div style="text-align:center; width:30%;color:#a1a1a1; font-size:1.2em; float:left;"><script>I18N("h","Home_Internet");</script><!-- 互联网 --></div>
+	<div style="text-align:center; width:36%;color:#a1a1a1; font-size:1.2em; float:left; padding-left:34%;"><script>I18N("h","Login_Router_Name");</script><!-- DIR-822+ --></div>
+	<div style="clear:both; "> </div>
+</div>
+
+<div style=" padding-top:10%; width:100%; text-align:center;color:#333333; font-size:1.6em;"><script>I18N("h","MobileProblem_Cable_not_Plugged");</script><!-- WAN口网线没有插好 --></div>
+<div style=" padding-top:3%; width:100%; text-align:center;color:#666666; font-size:1.4em;"><script>I18N("h","MobileProblem_Cable_Insert_Try");</script><!-- 请插入网线后重新尝试 --></div>
+
+<div width="100%" align="center" id="retry" style="padding-top:10%; text-align:center;">
+	<!-- <input type="button" onclick="getWanStatus();" class="styled_button_s" value="重试">-->
+	<input type="button" id="btn_retry" onclick="getWanStatus();" class="styled_button_s" value="">	
+</div>
+<div width="100%" align="center" id="setrouter" style="padding-top:7%; text-align:center;">
+	<!-- <input type="button" onclick="SetRouter();" class="styled_button_s" value="设置路由器">-->
+	<input type="button" id="btn_set_router" onclick="SetRouter();" class="styled_button_s" value="">
+</div>
+<!-------------------- Logo menu------------------------->
+	<!--div class="wrapper" align="center">  
+		
+		<table style="margin-top:363px">
+			<tr>
+				<td>
+					<img style="width:229px;height:191px" src="/image/mobile/icon_hulianwang_03.png">
+				</td>
+				<td style="width:265px">
+				<div align="center" style="height:191px">
+					<div style="position:absolute;height:93px;margin-top:49px;margin-left:86px;">
+						<img style="width:93px;height:93px" src="/image/mobile/icon_lianjie_dk-.png"></img>
+					</div>
+					<img style="width:198px;height:1px;margin-top:95px" src="/image/mobile/xian_01.png"></img>
+				</div>
+				</td>
+				<td>
+					<img style="width:274px;height:191px" src="/image/mobile/tu_luyouqi_02.png">
+				</td>
+			</tr>
+			<tr align="center" style="height:83px;font-size:33px;color:#b6b7b8">
+				<td>
+					互联网
+				</td>
+				<td>
+				
+				</td>
+				<td>
+					DIR-822+
+				</td>
+			</tr>
+		</table>
+		
+		<div style="font-size:43px;color:#333333;height:100px;line-height:100px;margin-top:42px"align="center" >
+			WAN口网线没有插好
+		</div>	
+		<div style="font-size:38px;color:#666666;height:69px;line-height:69px;margin-bottom:94px" align="center" >
+			请插入网线后重新尝试
+		</div>		
+		
+		<div width="100%" align="center" id="retry" style="">
+		<input type="button" onclick="getWanStatus();" class="styled_button_s" value="重试">	
+		</div>
+		<div width="100%" align="center" id="setrouter" style="padding-top:60px">
+		<input type="button" onclick="SetRouter();" class="styled_button_s" value="设置路由器">	
+		</div>
+					
+   </div-->
+
+</body>
+</html>

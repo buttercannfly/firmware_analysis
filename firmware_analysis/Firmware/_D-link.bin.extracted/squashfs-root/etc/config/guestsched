@@ -1,0 +1,3 @@
+config sched 'settings'
+	option local_access 0
+        option local_access_timeout 0

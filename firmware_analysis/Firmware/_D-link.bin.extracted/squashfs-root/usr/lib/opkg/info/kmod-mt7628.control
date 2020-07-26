@@ -1,0 +1,8 @@
+Package: kmod-mt7628
+Version: 3.10.14+MT7628_LinuxAP_V4.1.0.0_DPA_20160310-1
+Depends: kernel (=3.10.14-1-dfaf6ac8f16c02ab6e279930227df9e5)
+Source: package/ramips/drivers/mt7628
+Section: kernel
+Architecture: ramips_24kec
+Installed-Size: 827892
+Description:  MTK MT7628 wifi AP driver

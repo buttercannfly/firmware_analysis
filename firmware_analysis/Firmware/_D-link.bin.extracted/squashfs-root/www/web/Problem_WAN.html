@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html id="html">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<link rel=stylesheet type="text/css" href="css/jquery.selectbox.css" media="all" />
+<link href="css/style_page.css" type="text/css" rel="stylesheet" />
+<!-- <title>连接互联网失败</title> -->
+<title></title>
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<style>
+.circle {
+    background-attachment: inherit;
+    background-clip: inherit;
+    background-color: rgba(255, 255, 255, 1);
+    background-image: inherit;
+    background-origin: inherit;
+    background-position: inherit;
+    background-repeat: inherit;
+    background-size: inherit;
+    border-color: rgba(255, 0, 0, 1);
+    border-radius: 32px;
+    border-style: solid;
+    border-width: 1px;
+    box-shadow: none;
+    box-sizing: border-box;
+    height: 30px;
+    left: 580px;
+    position: absolute;
+    top: 260px;
+    width: 30px;
+}
+</style>
+<script type="text/javascript">
+//xframeoption
+//if(top!=self){top.location=self.location;}
+
+var HNAP = new HNAP_XML();
+
+$(document).ready( function() {
+	document.title=I18N("j","Problem_Internet_Fail");//标题 连接互联网失败
+	GetWanType();
+});
+
+function gotoNetwork()
+{
+	//设置cookie
+	$.cookie('problem_page', "Network.html", { path: '/' });
+	window.location.href = "Network.html";
+}
+
+//获取PPPoE拨号失败的原因
+function GetWanType()
+{	
+	GetResult_1st();
+}
+function GetResult_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetWanErrorStatus");
+		HNAP.SetXMLAsync("GetWanErrorStatus", result_xml, function(xml)	{	GetResult_2nd(xml);	});
+	}
+	else{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetResult_1st");	}	}
+}
+
+function GetResult_2nd(result_xml)
+{
+	var GetResult_2nd = result_xml.Get("GetWanErrorStatusResponse/GetWanErrorStatusResult");
+	if (GetResult_2nd == "OK"){
+		var networkproto = result_xml.Get("GetWanErrorStatusResponse/wan_wan(0)_proto");
+		if(networkproto == "pppoe"){
+			
+			document.getElementById("div_pppoe").style.display="";
+			document.getElementById("div_other").style.display="none";
+			
+			var pppoestatus = result_xml.Get("GetWanErrorStatusResponse/wan_wan(0)_pppoe_status");
+			if(pppoestatus == "8"){
+				document.getElementById("pppoe_reason").innerHTML = "PPPoE"+ I18N("j","RouterInfo_Connection_Failed") + pppoestatus + I18N("j","Problem_PPPoE_Failed");//拨号连接失败
+			}
+			else if(pppoestatus == "10"){
+				document.getElementById("pppoe_reason").innerHTML = "PPPoE"+ I18N("j","RouterInfo_Negotiation_Failed") + pppoestatus + I18N("j","Problem_PPPoE_Failed");//拨号协商失败
+			}
+			else if(pppoestatus == "19"){
+				document.getElementById("pppoe_reason").innerHTML = "PPPoE"+ I18N("j","RouterInfo_Authenticate_Failed") + pppoestatus + I18N("j","Problem_PPPoE_Failed");//帐号验证失败
+			}
+			else if(pppoestatus == "100"){
+				document.getElementById("pppoe_reason").innerHTML = I18N("j","Problem_PPPoE_Dialing");//正在拨号中...
+			}
+			else{
+				document.getElementById("pppoe_reason").innerHTML = "PPPoE"+ I18N("j","RouterInfo_Other_Failed") + pppoestatus + I18N("j","Problem_PPPoE_Failed");//未知的错误
+			}
+		}
+		else{
+			document.getElementById("div_pppoe").style.display="none";
+			document.getElementById("div_other").style.display="";
+		}
+	}
+}
+</script>
+</head>
+
+<body data-spy="scroll" data-target=".bs-docs-sidebar" style="background-color:white;">
+<!-------------------- Logo menu------------------------->
+	
+	
+	<div align="center">  
+		<div class="problemcontent">
+		
+		<div style="position:absolute; top:0px;left:0px;">
+		  <img width="162" height="134" src="image/mobile/icon_hulianwang_03.png">
+		  <div style="margin-top:18px; color:#666666; font-size:14px;"><script>I18N("h","Home_Internet");</script><!-- 互联网 --></div>
+		</div>
+		
+		<div style="position:absolute;top:30px;left:188px; z-index:1;">
+			<img width="162" height="68" src="/image/pic_fail.png">
+		</div>
+		
+		<div style="position:absolute; top:0; left:408px; ">
+			<img width="172" height="134" src="/image/icon_router02.png">
+			 <div style="margin-top:18px; color:#666666; font-size:14px;"><script>I18N("h","Login_Router_Name");</script><!-- DIR-822+ --></div>
+		</div>
+					
+  	</div>
+	
+	<div style="margin-top:68px;" align="center" class="words1"><script>I18N("h","Problem_Internet_Fail");</script><!-- 连接互联网失败 --></div>
+  	<div id="div_other" style=" margin:0 auto;margin-top:28px; width:340px; text-align:left;">
+		<span class="words"><script>I18N("h","Problem_Internet_not_Connected1");</script><!-- 路由器暂时无法连接互联网，请联系宽带服务提供商。<br>或登录路由器，进入 --></span>
+		<span style="text-decoration:underline;color:#333333; font-size:14px; font-weight:bold;cursor:pointer" onclick="gotoNetwork();"><script>I18N("h","Problem_Internet_not_Connected2");</script><!-- "网络设置" --></span>
+		<span class="words"><script>I18N("h","Problem_Internet_not_Connected3");</script><!-- 尝试更多上网方式。 --></span>
+	</div>
+	<div id="div_pppoe" style="display:none;margin:0 auto;margin-top:28px;width:368px;text-align:left;">
+		<span id="pppoe_reason" class="words"></span>
+		<span style="text-decoration:underline;color:#333333; font-size:14px; font-weight:bold;cursor:pointer" onclick="gotoNetwork();"><script>I18N("h","Problem_Internet_not_Connected2");</script><!-- "网络设置" --></span>
+		<span class="words"><script>I18N("h","Problem_Internet_not_Connected3");</script></span>
+	</div>
+   </div>	
+
+</body>
+</html>

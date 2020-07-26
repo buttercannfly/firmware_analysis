@@ -1,0 +1,3 @@
+/etc/ppp/pppoe-server-options
+/lib/upgrade/keep.d/rp-pppoe-server
+/usr/sbin/pppoe-server

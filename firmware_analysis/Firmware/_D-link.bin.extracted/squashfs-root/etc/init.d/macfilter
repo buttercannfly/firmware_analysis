@@ -1,0 +1,139 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=99
+
+STOP=99
+
+. $IPKG_INSTROOT/lib/functions.sh
+
+mode=`uci get macfilter.globals.mode`
+
+mac_filter_rule_add() {
+
+	local type device	
+
+	config_get type $1 type
+
+	if [ "$type" != "$mode" ]
+	then 
+		return
+	fi
+
+	config_get device $1 device
+	[ -z "$device" ] && return 
+	
+	if [ "$mode" = "deny" ]
+	then 
+		ebtables -A macfilter_input -s "$device" -j DROP
+		ebtables -A macfilter_input -d "$device" -j DROP
+		
+		ebtables -A macfilter_forward -s "$device" -j DROP
+		ebtables -A macfilter_forward -d "$device" -j DROP
+	elif [ "$mode" = "allow" ]
+	then
+		ebtables -A macfilter_input -s "$device" -j ACCEPT
+		ebtables -A macfilter_input -d "$device" -j ACCEPT
+		
+		ebtables -A macfilter_forward -s "$device" -j ACCEPT
+		ebtables -A macfilter_forward -d "$device" -j ACCEPT
+	fi
+}
+
+start() {
+		local enabled
+		
+        ebtables -N macfilter_input
+		ebtables -N macfilter_forward
+        ebtables -I INPUT -j macfilter_input
+        ebtables -I FORWARD -j macfilter_forward
+
+        enabled=`uci get macfilter.globals.enabled`
+
+        [ -z "$enabled" ] && return
+        [ -z "$mode" ] && return
+
+        if [ "$enabled" = "0" ]
+        then
+			return 
+        fi
+
+		#load mac filter config
+		config_load macfilter
+
+		#foreach parent_control_rule and add rules
+		config_foreach mac_filter_rule_add macfilter
+
+		if [ "$mode" = "allow" ]
+		then
+			local macfilter_num
+			local network_mode
+			local lanmac
+			local wan_ifname
+			local repeater_wan_24ifname
+			local repeater_wan_5ifname
+
+			network_mode=`uci get network.globals.network_mode`
+
+			#获取桥mac
+			lanmac=`ifconfig br-lan | grep HWaddr | tr -s ' ' | cut -d' ' -f5`
+			if [ -z "${lanmac}" ];then
+				return
+			fi
+			
+			#白名单的时候，加入目的mac为桥设备，并且入口是wan口的规则，避免设备拿不到地址
+			if [ "${network_mode}" != "repeater" ]
+			then
+				
+				wan_ifname=`uci get global_readonly.globals.wan_ifname`
+				if [ -z "${wan_ifname}" ];then
+					return
+				fi
+				
+				ebtables -A macfilter_input -d "$lanmac" -i "$wan_ifname" -j ACCEPT
+				#加入广播地址
+				ebtables -A macfilter_input -d ff:ff:ff:ff:ff:ff -i "$wan_ifname" -j ACCEPT
+				ebtables -A macfilter_forward -d ff:ff:ff:ff:ff:ff -i "$wan_ifname" -j ACCEPT
+			
+			else
+				support_5g=`cat /etc/version.conf |grep G5=1`
+				repeater_wan_24ifname=`uci get global_readonly.globals.repeater_24g_ifname`
+				if [ -z "${repeater_wan_24ifname}" ];then
+					return
+				fi
+				
+				ebtables -A macfilter_input -d "$lanmac" -i "$repeater_wan_24ifname" -j ACCEPT
+				#加入广播地址
+				ebtables -A macfilter_input -d ff:ff:ff:ff:ff:ff -i "$repeater_wan_24ifname" -j ACCEPT
+				ebtables -A macfilter_forward -d ff:ff:ff:ff:ff:ff -i "$repeater_wan_24ifname" -j ACCEPT
+				
+				#支持5g
+				if [ "$support_5g" != "" ]
+				then
+					repeater_wan_5ifname=`uci get global_readonly.globals.repeater_5g_ifname`
+					if [ -z "${repeater_wan_5ifname}" ];then
+						return
+					fi
+					ebtables -A macfilter_input -d "$lanmac" -i "$repeater_wan_5ifname" -j ACCEPT
+					#加入广播地址
+					ebtables -A macfilter_input -d ff:ff:ff:ff:ff:ff -i "$repeater_wan_5ifname" -j ACCEPT
+					ebtables -A macfilter_forward -d ff:ff:ff:ff:ff:ff -i "$repeater_wan_5ifname" -j ACCEPT
+				fi
+			fi
+			
+			#丢弃其他的包
+			ebtables -A macfilter_input -j DROP
+			ebtables -A macfilter_forward -j DROP
+
+		fi
+		
+}
+
+stop() {
+        ebtables -F macfilter_input
+		ebtables -F macfilter_forward
+        ebtables -D INPUT -j macfilter_input
+        ebtables -D FORWARD -j macfilter_forward
+        ebtables -X macfilter_input
+		ebtables -X macfilter_forward
+}

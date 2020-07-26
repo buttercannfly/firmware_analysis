@@ -1,0 +1,267 @@
+#!/bin/sh /etc/rc.common
+
+START=20
+STOP=90
+
+USE_PROCD=1
+
+#bind wan mac at wan port to fix the packet replay issue
+bind_wan_mac() {
+	local wan_ifname wan_mac
+	wan_ifname=`uci -q get network.wan.ifname`
+	if [ -n "$wan_ifname" ]; then
+		wan_mac=`ifconfig $wan_ifname | grep HWaddr | tr -s ' ' | cut -d' ' -f5|sed 's/://g'`
+	fi
+	if [ -n "$wan_mac" ]; then
+		switch add $wan_mac 0000001 4
+	fi
+}
+
+init_switch() {
+	setup_switch() { return 0; }
+
+	include /lib/network
+	setup_switch
+}
+
+extender_dhcp_discover_filter() {
+	local network_mode wanif
+	wanif=`uci get global_readonly.globals.wan_ifname`
+	[ -z ${wanif} ] && return
+	network_mode=`uci get network.globals.network_mode`
+	if [ -n ${network_mode} -a ${network_mode} != router ]; then
+		ebtables -N DHCP_DISCOVER_INPUT
+		ebtables -N DHCP_DISCOVER_OUTPUT
+		ebtables -F DHCP_DISCOVER_INPUT
+		ebtables -F DHCP_DISCOVER_OUTPUT
+		ebtables -D OUTPUT -p ipv4 --ip-proto 17 --ip-dport 67 -j DHCP_DISCOVER_OUTPUT
+		ebtables -A OUTPUT -p ipv4 --ip-proto 17 --ip-dport 67 -j DHCP_DISCOVER_OUTPUT
+		ebtables -D INPUT -p ipv4 --ip-proto 17 --ip-dport 67 -j DHCP_DISCOVER_INPUT
+		ebtables -A INPUT -p ipv4 --ip-proto 17 --ip-dport 67 -j DHCP_DISCOVER_INPUT
+		if [ ${network_mode} == repeater ]; then
+			ebtables -A DHCP_DISCOVER_OUTPUT -o apcli0 -j ACCEPT
+			ebtables -A DHCP_DISCOVER_OUTPUT -o apclii0 -j ACCEPT
+			ebtables -A DHCP_DISCOVER_INPUT -i apcli0 -j DROP
+			ebtables -A DHCP_DISCOVER_INPUT -i apclii0 -j DROP
+		else
+			ebtables -A DHCP_DISCOVER_OUTPUT -o ${wanif} -j ACCEPT
+			ebtables -A DHCP_DISCOVER_INPUT -i ${wanif} -j DROP
+		fi
+		ebtables -A DHCP_DISCOVER_OUTPUT -j DROP
+	else
+		ebtables -F DHCP_DISCOVER_INPUT
+		ebtables -F DHCP_DISCOVER_OUTPUT
+		ebtables -D OUTPUT -p ipv4 --ip-proto 17 --ip-dport 67 -j DHCP_DISCOVER_OUTPUT
+		ebtables -D INPUT -p ipv4 --ip-proto 17 --ip-dport 67 -j DHCP_DISCOVER_INPUT
+		ebtables -X DHCP_DISCOVER_INPUT
+		ebtables -X DHCP_DISCOVER_OUTPUT
+	fi	
+}
+
+start_service() {
+	init_switch
+	extender_dhcp_discover_filter
+
+	procd_open_instance
+	procd_set_param command /sbin/netifd
+	procd_set_param respawn
+	procd_set_param watch network.interface
+	[ -e /proc/sys/kernel/core_pattern ] && {
+		procd_set_param limits core="unlimited"
+		echo '/tmp/%e.%p.%s.%t.core' > /proc/sys/kernel/core_pattern
+	}
+	procd_close_instance
+}
+
+
+stop_service() {
+	if [ ! -e "/var/is_need_restart_wifi" ]; then
+        /sbin/wifi down
+        fi
+}
+
+service_running() {
+	rmmod nf_sc
+	ubus -t 30 wait_for network.interface
+	if [ -e "/var/is_need_restart_wifi" ]; then
+	rm -rf /var/is_need_restart_wifi
+	sleep 3
+	/sbin/wifi_addbridge up
+	else
+	/sbin/wifi reload_legacy
+	fi
+	sleep 3
+	init_switch
+	insmod /lib/modules/ralink/nf_sc.ko
+	mii_mgr -s -p 1 -r 0 -v 3300
+	mii_mgr -s -p 2 -r 0 -v 3300
+	mii_mgr -s -p 3 -r 0 -v 3300
+	mii_mgr -s -p 0 -r 0 -v 3300
+	bind_wan_mac
+	network_mode=`uci get network.globals.network_mode`
+	[ -n ${network_mode} -a ${network_mode} != router ] && return	
+	speed_duplex=`uci get network.wan.speed_duplex`
+	case $speed_duplex in
+	#10M 全双工
+	"10 Full")mii_mgr -s -p 4 -r 4 -v 0441;;
+	#10M半双工
+	"10 Half")mii_mgr -s -p 4 -r 4 -v 0421;;
+	#100M全双工
+	"100 Full")mii_mgr -s -p 4 -r 4 -v 0501;;
+	#100M半双工
+	"100 Half")mii_mgr -s -p 4 -r 4 -v 0481;;
+	#Auto
+	"Auto Auto")mii_mgr -s -p 4 -r 4 -v 05e1;;
+	*);;
+	esac
+	
+	mii_mgr -s -p 4 -r 9 -v 0 
+	mii_mgr -s -p 4 -r 0 -v 1240
+}
+
+validate_atm_bridge_section()
+{
+	uci_validate_section network "atm-bridge" "${1}" \
+		'unit:uinteger:0' \
+		'vci:range(32, 65535):35' \
+		'vpi:range(0, 255):8' \
+		'atmdev:uinteger:0' \
+		'encaps:or("llc", "vc"):llc' \
+		'payload:or("bridged", "routed"):bridged'
+}
+
+validate_route_section()
+{
+	uci_validate_section network route "${1}" \
+		'interface:string' \
+		'target:cidr4' \
+		'netmask:netmask4' \
+		'gateway:ip4addr' \
+		'metric:uinteger' \
+		'mtu:uinteger' \
+		'table:or(range(0,65535),string)'
+}
+
+validate_route6_section()
+{
+	uci_validate_section network route6 "${1}" \
+		'interface:string' \
+		'target:cidr6' \
+		'gateway:ip6addr' \
+		'metric:uinteger' \
+		'mtu:uinteger' \
+		'table:or(range(0,65535),string)'
+}
+
+validate_rule_section()
+{
+	uci_validate_section network rule "${1}" \
+		'in:string' \
+		'out:string' \
+		'src:cidr4' \
+		'dest:cidr4' \
+		'tos:range(0,31)' \
+		'mark:string' \
+		'invert:bool' \
+		'lookup:or(range(0,65535),string)' \
+		'goto:range(0,65535)' \
+		'action:or("prohibit", "unreachable", "blackhole", "throw")'
+}
+
+validate_rule6_section()
+{
+	uci_validate_section network rule6 "${1}" \
+		'in:string' \
+		'out:string' \
+		'src:cidr6' \
+		'dest:cidr6' \
+		'tos:range(0,31)' \
+		'mark:string' \
+		'invert:bool' \
+		'lookup:or(range(0,65535),string)' \
+		'goto:range(0,65535)' \
+		'action:or("prohibit", "unreachable", "blackhole", "throw")'
+}
+
+validate_switch_section()
+{
+	uci_validate_section network switch "${1}" \
+		'name:string' \
+		'enable:bool' \
+		'enable_vlan:bool' \
+		'reset:bool'
+}
+
+validate_switch_vlan()
+{
+	uci_validate_section network switch_vlan "${1}" \
+		'device:string' \
+		'vlan:uinteger' \
+		'ports:list(ports)'
+}
+
+service_triggers()
+{
+	procd_add_reload_trigger network wireless
+
+	procd_open_validate
+	validate_atm_bridge_section
+	validate_route_section
+	validate_route6_section
+	validate_rule_section
+	validate_rule6_section
+	validate_switch_section
+	validate_switch_vlan
+	procd_close_validate
+}
+
+restart() {
+	killall pppd	#修正PPPOE连接切换到其它WAN连接类型时lcp terminate不能发出的问题，只适应于单WAN
+	rmmod nf_sc
+	ifdown -a
+	sleep 1
+	trap '' TERM
+	stop "$@"
+	
+	#调用stop的时候会通过procd给netifd发信号，netifd收到信号之后会将其注册在ubus中的对象删除，然后调用start
+	#重新添加上去，异常的时候netifd还没收到信号，新的netifd已经起来了，添加ubus对象的时候会失败，后面旧的netifd
+	#收到信号了，又把注册的对象删除了，导致系统起来之后，ubus中没有netifd注册的对象，系统出现异常，这里轮询
+	#ubus中的对象，确认旧的对象删除了，才执行start动作
+
+	ubus_network_object_num=`ubus list|grep network|wc -l`
+	sleep_time=0;
+                                                   
+	while [ "$ubus_network_object_num" != "0" ]
+	do                                                
+        logger -t "[NETWORK]" -p local5.info "netifd object does not remove from ubus, sleep_time=$sleep_time"
+        sleep 1
+        ubus_network_object_num=`ubus list|grep network|wc -l`
+        sleep_time=`expr $sleep_time + 1`
+        if [ $sleep_time -ge 10 ]
+        then
+                logger -t "[NETWORK]" -p local5.info "netifd object does not remove from ubus timeout"
+                break
+        fi
+                                           
+	done
+	
+	start "$@"
+	insmod /lib/modules/ralink/nf_sc.ko
+}
+
+reload_service() {
+#	init_switch
+#	ubus call network reload
+#	/sbin/wifi reload_legacy
+#	mii_mgr -s -p 0 -r 0 -v 3300
+#	mii_mgr -s -p 1 -r 0 -v 3300
+#	mii_mgr -s -p 2 -r 0 -v 3300
+#	mii_mgr -s -p 3 -r 0 -v 3300
+    restart
+}
+
+shutdown() {
+	rmmod nf_sc
+	ifdown -a
+	stop
+}

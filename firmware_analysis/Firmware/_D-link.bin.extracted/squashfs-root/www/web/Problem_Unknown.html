@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html id="html">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<link rel=stylesheet type="text/css" href="css/jquery.selectbox.css" media="all" />
+<link href="css/style_page.css" type="text/css" rel="stylesheet" />
+<!-- <title>无线未扩展</title> -->
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.selectbox-0.2_new.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/verify/verify.js"></script>
+<style>
+.word_reason
+{
+	font-size:16px;
+	color:#666666;
+	margin-top:15px;
+}
+
+.word_solution
+{
+	color:#666666;
+	margin-top:6px;
+}
+
+.span_click
+{
+	color:#4598aa;
+	cursor:pointer;
+}
+
+.dialogBoxLight
+{
+	width:728px;
+	height:auto;
+	background: #fff;
+    margin: 0 auto;
+    position: relative;
+    top: 80px;
+	overflow:auto;
+	padding-bottom:42px;
+	border-radius:2px;
+}
+
+.imgbox
+{
+	border:1px solid #4598aa;
+	width:174px;
+	height:218px;
+}
+
+.light_words1
+{
+	margin-top:14px;
+	color:#333333;
+	font-size:14px;
+}
+
+.light_words2
+{
+	margin-top:10px;
+	color:#666666;
+	font-size:14px;
+}
+</style>
+<script type="text/javascript">
+$(document).ready( function() {
+	document.title = I18N("j","MobileProblem_Unknown_Not_Expand");//无线未扩展
+});
+//点击mowifi.com
+function RedirectPage()
+{
+	window.location.href="http://mowifi.com";
+}
+
+//点击指示灯状态图示
+function ShowLightStatus()
+{
+	document.getElementById("CreatePopAlertLight").style.display="";
+}
+
+//关闭指示灯状态图示
+function CloseLightDialog()
+{
+	document.getElementById("CreatePopAlertLight").style.display="none";
+}
+
+</script>
+</head>
+
+<body data-spy="scroll" data-target=".bs-docs-sidebar" style="background-color:white;">
+	
+	<div align="center">
+		<div class="problemcontent">
+			<div style="position:absolute;top:0px;left:0px;bottom:0px;">
+				<img width="156" height="134" src="image/icon_ap02.png" >
+				<div style="margin-top:18px; color:#999999; font-size:14px;"><script>I18N("h","Home_mainrouter");</script><!-- 主路由器 --></div>
+			</div>
+			<div style="position:absolute;top:40px;left:198px; z-index:1;">
+				<img width="162" height="68" src="/image/pic_break.png">
+			</div>
+			<div style="position:absolute;top:0px;bottom:0;right:25px;">
+				<img width="172" height="134" src="image/icon_router02.png" >
+				 <div style="margin-top:18px; color:#999999; font-size:14px;"><script>I18N("h","Login_Router_Name");</script></div>
+			</div>
+			<div id="div_expand" style="position:absolute;top:118px;bottom:0;left:192px;">
+				<span style="color:#999999; font-size:14px; "><script>I18N("h","MobileProblem_Unknown_Status1");</script><!-- 无线网络状态： --></span>
+				<span id="expand_status" style="color:#ff4c4c;font-size:14px;"><script>I18N("h","MobileProblem_Unknown_Status2");</script><!-- 未扩展 --></span>
+			</div>
+		</div>
+
+
+		<div align="center" style="margin-top:54px;">
+			<div style="width:768px;border:1px solid #4598aa">
+				<div class="repeate_status_words" style="text-align:center;margin-left:0px;margin-top:42px;height:auto"><script>I18N("h","MobileProblem_Unknown_Not_Connect");</script><!-- 中继未连接上主路由 --></div>
+				<div style="width:528px;">
+					<div align="left" style="text-align:left;margin-top:42px;margin-bottom:54px;">
+						<div style="font-weight:bold;font-size:16px;color:#333333;"><script>I18N("h","MobileProblem_Unknown_Reason");</script><!-- 可能原因及解决办法如下： --></div>
+						<div class="word_reason" style="margin-top:24px;">
+							<p><script>I18N("h","MobileProblem_Unknown_Solution1");</script><!-- 1. 主路由修改了无线名称 --></p>
+							<p class="word_solution"><span><script>I18N("h","MobileProblem_Unknown_Click");</script><!-- 请点击 --></span><span class="span_click" onClick="RedirectPage();"> dlinkrouter.com </span><span><script>I18N("h","MobileProblem_Unknown_Visit");</script><!-- 访问中继管理页面来扩展其他网络。 --></span></p>
+						</div>
+						<div class="word_reason">
+							<p><script>I18N("h","MobileProblem_Unknown_Solution2");</script><!-- 2. 中继与主路由的距离太远 --></p>
+							<p class="word_solution"><span><script>I18N("h","MobileProblem_Unknown_Move");</script><!-- 请将中继移至与主路由稍近的位置。 --></span><!--span class="span_click" onClick="ShowLightStatus()"><script>I18N("h","MobileProblem_Unknown_Light_Pic");</script--><!-- 指示灯状态图示 </span>--></p>
+						</div>
+						<div class="word_reason">
+							<p><script>I18N("h","MobileProblem_Unknown_Solution3");</script><!-- 3. 主路由没有上电 --></p>
+							<p class="word_solution"><span><script>I18N("h","MobileProblem_Unknown_Power");</script><!-- 请检查主路由，并确保主路由已上电。 --></span></p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+   </div>
+   
+   <!-- 指示灯状态图示 -->
+	<div class="createPopRecovery" id="CreatePopAlertLight" style="display:none;">
+		<div class="dialogBoxLight" align="center">
+			<div class="closedialogbutton_repeat" onClick="CloseLightDialog()"></div>
+			<div align="left" style="text-align:left;padding-left:48px;padding-top:42px;">
+				<!--div style="font-size:18px;font-weight:bold;color:#3a4046;"><script>I18N("h","MobileProblem_Unknown_Light_Indicator");</script--><!-- 请观察中继指示灯状态 --></div>
+				<div class="line" style="width:594px;"></div>
+				<div style="margin-top:10px;font-size:14px;color:#a7aaae;"><script>I18N("h","MobileProblem_Unknown_Adjust");</script><!-- 您可以通过调整中继的位置使其达到最佳工作质量。 --></div>
+			</div>
+			<div align="center" style="margin-top:42px; margin-left:150px; display:none;">
+				<div class="pull-left" align="center">
+					<div class="imgbox">
+						<img width="102" height="148" src="image/pic_yellow_light.png" style="margin-top:35px;"/>
+					</div>
+					<div class="light_words1"><script>I18N("h","MobileProblem_Unknown_Light_Orange");</script><!-- 橙灯常亮 --></div>
+					<div class="light_words2"><script>I18N("h","MobileProblem_Unknown_Work_General");</script><!-- 连接质量一般 --></div>
+				</div>
+				<div class="pull-left" align="center" style="margin-left:74px;">
+					<div class="imgbox">
+						<img width="102" height="148" src="image/pic_white_light.png" style="margin-top:35px;"/>
+					</div>
+					<div class="light_words1"><script>I18N("h","MobileProblem_Unknown_White");</script><!-- 白灯常亮 --></div>
+					<div class="light_words2"><script>I18N("h","MobileProblem_Unknown_Work_Well");</script><!-- 连接质量很好 --></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+config tomography 'ping'
+        option address 'www.baidu.com'
+        option number '5'
+        option size '64'
+        option timeout '1'
+        option ttl '20'

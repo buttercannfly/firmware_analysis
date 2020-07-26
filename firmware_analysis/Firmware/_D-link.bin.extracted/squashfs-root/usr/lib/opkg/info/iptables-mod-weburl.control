@@ -1,0 +1,12 @@
+Package: iptables-mod-weburl
+Version: 1.4.21-1
+Depends: libc, iptables, kmod-ipt-weburl
+Source: package/network/utils/iptables
+Section: net
+Architecture: ramips_24kec
+Installed-Size: 2267
+Description:  iptables extensions for matching weburl.
+ 
+ Matches:
+ - weburl
+ 

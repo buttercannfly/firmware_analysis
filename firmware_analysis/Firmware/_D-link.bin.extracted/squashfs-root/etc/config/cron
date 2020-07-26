@@ -1,0 +1,3 @@
+config cron
+	option enable '0'
+

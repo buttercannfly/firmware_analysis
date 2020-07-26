@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html id="html">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<link rel=stylesheet type="text/css" href="css/jquery.selectbox.css" media="all" />
+<link href="css/style_page.css" type="text/css" rel="stylesheet" />
+<title></title>
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<script type="text/javascript">
+//xframeoption
+//if(top!=self){top.location=self.location;}
+
+var DebugMode=0;
+var HNAP = new HNAP_XML();
+
+$(document).ready( function() {
+	document.title=I18N("j","Problem_Title");//标题 地址冲突
+	document.getElementById("btn_yes").value = I18N("j","Problem_Yes");//是
+	document.getElementById("savebutton").value = I18N("j","Commom_Apply");//确定
+});
+
+function dodge()
+{
+	getLanIP();
+}
+function getLanIP()
+{
+	GetResult_1st();
+}
+
+function GetResult_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetLanWanConflictInfo");
+		HNAP.SetXMLAsync("GetLanWanConflictInfo", result_xml, function(xml)	{	GetResult_2nd(xml);	});
+	}
+	else	{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetResult_1st");	}	}
+}
+var G_LanIp;
+
+function GetResult_2nd(result_xml)
+{
+	var GetResult_2nd = result_xml.Get("GetLanWanConflictInfoResponse/GetLanWanConflictInfoResult");
+	if (GetResult_2nd == "OK"){
+	
+		var lan_ip = result_xml.Get("GetLanWanConflictInfoResponse/avoided_ipaddr");
+		G_LanIp=lan_ip;
+		if(lan_ip != "")
+		{
+			document.getElementById("devIP").innerHTML = lan_ip;
+			document.getElementById("createPop").style.display = "";
+		}
+	}
+}
+function reboot()
+{
+	SetResult_1st();
+}
+
+function SetResult_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		HNAP.SetXMLAsync("SetLanWanConflict", result_xml, function(xml)	{	SetResult_2nd(xml);	});
+	}
+	else	{	if (DebugMode == 1)	{	alert("[!!SetXML Error!!] Function: SetResult_1st");	}	}
+}
+
+function SetResult_2nd(result_xml)
+{
+	var SetResult_2nd = result_xml.Get("SetLanWanConflictResponse/SetLanWanConflictResult");
+	if (SetResult_2nd == "OK"){
+		document.getElementById("dodge").style.display = "none";
+		document.getElementById("reboot").style.display = "";
+		setTimeout("RefreshPage()", 80*1000);
+	}
+}
+
+function RefreshPage()
+{
+	if(G_LanIp)
+	window.location.href ="http://"+G_LanIp;
+}
+
+function checkedWanStatus()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetWanDiagnosisStatus");
+		HNAP.SetXMLAsync("GetWanDiagnosisStatus", result_xml, function(xml)	{	checkedWanStatus_2nd(xml);	});
+	}
+	else	{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: checkedWanStatus");	}	}
+}
+function checkedWanStatus_2nd(result_xml)
+{
+	var checkedWanStatus_2nd = result_xml.Get("GetWanDiagnosisStatusResponse/GetWanDiagnosisStatusResult");
+	if (checkedWanStatus_2nd == "OK"){
+	
+		var wanstatus = result_xml.Get("GetWanDiagnosisStatusResponse/wan_status");
+		if(wanstatus == "0")
+		{
+			window.location.href = "Problem_success.html";
+		}
+		else if(wanstatus == "1")
+		{
+			window.location.href = "Problem_WAN.html";
+		}
+		else if(wanstatus == "2")
+		{
+			window.location.href = "Problem_Cable.html";
+		}
+		else if(wanstatus == "3")
+		{
+			window.location.href = "Problem_Conflict.html";
+		}
+	}
+}
+</script>
+</head>
+
+<body data-spy="scroll" data-target=".bs-docs-sidebar" style="background-color:white;">
+<!-------------------- Logo menu------------------------->
+	<div align="center">  
+		
+	<div class="problemcontent">
+		
+		<div style="position:absolute; top:0px;left:0px;">
+		  <img width="162" height="134" src="image/mobile/icon_hulianwang_03.png">
+		  <div style="margin-top:18px; color:#666666; font-size:14px;"><script>I18N("h","Home_Internet");</script><!-- 互联网 --></div>
+		</div>
+		
+		<div style="position:absolute;top:30px;left:188px; z-index:1;">
+			<img width="162" height="68" src="/image/pic_conflict.png">
+		</div>
+
+		<div style="position:absolute; top:0px; left:408px; ">
+			<img width="172" height="134" src="/image/icon_router02.png">
+			 <div style="margin-top:18px; color:#666666; font-size:14px;"><script>I18N("h","Login_Router_Name");</script><!-- DIR-822+ --></div>
+		</div>
+					
+  	</div>
+	<div class="problemwarn"><script>I18N("h","Problem_LAN_WAN_Conflicts");</script><!-- 路由器LAN口和WAN口IP出现冲突导致网络故障，是否需要避让冲突？ --></div>
+	<!-- <div align="center" style="margin-top:48px; "><input type="button" value="是" class="styled_button_s" onclick="dodge();"></div> -->
+	<div align="center" style="margin-top:48px; "><input type="button" id="btn_yes" value="" class="styled_button_s" onclick="dodge();"></div>
+
+			
+			
+			
+	<div style=" display:none;" id="createPop">
+	  <div style="width:476px; top:150px; " class="dialogBox2">
+	  	<div id="dodge">
+			<div class="advance_row" style=" padding-left:24px; padding-right:24px;">
+				<span><script>I18N("h","Problem_Avoid_Conflict");</script><!-- 避让冲突 --></span>
+			</div>
+			<div style=" margin-top:80px; " align="center" class="words">
+				<span><script>I18N("h","Problem_IP_Modified");</script><!-- 您的设备IP已改为 --></span><span id="devIP">192.168.1.101</span><span><script>I18N("h","Problem_Confirm_Reboot");</script><!-- 请点击确认重启路由器 --></span>
+			</div>
+			<div class="moreline2" style="margin-top:80px; "></div>
+			<div style="margin-top:26px; " align="center">
+			<!-- <input value="确定" id="savebutton" class="styled_button_s" onclick="reboot();" type="button"> -->
+			<input value="" id="savebutton" class="styled_button_s" onclick="reboot();" type="button">
+			</div>		
+	 	
+		</div>
+	 	<div id="reboot"  style="display:none;">
+			<div style=" margin-top:120px; " align="center">
+				<img src="image/submit.gif" width="58" height="58">
+			</div>
+			<div style="margin-top:12px; margin-bottom:142px; " class="words"><script>I18N("h","Problem_Rebooting");</script><!-- 正在为您重启路由器，请耐心等待 --></div>	
+		</div>
+
+		 </div>
+	
+	</div>
+					
+   </div>
+
+</body>
+</html>

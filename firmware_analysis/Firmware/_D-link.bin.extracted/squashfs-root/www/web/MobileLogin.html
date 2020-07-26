@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html id="html" style="height:100%">
+
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" type="text/css" href="/css/style_mobile.css" media="all" />
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.selectbox-0.2_new.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/Login.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<style>
+body{
+	background: -webkit-linear-gradient(top, #4598aa, #61c8de);   /*颜色渐变*/
+}
+#loginPassword1:disabled{
+background-color:#edeff2;
+}
+#loginPassword2:disabled{
+background-color:#edeff2;
+}
+.loginpasswd{
+	height:87px;
+	line-height:49px;
+	width:84.44%;
+	border-radius:3px;
+	background-color:white;
+	-webkit-box-shadow:0  2.3px 4px rgba(0, 18, 20, 0.25);  
+	-moz-box-shadow:0  2.3px 4px rgba(0, 18, 20, 0.25);  
+	box-shadow:0  2.3px 4px rgba(0, 18, 20, 0.25);  
+}
+.login_text
+{
+	background-color:#edeff2;
+	color:#c0c0c0;
+	height:87px;
+	line-height:49px;
+	width:84.44%;
+	border-radius:3px;
+	-webkit-box-shadow:0 2.3px 4px rgba(0, 18, 20, 0.25);  
+	-moz-box-shadow:0 2.3px 4px rgba(0, 18, 20, 0.25);  
+	box-shadow:0 2.3px 4px rgba(0, 18, 20, 0.25); 
+}
+
+.leftth {
+	color:#666666;
+    font-weight: normal;
+    text-align: left;
+	padding-left:14px;
+	width:80px;
+	float:left;
+	font-size:1.6em;
+}
+.leftth-disabled {
+	color:#c0c0c0;
+    font-weight: normal;
+    text-align: left;
+	padding-left:14px;
+	width:80px;
+	float:left;
+	font-size:1.6em;
+}
+.input-center{
+    color: #333333;
+    border:0;
+    font-size: 1.4em;
+    height: 32px;
+    width: 100%;
+}
+.input-center-disabled{
+    color: #c0c0c0;
+    border:0;
+    font-size: 1.4em;
+    height: 32px;
+    width: 100%;
+}
+.Login_button {
+    background-color:#ffffff;
+    border: 1px solid #bbbbbb;
+    color: #000000;
+    display: inline-block;
+    font-size: 1.6em;
+    text-align: center;
+    text-decoration: none;
+	width:84.44%;
+	margin-top:12px;
+	padding:0;
+	height:44px;
+	line-height: 44px;
+	border-radius: 3px;
+	-webkit-box-shadow:0 2.3px 4px rgba(0, 18, 20, 0.25); 
+	-moz-box-shadow:0 2.3px 4px rgba(0, 18, 20, 0.25);
+	box-shadow:0 2.3px 4px rgba(0, 18, 20, 0.25);
+}
+.Login_button:active{
+    background-color:#d3eef6;
+    border: 1px solid #459a88;
+    color: #000000;
+    display: inline-block;
+    font-size: 1.6em;
+    text-align: center;
+    text-decoration: none;
+	width:84.44%;
+	margin-top:12px;
+	padding:0;
+	height:44px;
+	line-height: 44px;
+	border-radius: 3px;
+	-webkit-box-shadow:0 2.3px 4px rgba(0, 18, 20, 0.25);  
+	-moz-box-shadow:0 2.3px 4px rgba(0, 18, 20, 0.25);
+	box-shadow:0 2.3px 4px rgba(0, 18, 20, 0.25);
+}
+.Login_button-disabled{
+    background-color:#edeff2;
+    border: 1px solid #c0c0c0;
+    color: #c0c0c0;
+    display: inline-block;
+    font-size: 1.6em;
+    text-align: center;
+    text-decoration: none;
+	width:84.44%;
+	margin-top:12px;
+	padding:0;
+	height:44px;
+	line-height: 44px;
+	border-radius: 3px;
+	-webkit-box-shadow:0 2.3px 4px rgba(0, 18, 20, 0.25);  
+	-moz-box-shadow:0 2.3px 4px rgba(0, 18, 20, 0.25);
+	box-shadow:0 2.3px 4px rgba(0, 18, 20, 0.25);
+}
+</style>
+<script type="text/javascript">
+//xframeoption
+if(top!=self){top.location=self.location;}
+
+var HNAP = new HNAP_XML();
+
+$(document).ready( function() {
+	//document.body.addEventListener('touchstart', function () { });
+	document.getElementById("loginPassword1").placeholder = I18N("j","MobileLogin_Password_Input");//请输入登录密码
+	document.getElementById("loginPassword2").placeholder = I18N("j","MobileLogin_Password_Input");//请输入登录密码
+	document.getElementById("savebutton").value = I18N("j","Login_Btn");//登录
+	
+	//进来登录页面时都会检测
+	detectWorkMode_Login();
+});
+
+function passwordType()
+{
+	if(document.getElementById("offline_ppp_eye_img").className == "imgrighteye_hide" )
+	{
+		document.getElementById("offline_ppp_eye_img").src="/image/mobile/icon_xianshi.png";
+		document.getElementById("loginPassword1").style.display="none";
+		document.getElementById('loginPassword2').style.display="";
+		document.getElementById("offline_ppp_eye_img").className = "imgrighteye_show";
+	}
+	else
+	{
+		document.getElementById("offline_ppp_eye_img").src="/image/mobile/icon_yingcang.png";
+		document.getElementById("loginPassword1").style.display="";
+		document.getElementById('loginPassword2').style.display="none";
+		document.getElementById("offline_ppp_eye_img").className = "imgrighteye_hide";
+	}
+	
+}
+function OnClickLogin()
+{
+	document.getElementById("error_1").style.display = "none";
+	var Login_Password = document.getElementById("loginPassword1").value;
+	var Login_Captcha = "";
+	$("#login_text").removeClass("loginpasswd");
+	$("#login_text").addClass("login_text");
+	$("#leftth").removeClass("leftth");
+	$("#leftth").addClass("leftth-disabled");
+	$("#loginPassword1").removeClass("input-center");
+	$("#loginPassword1").addClass("input-center-disabled");
+	$("#loginPassword2").removeClass("input-center");
+	$("#loginPassword2").addClass("input-center-disabled");
+	document.getElementById("loginPassword1").disabled = true;
+	document.getElementById("loginPassword2").disabled = true;
+	//document.getElementById("savebutton").disabled = true;
+	$("#savebutton").removeClass("Login_button-active");
+	$("#savebutton").addClass("Login_button-disabled");
+	
+		$.cookie('the_cookie', 'the_value', { path: '/' }); 
+		var aaa=$.cookie('the_cookie');
+	doLogin(Login_Password,Login_Captcha)
+	.done(function(){
+		var problem_goto_page = $.cookie('problem_page');
+		if (typeof(problem_goto_page) != "undefined") {
+			$.removeCookie('problem_page');
+			window.location.href = problem_goto_page;
+			return;
+		}
+         var redirect_url = $.cookie("RedirectUrl");
+		if((redirect_url == null) || (redirect_url.indexOf("Login.html") > 0) || (redirect_url.indexOf("html") < 0))
+		{
+			window.location.href = "/MobileIndex.html";	
+		}
+		else								
+		{	
+			window.location.href = redirect_url;		
+		}
+	})
+	.fail(function(){
+		
+		loginFail();
+		
+	});		
+}
+function loginFail()
+{
+	$("#login_text").removeClass("login_text");
+	$("#login_text").addClass("loginpasswd");
+	$("#leftth").removeClass("leftth-disabled");
+	$("#leftth").addClass("leftth");
+	$("#loginPassword1").removeClass("input-center-disabled");
+	$("#loginPassword1").addClass("input-center");
+	$("#loginPassword2").removeClass("input-center-disabled");
+	$("#loginPassword2").addClass("input-center");
+	document.getElementById("loginPassword1").disabled = false;
+	document.getElementById("loginPassword2").disabled = false;
+	//document.getElementById("savebutton").disabled = false;
+	$("#savebutton").removeClass("Login_button-disabled");
+	$("#savebutton").addClass("Login_button");
+
+
+		//showErr("error_1","errorinfo_1",I18N("j","Err_Login_PwdInvalid"));
+	if(G_Language == "en-us")
+	{
+		showErr("error_1","errorinfo_1","The password is wrong, please enter again.");
+	}
+	else
+	{
+		showErr("error_1","errorinfo_1","密码错误，请重新输入。");
+	}
+	if(document.getElementById("loginPassword2").style.display == "none")
+	{
+		document.getElementById("loginPassword1").focus();
+	}
+	else
+	{
+		document.getElementById("loginPassword2").focus();
+	}
+	document.getElementById("loginPassword1").value = "";
+	document.getElementById("loginPassword2").value = "";
+}
+function detect_KeyValue(e)
+{
+	var key = window.event ? e.keyCode : e.which;
+	if (key == 13)	
+	{	
+		if($("#loginPassword1").is(":hidden"))
+			document.getElementById("loginPassword1").value=document.getElementById("loginPassword2").value;
+		else
+			document.getElementById("loginPassword2").value=document.getElementById("loginPassword1").value;
+		document.getElementById("savebutton").click();
+	}
+}
+
+//检测当前工作模式
+function detectWorkMode_Login()
+{
+	var HNAP = new HNAP_XML();
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetNetworkModeSettings");
+		HNAP.SetXMLAsync("GetNetworkModeSettings", result_xml, function(xml)	{	GetLangResult_Login(xml);	});
+	}
+}
+function GetLangResult_Login(result_xml)
+{
+	var GetLangResult = result_xml.Get("GetNetworkModeSettingsResponse/GetNetworkModeSettingsResult");
+	if (GetLangResult == "OK")
+	{
+		var work_mode = result_xml.Get("GetNetworkModeSettingsResponse/global_network_mode");
+		if(work_mode == "")
+		{
+			work_mode = "router";
+		}
+		$.cookie('work_mode', work_mode, { path: '/' });
+	}
+}	
+</script>
+</head>
+
+<body style="height:100%;">
+<div align="center" class="content">
+	<div class="mobile_div_logo">
+		<div align="center" style="padding-top:27%">
+			<img src="/image/mobile/d-link_logo.png" style="width:42.4%;">
+		</div>
+		<div align="right" style="width:42.4%;padding-top:9px;padding-bottom:21.11%;font-size:1.3em;line-height:14px;color:#ffffff"><script>I18N("h","Login_Router_Name");</script><!-- Dlink-822+ -->
+		</div>
+	</div>
+	
+	<div id="login_text" class="loginpasswd" style="">
+		<div style="height:49px">
+		<div id="leftth" class="leftth"><script>I18N("h","MobileLogin_Login_Password");</script><!-- 登录密码 -->
+		</div>
+		<div style="float:left;width:45%" align="left">
+		<input type="password" id="loginPassword1" size="30" maxlength="63" name="loginPassword1" class="input-center"  placeholder="" onblur="loginPassword2.value=this.value;" onkeydown="detect_KeyValue(event)">
+		<input type="text" id="loginPassword2" size="30" maxlength="63" name="loginPassword2" class="input-center"  placeholder="" onblur="loginPassword1.value=this.value;" onkeydown="detect_KeyValue(event)" style="display:none; ">
+		</div>
+		<div onClick="passwordType();" style="float:right;padding-right:14px;">
+			<div style="vertical-align:middle;">
+			<img id="offline_ppp_eye_img" src="/image/mobile/icon_yingcang.png" class="imgrighteye_hide">
+			</div>
+		</div>
+		</div>
+		<div style="height:1px;margin:0px 14px;padding:0px;background-color:#cccccc;overflow:hidden;"></div>
+		<div id="error_1" style="height:22px;line-height:22px;font-size:1.2em;color:#666666;vertical-align:middle;display:none;padding:4px 14px 12px">
+			<div class="errorimg">
+				<div class="middle">
+				<img src="/image/mobile/icon_jingshi.png" class="ic-sign middle" >
+				</div>
+			</div>
+			<div id="errorinfo_1" class="errorinfo">
+			</div>
+		</div>
+	</div>
+	<div align="center">
+		<input type="button" value="" id="savebutton" class="Login_button" onClick="OnClickLogin();"></td>
+	</div>
+</div>
+</body>
+</html>

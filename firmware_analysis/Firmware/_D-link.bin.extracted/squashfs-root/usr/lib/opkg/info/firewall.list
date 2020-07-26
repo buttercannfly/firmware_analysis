@@ -1,0 +1,14 @@
+/etc/firewall.acl
+/etc/firewall.guest
+/etc/firewall.adv
+/etc/init.d/firewall
+/sbin/fw3
+/etc/config/acl
+/etc/firewall.parentcontrol
+/etc/config/firewall
+/etc/init.d/fix_firewall
+/lib/upgrade/keep.d/firewall
+/etc/hotplug.d/iface/20-firewall
+/etc/config/parentcontrol
+/etc/firewall.portal
+/etc/config/AdvFirewall

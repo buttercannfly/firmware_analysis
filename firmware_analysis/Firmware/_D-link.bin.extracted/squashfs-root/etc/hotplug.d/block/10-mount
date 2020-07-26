@@ -1,0 +1,41 @@
+
+#规避复位或者重启时,U盘插在板子上面的时候挂载失败的问题，因为产生hotplug事件的时候部分usb驱动未加载
+[ "$ACTION" = "add" ] && {
+        [ "$DEVTYPE" = "partition" -o "$DEVTYPE" = "disk" ] && {
+                [ "${DEVNAME:0:2}" = "sd" ] && {
+					usb_driver_num=`ls -l /sys/bus/usb/drivers/ | wc -l`
+					[ "$usb_driver_num" -lt "5" ] && sleep 10
+				}
+		}		
+}
+
+
+blkdev='dirname $DEVPATH'
+if [ 'basename $blkdev' != "block" ]; then
+ 
+    device='basename $DEVPATH'
+    case "$ACTION" in
+        add)
+                mkdir -p /mnt/$device
+                # vfat & ntfs-3g check
+                if  [ 'which fdisk' ]; then
+                        isntfs='fdisk -l | grep $DEVNAME | grep NTFS'
+                        isfuse='lsmod | grep fuse'
+                        isntfs3g='which ntfs-3g'
+                else
+                        isntfs=""
+                fi
+ 
+                # mount with ntfs-3g if possible
+                if [ "$isntfs" -a "$isfuse" -a "$isntfs3g" ]; then
+			#恢复出厂的时候由于不存在挂载点，会导致第一次插上的时候不能识别U盘,所以需要先创建挂载
+			mkdir /mnt/$DEVNAME
+			chmod 777 /mnt/$DEVNAME
+                        ntfs-3g -o nls=utf8 /dev/$DEVNAME /mnt/$DEVNAME
+                fi
+    esac
+ 
+fi
+
+/sbin/block hotplug
+

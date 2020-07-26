@@ -1,0 +1,94 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2013 OpenWrt.org
+
+# start after and stop before networking
+START=13
+STOP=88
+PIDCOUNT=0
+
+USE_PROCD=1
+PROG=/sbin/klogd
+
+validate_log_section()
+{
+	uci_validate_section system system "${1}" \
+		'syslog_file:string' \
+		'syslog_size:uinteger' \
+		'syslog_level:uinteger:8' \
+		'syslog_ip:ipaddr' \
+		'syslog_remote:bool:1' \
+		'syslog_port:port:514' \
+		'syslog_proto:or("tcp", "udp"):udp' \
+		'syslog_prefix:string'
+}
+
+start_service_daemon()
+{
+	local syslog_file syslog_size syslog_level 	
+
+        validate_log_section "${1}" || {                                          
+                echo "validation failed"                                          
+                return 1                                                          
+        }
+                                                                           
+        [ -z "${syslog_file}" ] && return       
+	
+	procd_open_instance
+	procd_set_param command "/sbin/syslogd"
+#	procd_append_param command -O "${syslog_file}"
+#	procd_append_param command -l "${syslog_level}"
+	procd_append_param command -s "${syslog_size}"
+	procd_append_param command -f "/etc/syslog.conf"
+	procd_append_param command -n
+	procd_set_param respawn
+	procd_close_instance
+}
+
+start_service_file()
+{
+	PIDCOUNT="$(( ${PIDCOUNT} + 1))"
+
+	procd_open_instance
+	procd_set_param command "$PROG"
+	procd_append_param command -n   
+	procd_set_param respawn
+	procd_close_instance
+}
+
+start_service_remote()
+{
+	PIDCOUNT="$(( ${PIDCOUNT} + 1))"
+	local pid_file="/var/run/logread.${PIDCOUNT}.pid"
+	local syslog_ip syslog_port syslog_proto syslog_prefix syslog_remote
+
+	validate_log_section "${1}" || {
+		echo "validation failed"
+		return 1
+	}
+	[ "${syslog_remote}" -ne 0 ] || return
+	[ -z "${syslog_ip}" ] && return
+
+	procd_open_instance
+	procd_set_param command "$PROG" -f -r "$syslog_ip" "${syslog_port}" -p "$pid_file"
+	[ "${syslog_proto}" != "udp" ] || procd_append_param command -u
+	[ -z "${syslog_prefix}" ] || procd_append_param command -P "${syslog_prefix}"
+	procd_close_instance
+}
+
+service_triggers()
+{
+	procd_add_reload_trigger "system"
+	procd_add_validation validate_log_section
+}
+
+start_service()
+{
+	if [ ! -e "/log" ]; then            
+	mkdir /log                          
+	fi                                           
+
+	config_load system
+	config_foreach start_service_daemon system
+	config_foreach start_service_file system
+	config_foreach start_service_remote system
+}

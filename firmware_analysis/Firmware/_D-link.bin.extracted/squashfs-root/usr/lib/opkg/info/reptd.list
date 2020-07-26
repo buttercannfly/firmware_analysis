@@ -1,0 +1,3 @@
+/etc/config/reptd
+/usr/sbin/reptd
+/etc/init.d/reptd

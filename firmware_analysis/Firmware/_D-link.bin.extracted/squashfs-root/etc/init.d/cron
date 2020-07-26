@@ -1,0 +1,132 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006-2011 OpenWrt.org
+
+START=50
+
+USE_PROCD=1
+PROG=/usr/sbin/crond
+
+PLW_SIG_STATUS="/tmp/plw_sig_status"
+exist_flag=0
+validate_cron_section() {
+	uci_validate_section system system "${1}" \
+		'cronloglevel:uinteger'
+}
+
+cron_config_get()
+{ 
+	config_get enabled $1 enabled
+	if [ "$enabled" == "1" ];then
+		config_get start_time $1 start_time
+		config_get stop_time $1 stop_time
+		config_get weekdays $1 weekdays
+		s_h=$(echo $start_time |cut  -d ":" -f1)
+		s_m=$(echo $start_time |cut  -d ":" -f2)
+		e_h=$(echo $stop_time |cut  -d ":" -f1)
+		e_m=$(echo $stop_time |cut  -d ":" -f2)
+		echo "$s_m $s_h * * $weekdays wifi_down.sh" >> /etc/crontabs/root
+		echo "$e_m $e_h * * $weekdays wifi_up.sh" >> /etc/crontabs/root
+		result=$(echo $weekdays | grep "$4")
+		if [ -n "$result" ];then
+			if [ $s_h = 08 ];then
+				s_h=8
+			elif [ $s_h = 09 ];then
+				s_h=9
+			fi
+			if [ $s_m = 08 ];then
+				s_m=8
+			elif [ $s_m = 09 ];then
+				s_m=9
+			fi
+			if [ $e_h = 08 ];then
+				e_h=8
+			elif [ $e_h = 09 ];then
+				e_h=9
+			fi
+			if [ $e_m = 08 ];then
+				e_m=8
+			elif [ $e_m = 09 ];then
+				e_m=9
+			fi
+			cur_h=$2
+			cur_m=$3
+			if [ $cur_h = 08 ];then
+				cur_h=8
+			elif [ $cur_h = 09 ];then
+				cur_h=9
+			fi
+			if [ $cur_m = 08 ];then
+				cur_m=8
+			elif [ $cur_m = 09 ];then
+				cur_m=9
+			fi
+			s_hm=$(($s_h*60 + $s_m))
+			e_hm=$(($e_h*60 + $e_m))
+			cur_hm=$(($cur_h*60 + $cur_m))
+			if [ $cur_hm -ge $s_hm -a $cur_hm -le $e_hm ]; then
+				exist_flag=1
+			fi
+		fi
+	fi
+}
+pasre_cron_config()
+{
+	sed -i /wifi/d /etc/crontabs/root
+	exist_flag=0
+	cur_h=`date | cut -d' ' -f4 | cut -d':' -f1`
+	cur_m=`date | cut -d':' -f2`
+	cur_w=`date | cut -d' ' -f1`
+	cron_enable=$(uci_get "cron.@cron[0].enable")
+	if [ "$cron_enable" == "1" ];then
+		config_load cron
+		config_foreach cron_config_get rule $cur_h $cur_m $cur_w
+	fi
+	sed -i 's/Sun/0/g;s/Mon/1/g;s/Tues/2/g;s/Wed/3/g;s/Thur/4/g;s/Fri/5/g;s/Sat/6/g' /etc/crontabs/root
+	if [ "$exist_flag" = "0" ]; then
+		wifi_up.sh
+	fi
+}
+
+pasre_autoupgrade_config()
+{
+	local start_time
+	sed -i /autoupgrade/d /etc/crontabs/root
+	
+	autoupgrade_enable=`uci get autoupgrade.@autoupgrade[0].enabled`
+	autoreboot_enable=`uci get autoupgrade.@autoupgrade[0].auto_reboot_enabled`
+	if [ "$autoupgrade_enable" == "1" -o  "$autoreboot_enable" == "1" ];then
+        start_time=`uci get autoupgrade.@autoupgrade[0].start_time`
+	start_time=`expr $start_time / 60`
+        echo "0 $start_time * * * autoupgrade" >> /etc/crontabs/root
+	fi
+}
+
+
+start_service () {
+	pasre_cron_config
+	pasre_autoupgrade_config
+	
+	[ -z "$(ls /etc/crontabs/)" ] && return 1
+
+	loglevel=$(uci_get "system.@system[0].cronloglevel")
+
+	[ -z "${loglevel}" ] || {
+		/sbin/validate_data uinteger "${loglevel}"
+		[ "$?" -eq 0 ] || {
+			echo "validation failed"
+			return 1
+		}
+	}
+
+	mkdir -p /var/spool/cron
+	ln -s /etc/crontabs /var/spool/cron/ 2>/dev/null
+
+	procd_open_instance
+	procd_set_param command "$PROG" -f -c /etc/crontabs -l ${loglevel:-5}
+	procd_close_instance
+}
+
+service_triggers()
+{
+	procd_add_validation validate_cron_section
+}

@@ -1,0 +1,17 @@
+#!/bin/sh /etc/rc.common
+
+START=98
+
+start() {
+        time=`uci -q get guestsched.settings.local_access_timeout`
+
+
+        if [ $time != 0 ];then
+		killall -9 guest_sched
+                guest_sched $time &
+        fi
+}
+
+stop() {
+        killall -9 guest_sched
+}

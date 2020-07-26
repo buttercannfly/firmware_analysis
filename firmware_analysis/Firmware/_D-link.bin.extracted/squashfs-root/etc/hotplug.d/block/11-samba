@@ -1,0 +1,61 @@
+logger $ACTION $DEVNAME $DEVTYPE
+
+[ "$ACTION" = "add" ] && {
+	[ "$DEVTYPE" = "partition" -o "$DEVTYPE" = "disk" ] && {
+		[ "${DEVNAME:0:2}" = "sd" ] && {
+			# light up usb led -gpio 6 
+			gpio l 6 0 4000 0 1 4000  
+
+			[ "$(mount | grep $DEVNAME | cut -d ' ' -f1 | tr -d '\n')" = "/dev/$DEVNAME" ] && {
+				usb0_name=`/sbin/uci get samba.usb0.name`
+				[ "$usb0_name" = "" ] && {
+					section=`/sbin/uci add samba sambashare`
+                                        /sbin/uci rename samba.$section=usb0
+                                }
+				/sbin/uci set samba.usb0.name=admin
+				/sbin/uci set samba.usb0.path=/mnt/$DEVNAME
+				/sbin/uci set samba.usb0.read_only=yes
+                                if [ `/sbin/uci get samba.@samba[0].status` = "0" ];then
+                                /sbin/uci set samba.usb0.guest_ok=yes
+                                /sbin/uci set samba.usb1.guest_ok=yes
+                                else                                
+                                /sbin/uci set samba.usb0.guest_ok=no
+                                /sbin/uci set samba.usb1.guest_ok=no    
+                                fi 
+				/sbin/uci set samba.usb0.create_mask=777
+				/sbin/uci set samba.usb0.dir_mask=777
+				/sbin/uci set samba.usb1.path=/mnt/$DEVNAME
+				/sbin/uci commit
+				chmod 777 /mnt/$DEVNAME
+
+				touch /tmp/smb.flag
+				smp.sh storage
+
+				/etc/init.d/samba restart
+			}
+		}
+	}
+}
+
+[ "$ACTION" = "remove" ] && {
+	[ "$DEVTYPE" = "partition" -o "$DEVTYPE" = "disk" ] && {
+		[ "${DEVNAME:0:2}" = "sd" ] && {
+			gpio l 6 4000 0 1 0 4000
+			[ `/sbin/uci get samba.usb0.name` = "" ] && break
+			[ `/sbin/uci get samba.usb0.name` = "admin" ] && {
+				/sbin/uci delete samba.usb0
+				/sbin/uci commit
+			}
+			ret=$(/sbin/uci get samba.@sambashare[0] 2>&1 | awk '{print $3}' | tr -d '\n')
+			[ $ret = "not" ] && {
+				/etc/init.d/samba stop
+				rm -f /tmp/smb.flag
+			}
+			[ $ret = "not" ] || {
+				/etc/init.d/samba restart	
+			}
+		}
+	}
+}
+
+

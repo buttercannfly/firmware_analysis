@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html>
+<html id="html">
+<head>
+<meta name="viewport" content="width=1200">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<link href="css/style_page.css" type="text/css" rel="stylesheet" />
+<title></title>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.selectbox-0.2_new.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<script type="text/javascript">
+
+//xframeoption
+if(top!=self){top.location=self.location;}
+
+var DebugMode=1;
+var HNAP = new HNAP_XML();
+function GetXML()	
+{	
+	GetResult_1st();
+}
+function GetResult_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetTelnetSettings ");
+		HNAP.SetXMLAsync("GetTelnetSettings", result_xml, function(xml)	{	GetResult_2nd(xml);	});
+	}
+	else	{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetResult_1st");	}	}
+}
+	
+function GetResult_2nd(result_xml)
+{
+	var GetResult_2nd = result_xml.Get("GetTelnetSettingsResponse/GetTelnetSettingsResult");
+	if (GetResult_2nd == "OK"){
+		
+		var telnet_enabled = result_xml.Get("GetTelnetSettingsResponse/telnet_enabled");
+		
+		if(telnet_enabled == "1")
+		{
+			document.getElementById("talnet_enable").checked=true;
+			document.getElementById("talnet_statue").className = "checkbox_on";
+		}
+		else
+		{
+			document.getElementById("talnet_enable").checked=false;
+			document.getElementById("talnet_statue").className = "checkbox_off";
+		}
+		
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!GetXML Error!!] Function: GetResult_2nd");
+		}
+	}
+}
+	
+
+function SetXML()
+{
+	
+	$.ajax({
+		cache: false,
+		url: "./js/CheckConnection",
+		timeout: 5000,
+		type: "GET",
+		success: function(data) {
+			
+			SetResult_1st();
+		},
+		error: function() {
+			alert("请查看网络环境是否正常");
+		}
+	});
+	
+}
+
+function SetResult_1st() {
+	var result_xml = new StringDoc();
+	
+	if (result_xml != null) {
+		if(document.getElementById("talnet_enable").checked)
+			result_xml.Set("SetTelnetSettings/telnet_enabled", "1");
+		else
+			result_xml.Set("SetTelnetSettings/telnet_enabled", "0");
+		// Send HNAP to DUT
+		HNAP.SetXMLAsync("SetTelnetSettings", result_xml, function(xml)	{	SetResult_2nd(xml);	});
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetResult_1st");	
+		}	
+	}
+}
+
+function SetResult_2nd(result_xml) {
+
+	var SetResult_2nd = result_xml.Get("SetTelnetSettingsResponse/SetTelnetSettingsResult");
+	if (SetResult_2nd == "OK") {
+		
+		window.location.reload();
+	}
+	if (SetResult_2nd == "ERROR") {
+		if (DebugMode == 1) {
+		alert("[!!SetXML Error!!] Function: SetResult_2nd");
+		}
+		window.location.reload();
+	}
+}
+
+
+$(document).ready( function() {
+
+	GetXML();
+});
+	
+function ChangTelnetStatus()
+{	
+	var a = document.getElementById("talnet_enable").checked;
+	if(a)
+	{
+		document.getElementById("talnet_statue").className = "checkbox_off";
+		document.getElementById("talnet_enable").checked=false;	
+	}
+	else
+	{
+		document.getElementById("talnet_statue").className = "checkbox_on";
+		document.getElementById("talnet_enable").checked=true;
+	}
+	SetXML();
+}
+</script>
+</head>
+
+<body>
+<div class="wrapper">  
+	<div class="clearboth" align="center" id="content">
+		<div class="basiccontainer" align="center" id="basiccontent">
+			<table border="0"  class="tablecontent clearboth" cellpadding="0" cellspacing="0" align="left">
+				<tr>
+					<th>启用telnet</th>
+					<td class="tdcheckbox">
+						 <div id="talnet_statue" class="checkbox_off" onclick="ChangTelnetStatus();">
+							 <input type="checkbox" id="talnet_enable" name="talnet_enable" checked>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</div>
+</body>
+</html>

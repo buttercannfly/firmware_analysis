@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html id="html">
+<head>
+<meta content="width=device-width, height=device-height,initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<link href="css/style_mobile.css" type="text/css" rel="stylesheet" />
+<!-- <title>地址冲突</title> -->
+<title></title>
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<style>
+</style>
+<script type="text/javascript">
+//xframeoption
+//if(top!=self){top.location=self.location;}
+
+var DebugMode=0;
+var HNAP = new HNAP_XML();
+var G_LanIp;
+$(document).ready( function() {
+	document.title=I18N("j","Problem_Title");//标题 地址冲突
+	document.getElementById("btn_yes").value = I18N("j","Problem_Yes");//是
+	document.getElementById("btn_confirm").value = I18N("j","Commom_Confirm");//确认
+});
+
+function dodge()
+{
+	//document.getElementById("devIP").innerHTML = "192.168.1.1";
+	//document.getElementById("main").style.display = "none";
+	//document.getElementById("dodge").style.display = "";
+	getLanIP();
+}
+function getLanIP()
+{
+	GetResult_1st();
+}
+
+function GetResult_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetLanWanConflictInfo");
+		HNAP.SetXMLAsync("GetLanWanConflictInfo", result_xml, function(xml)	{	GetResult_2nd(xml);	});
+	}
+	else	{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetResult_1st");	}	}
+}
+
+function GetResult_2nd(result_xml)
+{
+	var GetResult_2nd = result_xml.Get("GetLanWanConflictInfoResponse/GetLanWanConflictInfoResult");
+	if (GetResult_2nd == "OK"){
+	
+		var lan_ip = result_xml.Get("GetLanWanConflictInfoResponse/avoided_ipaddr");
+		G_LanIp = lan_ip;
+		if(lan_ip != "")
+		{
+			document.getElementById("devIP").innerHTML = lan_ip;
+			document.getElementById("main").style.display = "none";
+			document.getElementById("dodge").style.display = "";
+		}
+	}
+}
+function reboot()
+{
+	SetResult_1st();
+	document.getElementById("dodge").style.display = "none";
+	document.getElementById("reboot").style.display = "";
+}
+
+function SetResult_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		//HNAP.SetXMLAsync("SetRebootSettings", result_xml, function(xml)	{	SetResult_2nd(xml);	});
+		HNAP.SetXMLAsync("SetLanWanConflict", result_xml, function(xml)	{						;});
+		document.getElementById("dodge").style.display = "none";
+		document.getElementById("reboot").style.display = "";
+		//setTimeout("checkedWanStatus()", 50*1000);
+		setTimeout("RefreshPage()", 80*1000);
+	}
+	else	{	if (DebugMode == 1)	{	alert("[!!SetXML Error!!] Function: SetResult_1st");	}	}
+}
+function RefreshPage()
+{
+	if(G_LanIp)
+		window.location.href ="http://"+G_LanIp;
+}
+function SetResult_2nd(result_xml)
+{
+	var SetResult_2nd = result_xml.Get("SetRebootSettingsResponse/SetRebootSettingsResult");
+	if (SetResult_2nd == "OK"){
+		document.getElementById("dodge").style.display = "none";
+		document.getElementById("reboot").style.display = "";
+		setTimeout("checkedWanStatus()", 50*1000);
+	}
+}
+
+function checkedWanStatus()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetWanDiagnosisStatus");
+		HNAP.SetXMLAsync("GetWanDiagnosisStatus", result_xml, function(xml)	{	checkedWanStatus_2nd(xml);	});
+	}
+	else	{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: checkedWanStatus");	}	}
+}
+function checkedWanStatus_2nd(result_xml)
+{
+	var checkedWanStatus_2nd = result_xml.Get("GetWanDiagnosisStatusResponse/GetWanDiagnosisStatusResult");
+	if (checkedWanStatus_2nd == "OK"){
+	
+		var wanstatus = result_xml.Get("GetWanDiagnosisStatusResponse/wan_status");
+		if(wanstatus == "0")
+		{
+			window.location.href = "MobileProblem_success.html";
+		}
+		else if(wanstatus == "1")
+		{
+			window.location.href = "MobileProblem_WAN.html";
+		}
+		else if(wanstatus == "2")
+		{
+			window.location.href = "MobileProblem_Cable.html";
+		}
+		else if(wanstatus == "3")
+		{
+			window.location.href = "MobileProblem_Conflict.html";
+		}
+	}
+}
+</script>
+</head>
+
+<body data-spy="scroll" data-target=".bs-docs-sidebar" style="background-color:#edeff2">
+<div id="main" style="width:100%; ">  
+	<div style="padding-left:10%; padding-right:10%; padding-top:22%; clear: both;">
+		<div style="width:32%; float:left; padding-top:1%;">
+			<img style="width:100%;" src="/image/mobile/icon_hulianwang_03.png">
+		</div>
+		<div style="width:28%; float:left; padding-left:4%; padding-right:4%; padding-top:7%;"><img style="width:100%;" src="/image/mobile/pic_lianjie_ts.png"></div>
+		<div style="width:32%; float:left;">
+			<img style="width:100%;" src="/image/mobile/icon_router.png">
+		</div>
+		<div style="clear:both; "> </div>
+	</div>
+	<div style=" padding-left:10%; padding-right:10%; padding-top:3%;">
+		<div style="text-align:center; width:30%;color:#a1a1a1; font-size:1.2em; float:left;"><script>I18N("h","Home_Internet");</script><!-- 互联网 --></div>
+		<div style="text-align:center; width:36%;color:#a1a1a1; font-size:1.2em; float:left; padding-left:34%;"><script>I18N("h","Login_Router_Name");</script><!-- DIR-822+ --></div>
+		<div style="clear:both; "> </div>
+	</div>
+	
+	<div style=" padding-top:10%; width:100%; text-align:center;color:#333333; font-size:1.6em;"><script>I18N("h","Problem_Internet_Fail");</script><!-- 连接互联网失败 --></div>
+	<div style=" padding-left:10%; padding-right:10%;width:80%; margin:0 atuto;text-align:left; margin-top:4%; font-size:1.4em;color:#666666; line-height:25px;"><script>I18N("h","Problem_LAN_WAN_Conflicts");</script><!-- 路由器LAN口和WAN口IP出现冲突导致网络故障，是否需要避让冲突？ --></div>
+	<!-- <div align="center" style=" width:100%;padding-top:12%;"><input type="button" onclick="dodge();" class="styled_button_s" value="是">	</div> -->
+	<div align="center" style=" width:100%;padding-top:12%;"><input type="button" onclick="dodge();" class="styled_button_s" id="btn_yes" value="">	</div>
+</div>
+
+	
+<div id="dodge" align="center" style="padding-top:40%;display:none; width:100%;">
+		<div align="center" style=" padding-left:6%; padding-right:6%; width:88%;font-size:1.8em;color:#666666;line-height:30px; text-align:left;">
+		<script>I18N("h","Problem_IP_Modified");</script><!-- 您的设备IP已改为 --><span id="devIP">192.168.1.101</span><script>I18N("h","Problem_Confirm_Reboot");</script><!-- ，请点击确认重启路由器。 -->
+		</div>
+		<div width="100%" align="center" style=" padding-top:10%;">
+			<!-- <input type="button" onclick="reboot();" class="styled_button_s" value="确认">	 -->
+			<input type="button" onclick="reboot();" class="styled_button_s" id="btn_confirm" value="">
+		</div>
+</div>
+
+	<div align="center" id="reboot" style="padding-top:45%;display:none">
+		<img width="58" height="58" src="/image/mobile/Wait.gif">
+		<div style="font-size:1.8em;color:#666666; padding-left:6%; padding-right:6%; padding-top:8%;width:88%; text-align:center;"><script>I18N("h","Problem_Rebooting");</script><!-- 正在为您重启路由器，请耐心等待... --></div>
+	</div>
+				
+</body>
+</html>

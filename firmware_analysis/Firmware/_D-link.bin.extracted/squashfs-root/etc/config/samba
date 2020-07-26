@@ -1,0 +1,17 @@
+config samba
+	option 'name'			'OpenWrt'
+	option 'workgroup'		'WORKGROUP'
+	option 'description'		'OpenWrt'
+	option 'homes'			'1'
+	option 'enable'                 '0'
+	option 'status'                 '0'
+
+config sambashare 'usb1'
+        option name 'admin'
+        option path '/mnt/sda1'
+        option read_only 'yes'
+        option guest_ok 'yes'
+        option create_mask '777'
+        option dir_mask '777'
+	option deleted '0'
+	option valid_users 'admin'

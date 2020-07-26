@@ -1,0 +1,149 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=105
+
+fix_parent_control() {
+	local app_name enabled src_mac url_enable url start_time stop_time weekdays
+
+	config_get app_name $1 app_name
+	[ "$app_name" = "Web Filter" ] || return
+	
+	config_get enabled $1 enabled
+	config_get src_mac $1 src_mac
+	config_get url_enable $1 url_enable
+	config_get url $1 url
+	config_get start_time $1 start_time
+	config_get stop_time $1 stop_time
+	config_get weekdays $1 weekdays
+
+	[ -n "$enabled" ] || return
+	[ -n "$src_mac" ] || return
+	[ -n "$url_enable" ] || return
+	[ -n "$start_time" ] || return
+	[ -n "$stop_time" ] || return
+	[ -n "$weekdays" ] || return
+
+	if [ "$url_enable" = "1" ]
+	then
+		[ -n "$url" ] || return
+	fi
+
+	uci add parentcontrol parent_control_rule
+	uci set parentcontrol.@parent_control_rule[-1].enabled=$enabled
+	uci set parentcontrol.@parent_control_rule[-1].src_mac=$src_mac
+	uci set parentcontrol.@parent_control_rule[-1].url_enable=$url_enable
+	uci set parentcontrol.@parent_control_rule[-1].start_time=$start_time
+	uci set parentcontrol.@parent_control_rule[-1].stop_time=$stop_time
+
+	if [ "$url_enable" = "1" ]
+        then
+		uci set parentcontrol.@parent_control_rule[-1].url=$url
+        fi
+
+	for weekday in $weekdays
+	do
+        new_weekdays="$new_weekdays"`echo ${weekday:0:1}|tr '[a-z]' '[A-Z]'``echo ${weekday:1},`
+	done
+	new_weekdays=`echo $new_weekdays|sed 's/.$//'`
+	uci set parentcontrol.@parent_control_rule[-1].weekdays=$new_weekdays
+}
+	
+
+boot() {
+
+        echo fix_filrewall################################# > /dev/console
+
+        #get current firewall Version
+        current_firewall_version=`uci get firewall.@defaults[0].firewall_version`
+
+        if [ "$current_firewall_version" = "" ]
+        then
+		echo "firewall_version config not exist, use default version 1" > /dev/console
+                current_firewall_version=1
+        else
+		echo "get firewall_version success, current version is $current_firewall_version!!" > /dev/console
+        fi
+
+        #fix firewall to version 2
+        if [ $current_firewall_version -lt 2 ]
+        then
+		echo "current firewall_version is lower than version 2, so fix it config to version 2!" > /dev/console
+                #1. fix SPI
+                echo "start fix spi" > /dev/console
+                spi_enable=`uci get AdvFirewall.FirewallSettings.SPIIPv4Enable`
+                if [ "$spi_enable" = "0" ]
+                then
+                        echo "user config spi disable" > /dev/console
+                        uci set firewall.@defaults[0].forward=ACCEPT
+                        uci set firewall.@zone[2].input=ACCEPT
+                else
+                        echo "user config spi enable" > /dev/console
+                        uci set firewall.@defaults[0].forward=DROP
+                        uci set firewall.@zone[2].input=DROP
+                fi
+		echo "end fix spi" > /dev/console
+
+		#2. fix WAN PING
+		wan_ping_enable=`uci get firewall.WANPing.target`
+		if [ "$wan_ping_enable" = "ACCEPT" ]
+                then
+                        echo "user config wan ping enable" > /dev/console
+                        uci set acl.wan_acl.ping_enable=1
+                else
+                        echo "user config wan ping disable" > /dev/console
+                        uci set acl.wan_acl.ping_enable=0
+                fi
+		uci delete firewall.WANPing
+                echo "end fix wan ping" > /dev/console
+		
+		#3 fix firewall config include
+		echo "delete firewall.user" > /dev/console
+		uci delete firewall.@include[0]
+
+		echo "delete firewall.post" > /dev/console
+		uci delete firewall.post
+	
+		echo "add firewall.acl" > /dev/console
+		uci add firewall include
+		uci rename firewall.@include[-1]=acl
+		uci set firewall.acl.path=/etc/firewall.acl
+		uci set firewall.acl.reload=1
+		uci set firewall.acl.enabled=1
+		echo "add firewall.acl end" > /dev/console
+
+		echo "add firewall.parentcontrol" > /dev/console
+                uci add firewall include
+                uci rename firewall.@include[-1]=parentcontrol
+                uci set firewall.parentcontrol.path=/etc/firewall.parentcontrol
+                uci set firewall.parentcontrol.reload=0
+                uci set firewall.parentcontrol.enabled=1
+                echo "add firewall.parentcontrol end" > /dev/console
+
+		#4. fix firewall config rule
+		
+		echo "delete extra rule" > /dev/console
+		uci delete firewall.@rule[1]
+		uci delete firewall.@rule[1]
+		uci delete firewall.@rule[1]
+		echo "delete extra rule end" > /dev/console
+
+		#5. fix parent control
+		echo "start fix parent control!!" > /dev/console
+		config_load firewall
+		config_foreach fix_parent_control rule
+		echo "fix parent control end!!" > /dev/console
+		
+		#change firewall_version
+		uci set firewall.@defaults[0].firewall_version=2		
+
+		#apply uci
+		uci commit acl
+		uci commit firewall
+		uci commit parentcontrol
+		
+		
+        else
+                echo "current firewall_version is not lower than version 2, don not need fix!!" > /dev/console
+        fi
+}

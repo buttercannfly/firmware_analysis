@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html id="html">
+<head>
+<meta name="viewport" content="width=1200">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<link rel=stylesheet type="text/css" href="css/jquery.selectbox.css" media="all" />
+<link href="css/stylish-select.css" type="text/css" rel="stylesheet" />
+<link href="css/style_page.css" type="text/css" rel="stylesheet" />
+<title></title>
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/header.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.selectbox-0.2_new.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/verify/verify.js"></script>
+
+<script type="text/javascript">
+
+//xframeoption
+if(top!=self){top.location=self.location;}
+
+var HNAP = new HNAP_XML();
+var enable="";
+var provider="";
+var hostname="";
+var username="";
+var password="";
+function Load_HTML()	
+{	
+	document.getElementById("ip_domain").disabled = false;
+	document.getElementById("ping_time").disabled = false;
+	document.getElementById("ping_message_len").disabled = false;
+	document.getElementById("ping_timeout").disabled = false;
+	document.getElementById("ping_ttl").disabled = false;
+	document.getElementById("savebutton5").disabled = false;
+	document.getElementById("pinging").style.display="none";		}
+
+
+$(document).ready( function() {
+	MoreContainMiniheight();
+	Load_HTML();
+	GetXML();
+	checkTimeout();
+	document.getElementById("btn_export_log").value = I18N("j","Diagnosis_Export_Log");//导出系统日志
+	document.getElementById("savebutton5").value = I18N("j","Diagnosis_Begin");//开始诊断
+});
+
+function GetXML()	
+{	
+	GetResult_1st();
+}
+function GetResult_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetNetworkTomographySettings");
+		HNAP.SetXMLAsync("GetNetworkTomographySettings", result_xml, function(xml)	{	GetResult_2nd(xml);	});
+	}
+	else	{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetResult_1st");	}	}
+}
+	
+function GetResult_2nd(result_xml)
+{
+	var GetResult_2nd = result_xml.Get("GetNetworkTomographySettingsResponse/GetNetworkTomographySettingsResult");
+	if (GetResult_2nd == "OK"){
+	
+		var ping_address = result_xml.Get("GetNetworkTomographySettingsResponse/tomography_ping_address");
+		var ping_number = result_xml.Get("GetNetworkTomographySettingsResponse/tomography_ping_number");
+		var ping_size = result_xml.Get("GetNetworkTomographySettingsResponse/tomography_ping_size");
+		var ping_timeout = result_xml.Get("GetNetworkTomographySettingsResponse/tomography_ping_timeout");
+		var ping_ttl = result_xml.Get("GetNetworkTomographySettingsResponse/tomography_ping_ttl");
+	
+		document.getElementById("ip_domain").value = ping_address;
+		document.getElementById("ping_time").value = ping_number;
+		document.getElementById("ping_message_len").value = ping_size;
+		document.getElementById("ping_timeout").value = ping_timeout;
+		document.getElementById("ping_ttl").value = ping_ttl;
+		
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!GetXML Error!!] Function: GetResult_2nd");
+		}
+	}
+}
+
+function SaveData()
+{
+	var result=verifyDiagnisInput();
+	
+	if(result)
+	{
+		document.getElementById("ip_domain").disabled = true;
+		document.getElementById("ping_time").disabled = true;
+		document.getElementById("ping_message_len").disabled = true;
+		document.getElementById("ping_timeout").disabled = true;
+		document.getElementById("ping_ttl").disabled = true;
+		document.getElementById("savebutton5").disabled = true;
+		document.getElementById("pinging").style.display="";
+		//document.getElementById("dialog_msg_black2").innerHTML="正在进行诊断，请稍后...";
+		document.getElementById("dialog_msg_black2").innerHTML=I18N("j","Diagnosis_Marching_Wait");
+		
+		
+		$.ajax({
+				cache: false,
+				url: "./js/CheckConnection",
+				timeout: 5000,
+				type: "GET",
+				success: function(data) {
+					SetXML();
+				},
+				error: function() {
+					document.getElementById("DetectRouterConnection").style.display = "inline";
+				}
+			});		
+	}
+	
+}
+
+function SetXML() {
+	document.getElementById("CreatePopAlertMessage").style.display = "inline";
+	document.getElementById("waitSettingFinish").style.display = "inline";
+	SetResult_1st();
+}
+
+function SetResult_1st() {
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		
+		result_xml.Set("SetNetworkTomographySettings/tomography_ping_address", document.getElementById("ip_domain").value);
+		result_xml.Set("SetNetworkTomographySettings/tomography_ping_number", document.getElementById("ping_time").value);
+		result_xml.Set("SetNetworkTomographySettings/tomography_ping_size", document.getElementById("ping_message_len").value);
+		result_xml.Set("SetNetworkTomographySettings/tomography_ping_timeout", document.getElementById("ping_timeout").value);
+		result_xml.Set("SetNetworkTomographySettings/tomography_ping_ttl", document.getElementById("ping_ttl").value);
+		HNAP.SetXMLAsync("SetNetworkTomographySettings", result_xml, function(xml)	{	SetResult_2nd(xml);	});
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetResult_1st");	
+		}	
+	}
+}
+function SetResult_2nd(result_xml) {
+	var SetResult_1st = result_xml.Get("SetNetworkTomographySettingsResponse/SetNetworkTomographySettingsResult");
+	if (SetResult_1st == "OK") {
+		setTimeout("GetPingResult()", 5000);
+	}
+	if (SetResult_1st == "ERROR") {
+		if (DebugMode == 1) {
+		alert("[!!SetXML Error!!] Function: SetResult_2nd");
+		}
+		window.location.reload();
+	}
+}
+function waitSettingFinished() 
+{
+	window.location.reload();
+}	
+
+function GetPingResult()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetNetworkTomographyResult");
+		HNAP.SetXMLAsync("GetNetworkTomographyResult", result_xml, function(xml)	{	GetResult_3nd(xml);	});
+	}
+	else	{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetPingResult");	}	}
+}
+
+function GetResult_3nd(result_xml)
+{
+	var GetResult_2nd = result_xml.Get("GetNetworkTomographyResultResponse/GetNetworkTomographyResultResult");
+	if (GetResult_2nd == "OK"){
+	
+		var ping_result = result_xml.Get("GetNetworkTomographyResultResponse/tomography_ping_result");
+		
+		if(ping_result=="0")
+		{
+			setTimeout("GetPingResult()", 1000);
+		}
+		else
+		{
+			document.getElementById("ip_domain").disabled = false;
+			document.getElementById("ping_time").disabled = false;
+			document.getElementById("ping_message_len").disabled = false;
+			document.getElementById("ping_timeout").disabled = false;
+			document.getElementById("ping_ttl").disabled = false;
+			document.getElementById("savebutton5").disabled = false;
+			document.getElementById("pinging").style.display="none";			
+			document.getElementById("result").value=ping_result;
+			document.getElementById("CreatePopAlertMessage").style.display = "none";
+			document.getElementById("waitSettingFinish").style.display = "none";
+		}
+
+		
+	} else {	
+		if (DebugMode == 1)	{	
+			alert("[!!GetXML Error!!] Function: GetResult_2nd");
+		}
+	}
+}
+function hideAllErrorInfo()
+{
+	$("#error_1").hide();
+	$("#error_2").hide();
+	$("#error_3").hide();
+	$("#error_4").hide();
+	$("#error_5").hide();
+}
+
+function verifyDiagnisInput()
+{
+	hideAllErrorInfo();
+	var ip_domainValue=$("#ip_domain").val();
+	var ping_timeValue=$("#ping_time").val();
+	var messageValue=$("#ping_message_len").val();
+	var timeoutValue=$("#ping_timeout").val();
+	var ttlValue=$("#ping_ttl").val();
+	
+	if(""==ip_domainValue)
+	{
+		showErr("error_1","errorinfo_1",I18N("j","Err_Diagnosis_IpDomainEmpty"));
+		return false;
+	}
+	else if(!isKeyboardInput(ip_domainValue))
+	{
+		showErr("error_1","errorinfo_1",I18N("j","Err_Diagnosis_IpDomainFormat"));
+		return false;
+	}
+	else if(validateKey(ip_domainValue))//数字和.格式
+	{
+		var IPresult=checkIpAddr(ip_domainValue);
+		switch(IPresult)//IP验证
+		{
+			case ERR_IP_FORMAT:
+				showErr("error_1","errorinfo_1",I18N("j","Err_Diagnosis_IpAddrFormat"));
+				return false;
+			case ERR_IP_ALLZERO:
+				showErr("error_1","errorinfo_1",I18N("j","Err_Diagnosis_IpAddrAllZero"));
+				return false;
+			case ERR_IP_ALLONE:
+				showErr("error_1","errorinfo_1",I18N("j","Err_Diagnosis_IpAddrAllOne"));
+				return false;
+			case ERR_IP_INVALID:
+				showErr("error_1","errorinfo_1",I18N("j","Err_Diagnosis_IpAddrIvalid"));
+				return false;
+			case ERR_IP_FIRSTZERO:
+				showErr("error_1","errorinfo_1",I18N("j","Err_Diagnosis_IpAddrFirstZero"));
+				return false;
+			case ERR_IP_LOOP:
+				showErr("error_1","errorinfo_1",I18N("j","Err_Diagnosis_IpAddrLoop"));
+				return false;
+			case ERR_IP_GROUP:
+				showErr("error_1","errorinfo_1",I18N("j","Err_Diagnosis_IpAddrGroup"));
+				return false;
+		}
+	}
+	else if(!verifyDomain(ip_domainValue))
+	{
+		showErr("error_1","errorinfo_1",I18N("j","Err_Diagnosis_DomainFormat"));
+		return false;
+	}
+	var index=ip_domainValue.indexOf('\/\/');
+	if(-1!=index)
+	{
+		document.getElementById("ip_domain").value=ip_domainValue.substring(index+2);
+	}
+	
+	
+	if(""==ping_timeValue)//ping次数
+	{
+		showErr("error_2","errorinfo_2",I18N("j","Err_Diagnosis_PingNumEmpty"));
+		return false;
+	}
+	if("0"==ping_timeValue)
+	{
+		showErr("error_2","errorinfo_2",I18N("j","Err_Diagnosis_PingNumRange"));
+		return false;
+	}
+	else if(!checkNum(ping_timeValue))
+	{
+		showErr("error_2","errorinfo_2",I18N("j","Err_Diagnosis_PingNumFormat"));
+		return false;
+	}
+	else if(!checkDigitRange(ping_timeValue,1,1,50))
+	{
+		showErr("error_2","errorinfo_2",I18N("j","Err_Diagnosis_PingNumRange"));
+		return false;
+	}
+	
+	if(""==messageValue)//ping大小
+	{
+		showErr("error_3","errorinfo_3",I18N("j","Err_Diagnosis_PingSizeEmpty"));
+		return false;
+	}
+	if("0"==messageValue)
+	{
+		showErr("error_3","errorinfo_3",I18N("j","Err_Diagnosis_PingSizeRange"));
+		return false;
+	}
+	else if(!checkNum(messageValue))
+	{
+		showErr("error_3","errorinfo_3",I18N("j","Err_Diagnosis_PingSizeFormat"));
+		return false;
+	}
+	else if(!checkDigitRange(messageValue,1,4,1472))
+	{
+		showErr("error_3","errorinfo_3",I18N("j","Err_Diagnosis_PingSizeRange"));
+		return false;
+	}
+	
+	if(""==timeoutValue)//超时时间
+	{
+		showErr("error_4","errorinfo_4",I18N("j","Err_Diagnosis_TimeoutEmpty"));
+		return false;
+	}
+	else if(!checkNum(timeoutValue))
+	{
+		showErr("error_4","errorinfo_4",I18N("j","Err_Diagnosis_TimeoutFormat"));
+		return false;
+	}
+	else if(!checkDigitRange(timeoutValue,1,1,3))
+	{
+		showErr("error_4","errorinfo_4",I18N("j","Err_Diagnosis_TimeoutRange"));
+		return false;
+	}
+		
+	if(""==ttlValue)//TTL
+	{
+		showErr("error_5","errorinfo_5",I18N("j","Err_Diagnosis_MaxTTLEmpty"));
+		return false;
+	}
+	else if(!checkNum(ttlValue))
+	{
+		showErr("error_5","errorinfo_5",I18N("j","Err_Diagnosis_MaxTTLFormat"));
+		return false;
+	}
+	else if(!checkDigitRange(ttlValue,1,1,30))
+	{
+		showErr("error_5","errorinfo_5",I18N("j","Err_Diagnosis_MaxTTLRange"));
+		return false;
+	}
+	return true;
+
+}
+</script>
+</head>
+
+<body>
+<!-------------------- Logo menu------------------------->
+	<div class="wrapper">  
+		<div id="header"></div>
+		<div class="clearboth" align="center" id="content">
+			<div class="morecontent" align="center" id="basiccontent">
+		 		<div class="pull-left" id="sub_menu_container"><script>initialLeftMenu();</script> </div>
+				<div id="right_content"  class="pull-left">
+					<table border="0"  class="clearboth tablemoreheader" cellpadding="0" cellspacing="0" align="left">
+						<tr>
+							<th><script>I18N("h","Commom_Log_Diagnosis");</script><!-- 日志与诊断 --> </th>
+						</tr>
+					</table>
+					<div class="clearboth moreline1"></div>
+					<div id="ddnscontent">
+					<div class="description" style="text-align:justify;"><span class="inlineblock"><script>I18N("h","Diagnosis_Description");</script><!-- 诊断工具帮助您对路由器的网络连接状态和自身重要业务做一个全面的检查，您可以根据诊断的结果初步判断您的路由器运行状态。 --></span></div>
+					<div class="clearboth headerline2" align="left" style="padding-top:64px;margin-bottom:12px;"><span class="inlineblock"><script>I18N("h","Diagnosis_System_Log");</script><!-- 系统日志 --></span></div>
+					<div class="moreline1"></div>
+					<form id="dlcfgbin" action="/HNAP1/prog.fcgi?method=/HNAP1/GetDownLoadSyslog" method="post">
+					 <div align="left">
+						<!-- <input type="button" value="导出系统日志" id="btn_export_log" class="styled_button_s" style="margin-top:36px;" onClick="document.forms['dlcfgbin'].submit();"> -->
+						<input type="button" value="" id="btn_export_log" class="styled_button_s" style="margin-top:36px;" onClick="document.forms['dlcfgbin'].submit();">
+					 </div>
+			 		</form>
+					<div class="clearboth headerline2" align="left" style="padding-top:64px; padding-bottom:12px; "><span class="inlineblock"><script>I18N("h","Diagnosis_Network");</script><!-- 网络诊断 --></span></div>
+					<div class="clearboth moreline1"></div>
+					<div class="clearboth headerline2" align="left" style="padding-top:36px; padding-bottom:12px; font-size:14px;font-weight:normal"><span class="inlineblock"><script>I18N("h","Diagnosis_Ping_Parameter");</script><!-- Ping诊断参数 --></span></div>
+					   <table border="0" class="clearboth block" cellpadding="0" cellspacing="0" align="left">
+					 	<tbody>
+						<tr>
+						  <th>
+						 <script>I18N("h","Diagnosis_Address_Domain");</script><!-- 地址/域名 -->
+						  </th>
+						  <td>
+							<input type="text"  maxlength="64" id="ip_domain"  name="ip_domain" class="styled-text">
+						  </td>
+						</tr>			
+						 <tr id="error_1" style="display:none; ">
+							<td>&nbsp;</td>
+							<td class="errorinfo">
+								<table>
+									<tbody>
+										<tr>
+											<td>
+											<div class="ic-sign ic"></div>
+										  </td>
+										  <td id="errorinfo_1"></td>
+										</tr>
+									</tbody>
+								  </table>
+							</td>
+						 </tr>
+						<tr class="space"></tr>
+						<tr>
+						  <th>
+						   <script>I18N("h","Diagnosis_Ping_Times");</script><!-- 次数 -->
+						  </th>
+						  <td>
+							<input type="text" maxlength="2" id="ping_time"  name="ping_time" class="styled-text-ss">
+							<span class="markedwords">(1-50)</span>
+						  </td>
+						</tr>			
+						 <tr id="error_2" style="display:none; ">
+							<td>&nbsp;</td>
+							<td class="errorinfo">
+								<table>
+									<tbody>
+										<tr>
+											<td>
+											<div class="ic-sign ic"></div>
+										  </td>
+										  <td id="errorinfo_2"></td>
+										</tr>
+									</tbody>
+								  </table>
+							</td>
+						 </tr>
+						<tr class="space"></tr>
+						<tr>
+						  <th>
+						   <script>I18N("h","Diagnosis_Message_Size");</script><!-- 报文大小 -->
+						  </th>
+							<td>
+							<input type="text" maxlength="4" id="ping_message_len"  name="ping_message_len" class="styled-text-ss">
+							<span class="markedwords">(4-1472Bytes)</span>
+							</td>
+						</tr>
+									
+						 <tr id="error_3" style="display:none; ">
+							<td>&nbsp;</td>
+							<td class="errorinfo">
+								<table>
+									<tbody>
+										<tr>
+											<td>
+											<div class="ic-sign ic"></div>
+										  </td>
+										  <td id="errorinfo_3"></td>
+										</tr>
+									</tbody>
+								  </table>
+							</td>
+						 </tr>
+						<tr class="space" style="display:none; "></tr>
+						<tr style="display:none; ">
+						  <th>
+						   <script>I18N("h","Diagnosis_Ping_Timeout");</script><!-- Ping超时时间 -->
+						  </th>
+							<td>
+							<input type="text" maxlength="4" id="ping_timeout"  name="ping_timeout" class="styled-text-ss">
+							<span class="markedwords">(100-2000Milliseconds)</span>
+							</td>
+						</tr>
+									
+						 <tr id="error_4" style="display:none; ">
+							<td>&nbsp;</td>
+							<td class="errorinfo">
+								<table>
+									<tbody>
+										<tr>
+											<td>
+											<div class="ic-sign ic"></div>
+										  </td>
+										  <td id="errorinfo_4"></td>
+										</tr>
+									</tbody>
+								  </table>
+							</td>
+						 </tr>									 
+						<tr class="space"></tr>
+						<tr style="display:none; ">
+						  <th>
+						   <script>I18N("h","Diagnosis_Max_TTL");</script><!-- 最大TTL -->
+						  </th>
+							<td>
+							<input type="text" maxlength="2" id="ping_ttl"  name="ping_ttl" class="styled-text-ss">
+							<span class="markedwords">(1-30)</span>
+							</td>
+							
+						</tr>
+									
+						 <tr id="error_5" style="display:none; ">
+							<td>&nbsp;</td>
+							<td class="errorinfo">
+								<table>
+									<tbody>
+										<tr>
+											<td>
+											<div class="ic-sign ic"></div>
+										  </td>
+										  <td id="errorinfo_5"></td>
+										</tr>
+									</tbody>
+								  </table>
+							</td>
+						 </tr>
+						 <tr style="height:36px; "></tr>
+						 <tr><th>&nbsp;</th><td><input type="button" value="" id="savebutton5" class="styled_button_s" onClick="SaveData();"></td></tr>					
+						  </tbody>	
+					 </table>
+
+					</div>
+					<div  class="clearboth diagnresult" align="left" style="padding-top:36px; ">
+						<script>I18N("h","Diagnosis_Result");</script><!-- 诊断结果 --><span id="pinging" style="display:none; ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<script>I18N("h","Diagnosis_Marching");</script><!-- 正在诊断...... --></span>
+					  </div>								
+					  <div align="left" style="padding-top:12px; ">
+					<textarea readonly="readonly" value="" name="result" id="result" type="text" style="height:188px; width:768px; border: 1px solid #4598aa;border-radius: 2px;outline:none;resize:none; padding-left:10px; padding-top:5px;"></textarea>					
+					</div>
+				</div><!--end right_content -->
+			</div>
+	   </div>
+ 	   <div class="footer_placeholder"></div>  
+   </div>
+	
+	<div id="footer"></div>
+	<div id="CreatePopAlertMessage" style=" display:none;"></div>
+	<div style=" display:none;" id="DetectRouterConnection"></div>
+</body>
+<script type="text/javascript">
+Initial();
+</script>
+</html>

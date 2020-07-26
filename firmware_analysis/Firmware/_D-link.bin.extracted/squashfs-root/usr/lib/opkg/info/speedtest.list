@@ -1,0 +1,6 @@
+/usr/bin/upload_speedtest
+/usr/lib/lua/Posix.lua
+/usr/bin/download_speedtest
+/usr/bin/ab
+/usr/share/speedtest.xml
+/usr/lib/lua/posix.so

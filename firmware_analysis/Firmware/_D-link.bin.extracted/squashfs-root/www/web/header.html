@@ -1,0 +1,220 @@
+<script type="text/javascript">
+$(document).ready( function() {	
+
+	var isMobile = false;
+	if(navigator.userAgent.match(/iPad|Android|webOS|iPhone|iPod|BlackBerry/i)) {
+		isMobile = true;
+	}else {
+		isMobile = false;
+	}
+	if(isMobile)
+	{
+		document.getElementById("divphonepage").style.display="";
+	}
+	else
+	{
+		document.getElementById("divphonepage").style.display="none";
+	}
+
+	$("#home").click(function(){
+		location.href ="Home.html";
+	}); 
+	$("#internet").click(function(){
+		location.href ="Network.html";
+	}); 	
+	$("#wirless").click(function(){
+		location.href ="Wireless.html";
+	}); 
+	$("#parentcontrol").click(function(){
+		location.href ="Parentcontrol.html";
+	});
+	$("#qos").click(function(){
+		location.href ="QoSControl.html";
+	}); 		
+	$("#guestwireless").click(function(){
+		location.href ="Devices.html";
+	}); 
+	$("#more").click(function(){
+		location.href ="DhcpServer.html";
+	}); 
+	$("#reboot").click(function(){
+		reboot();
+	}); 
+	$("#divphonepage").click(function(){
+		$("#phoneimg").removeClass("phoneimghover").removeClass("phoneimg").addClass("phoneimgactive");
+		$("#phoneword").removeClass("bsword").addClass("bswordhover");
+		location.href ="MobileIndex.html";
+	});
+	
+	$("#divlogout").hover(function(){
+		$("#logoutimg").removeClass("logout").addClass("logouthover");
+		$("#logoutword").removeClass("bsword").addClass("bswordhover");
+	},function(){
+		$("#logoutimg").removeClass("logouthover").addClass("logout");
+		$("#logoutword").removeClass("bswordhover").addClass("bsword");
+	}); 	
+	
+	$("#divphonepage").hover(function(){
+		$("#phoneimg").removeClass("phoneimg").addClass("phoneimghover");
+		$("#phoneword").removeClass("bsword").addClass("bswordhover");
+	},function(){
+		$("#phoneimg").removeClass("phoneimghover").addClass("phoneimg");
+		$("#phoneword").removeClass("bswordhover").addClass("bsword");
+	}); 		
+	var str=location.href; //取得整个地址栏
+   var start=str.lastIndexOf("/");
+   var page="";
+   if(start>-1)
+   {
+  	 page=str.substring(start+1,str.length+1);
+   }
+   switch(page)
+   {
+   case "Home.html":
+  $('#want_home_id').removeClass("want_home").addClass("want_home_select");
+   break;   
+   case "Network.html":
+  $('#want_internet_id').removeClass("want_internet").addClass("want_internet_select");
+   break;    
+   case "Wireless.html":
+  $('#want_wirless_id').removeClass("want_wirless").addClass("want_wirless_select");
+   break;   
+   case "Parentcontrol.html":
+   $('#want_parentcontrol_id').removeClass("want_parentcontrol").addClass("want_parentcontrol_select");
+   break;    
+   case "QoSControl.html":
+   $('#want_qos_id').removeClass("want_qos").addClass("want_qos_select");
+   break;    
+   case "Devices.html":
+   $('#want_guestwireless_id').removeClass("want_guestwireless").addClass("want_guestwireless_select");
+   break;    
+   default:
+   $('#want_more_id').removeClass("want_more").addClass("want_more_select");
+   break;    
+   }
+   
+});
+
+function Logout()
+{
+	$("#logoutimg").removeClass("logout").removeClass("logouthover").addClass("logoutactive");
+	$("#logoutword").removeClass("bsword").addClass("bswordhover");	
+	readyLogout();
+}
+</script>
+
+<div align="center" style="background-color:#3e4954;height:64px;width:100%;min-width:1160px;" class="clearboth" id="top_nav">
+  <div style="width:1160px;" class="clearboth" id="nav_title">
+      <div style="margin-top:15px;" class="pull-left">
+        <img src="image/logo_02_shouye.png" width="36" height="36">
+      </div>
+	  <div class="pull-left" style="margin-top:20px; "><span style="padding-left:8px; color:#FFFFFF; font-size:16px; "><script>I18N("h","Login_Router_Name");</script><!-- DIR-822+ --></span></div>
+	  <div class="pull-right">
+		  <div style=" margin-top:10px;cursor: pointer;" class="pull-left" onClick="Logout();" id="divlogout">
+				<div class="logout" id="logoutimg"></div>
+				<div class="bsword" id="logoutword"><script>I18N("h","Commom_Logout");</script><!-- 退出登录 --></div>
+		  </div>
+	 
+		  <div style=" margin-top:10px; margin-left:36px;cursor: pointer;" class="pull-left" onClick="GotoPhonePage();" id="divphonepage">
+				<div class="phoneimg" id="phoneimg"></div>
+				<div class="bsword" id="phoneword"><script>I18N("h","Footer_Mobile");</script><!-- 手机端 --></div>
+		  </div> 
+	  </div>
+	  
+	  </div>
+</div>
+
+<div align="center" style="width:100%;min-width:1160px;" class="menu_top">
+  <div style="width:100%;height:122px;position:relative;" class="clearboth">
+    <div class="menuleft" id="menuleft"></div>
+	<div class="menuright"></div>
+	<div class="nav-bar">
+      <div id="home">
+        <div class="wrap-icon">
+          <div class="want_home" id="want_home_id">
+          
+			<div class="nav-title">
+				<script>I18N("h","Commom_Home");</script><!-- 主页 -->
+			</div>		  
+		  </div>
+        </div>
+
+      </div>
+      <div id="internet">
+        <div class="wrap-icon">
+          <div class="want_internet" id="want_internet_id">
+			<div class="nav-title">
+			  <span>
+				<script>I18N("h","Commom_Internet");</script><!-- 上网设置 -->
+			  </span>
+			</div>		  
+		  </div>
+        </div>
+      </div>
+	  
+      <div id="wirless">
+        <div class="wrap-icon">
+          <div class="want_wirless" id="want_wirless_id">
+			<div class="nav-title">
+			  <span>
+				<script>I18N("h","Commom_Wireless");</script><!-- 无线设置 -->
+			  </span>
+			</div>
+			</div>
+        </div>
+
+      </div>
+
+      <div id="parentcontrol">
+        <div class="wrap-icon">
+          <div class="want_parentcontrol" id="want_parentcontrol_id">
+			<div class="nav-title">
+			  <span>
+				<script>I18N("h","Commom_Parent_Control");</script><!-- 家长控制 -->
+			  </span>
+			</div>
+		 </div>
+        </div>
+      </div>
+	  
+      <div id="qos">
+        <div class="wrap-icon">
+          <div class="want_qos" id="want_qos_id">
+			<div class="nav-title">
+			  <span>
+				<script>I18N("h","Commom_QoS_Control");</script><!-- 智能流控 -->
+			  </span>
+			</div>		  
+		  </div>
+        </div>
+      </div>
+	  
+	  <div id="guestwireless">
+        <div class="wrap-icon">
+          <div class="want_guestwireless" id="want_guestwireless_id">
+			<div class="nav-title">
+			  <span>
+				<script>I18N("h","Commom_Device_Users");</script><!-- 终端用户 -->
+			  </span>
+			</div>
+		</div>
+        </div>
+      </div>      
+	  <div id="more">
+        <div class="wrap-icon">
+          <div class="want_more" id="want_more_id">
+			<div class="nav-title">
+			  <span>
+				<script>I18N("h","Commom_More");</script><!-- 更多 -->
+			  </span>
+			</div>
+		</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="headline"></div>
+</div>
+
+
+

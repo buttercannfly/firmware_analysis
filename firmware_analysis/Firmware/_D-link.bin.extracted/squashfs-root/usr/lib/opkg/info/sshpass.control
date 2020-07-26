@@ -1,0 +1,9 @@
+Package: sshpass
+Version: 1.05-1
+Depends: libc, libpcap
+Source: package/network/utils/sshpass
+Section: net
+Maintainer: Felix Fietkau <nbd@openwrt.org>
+Architecture: ramips_24kec
+Installed-Size: 3985
+Description:  ssh password login tool

@@ -1,0 +1,8 @@
+Package: prog-cgi
+Version: 1
+Depends: libc, libjson, librt, libuci, libopenssl, fcgi, libiconv-full
+Source: package/tw-prog.priv/prog-cgi
+Section: TW Prog Priv
+Architecture: ramips_24kec
+Installed-Size: 169741
+Description:  prog-cgi Daemon

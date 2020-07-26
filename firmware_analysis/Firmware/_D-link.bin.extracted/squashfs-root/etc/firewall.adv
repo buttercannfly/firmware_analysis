@@ -1,0 +1,113 @@
+#!/bin/sh
+
+. /usr/share/libubox/jshn.sh
+
+DOSEnable=`uci get AdvFirewall.FirewallSettings.DosEnable`
+
+json_init
+json_load "$(ubus -S call network.interface.wan status)"
+json_get_var wan_ifname l3_device                       
+
+#DOS attack
+if [ $DOSEnable = '1' ]
+then
+	iptables -w -t filter -N input_dos
+	iptables -w -t filter -N input_wan_dos
+	iptables -w -t filter -N input_lan_dos
+	iptables -w -t filter -N input_guest_dos
+	iptables -w -t filter -N forward_dos
+	iptables -w -t filter -N forward_wan_dos
+	iptables -w -t filter -N forward_lan_dos
+	iptables -w -t filter -N forward_guest_dos
+
+	iptables -w -t filter -F input_dos
+        iptables -w -t filter -F input_wan_dos
+        iptables -w -t filter -F input_lan_dos
+        iptables -w -t filter -F input_guest_dos
+        iptables -w -t filter -F forward_dos
+        iptables -w -t filter -F forward_wan_dos
+        iptables -w -t filter -F forward_lan_dos
+        iptables -w -t filter -F forward_guest_dos
+
+
+	iptables -w -t filter -I delegate_input -j input_dos
+	iptables -w -t filter -I delegate_forward -j forward_dos
+        iptables -w -t filter -I input_dos -i br-lan -j input_lan_dos                              
+        iptables -w -t filter -I input_dos -i br-guest -j input_guest_dos                            
+	if [ ! "$wan_ifname" = "" ]
+	then
+        iptables -w -t filter -I input_dos -i $wan_ifname -j input_wan_dos                         
+	fi
+                                                                                  
+        iptables -w -t filter -I forward_dos -i br-lan -j forward_lan_dos            
+        iptables -w -t filter -I forward_dos -i br-guest -j forward_guest_dos          
+	if [ ! "$wan_ifname" = "" ]
+        then
+        iptables -w -t filter -I forward_dos -i $wan_ifname -j forward_wan_dos  
+	fi
+        #SYN FLOOD
+        iptables -w -A input_lan_dos -j RETURN -p tcp --tcp-flags SYN,FIN,ACK,RST SYN -m limit --limit 25/second --limit-burst 50
+        iptables -w -A input_lan_dos -j DROP -p tcp --tcp-flags SYN,FIN,ACK,RST SYN
+        #RST FLOOD
+        iptables -w -A input_lan_dos -j RETURN -p tcp --tcp-flags SYN,FIN,ACK,RST RST -m limit --limit 25/second --limit-burst 50
+        iptables -w -A input_lan_dos -j DROP -p tcp --tcp-flags SYN,FIN,ACK,RST RST
+        #ICMP FLOOD
+        iptables -w -A input_lan_dos -j RETURN -p icmp --icmp-type 8 -m limit --limit 25/second --limit-burst 50
+        iptables -w -A input_lan_dos -j DROP -p icmp --icmp-type 8
+
+
+         #SYN FLOOD
+        iptables -w -A input_guest_dos -j RETURN -p tcp --tcp-flags SYN,FIN,ACK,RST SYN -m limit --limit 25/second --limit-burst 50
+        iptables -w -A input_guest_dos -j DROP -p tcp --tcp-flags SYN,FIN,ACK,RST SYN
+        #RST FLOOD
+        iptables -w -A input_guest_dos -j RETURN -p tcp --tcp-flags SYN,FIN,ACK,RST RST -m limit --limit 25/second --limit-burst 50
+        iptables -w -A input_guest_dos -j DROP -p tcp --tcp-flags SYN,FIN,ACK,RST RST
+        #ICMP FLOOD
+        iptables -w -A input_guest_dos -j RETURN -p icmp --icmp-type 8 -m limit --limit 25/second --limit-burst 50
+        iptables -w -A input_guest_dos -j DROP -p icmp --icmp-type 8
+
+         #SYN FLOOD
+        iptables -w -A input_wan_dos -j RETURN -p tcp --tcp-flags SYN,FIN,ACK,RST SYN -m limit --limit 25/second --limit-burst 50
+        iptables -w -A input_wan_dos -j DROP -p tcp --tcp-flags SYN,FIN,ACK,RST SYN
+        #RST FLOOD
+        iptables -w -A input_wan_dos -j RETURN -p tcp --tcp-flags SYN,FIN,ACK,RST RST -m limit --limit 25/second --limit-burst 50
+        iptables -w -A input_wan_dos -j DROP -p tcp --tcp-flags SYN,FIN,ACK,RST RST
+        #ICMP FLOOD
+        iptables -w -A input_wan_dos -j RETURN -p icmp --icmp-type 8 -m limit --limit 25/second --limit-burst 50
+        iptables -w -A input_wan_dos -j DROP -p icmp --icmp-type 8
+
+
+         #SYN FLOOD
+        iptables -w -A forward_lan_dos -j RETURN -p tcp --tcp-flags SYN,FIN,ACK,RST SYN -m limit --limit 25/second --limit-burst 50
+        iptables -w -A forward_lan_dos -j DROP -p tcp --tcp-flags SYN,FIN,ACK,RST SYN
+        #RST FLOOD
+        iptables -w -A forward_lan_dos -j RETURN -p tcp --tcp-flags SYN,FIN,ACK,RST RST -m limit --limit 25/second --limit-burst 50
+        iptables -w -A forward_lan_dos -j DROP -p tcp --tcp-flags SYN,FIN,ACK,RST RST
+        #ICMP FLOOD
+        iptables -w -A forward_lan_dos -j RETURN -p icmp --icmp-type 8 -m limit --limit 25/second --limit-burst 50
+        iptables -w -A forward_lan_dos -j DROP -p icmp --icmp-type 8
+
+         #SYN FLOOD
+        iptables -w -A forward_guest_dos -j RETURN -p tcp --tcp-flags SYN,FIN,ACK,RST SYN -m limit --limit 25/second --limit-burst 50
+        iptables -w -A forward_guest_dos -j DROP -p tcp --tcp-flags SYN,FIN,ACK,RST SYN
+        #RST FLOOD
+        iptables -w -A forward_guest_dos -j RETURN -p tcp --tcp-flags SYN,FIN,ACK,RST RST -m limit --limit 25/second --limit-burst 50
+        iptables -w -A forward_guest_dos -j DROP -p tcp --tcp-flags SYN,FIN,ACK,RST RST
+        #ICMP FLOOD
+        iptables -w -A forward_guest_dos -j RETURN -p icmp --icmp-type 8 -m limit --limit 25/second --limit-burst 50
+        iptables -w -A forward_guest_dos -j DROP -p icmp --icmp-type 8
+
+         #SYN FLOOD
+        iptables -w -A forward_wan_dos -j RETURN -p tcp --tcp-flags SYN,FIN,ACK,RST SYN -m limit --limit 25/second --limit-burst 50
+        iptables -w -A forward_wan_dos -j DROP -p tcp --tcp-flags SYN,FIN,ACK,RST SYN
+        #RST FLOOD
+        iptables -w -A forward_wan_dos -j RETURN -p tcp --tcp-flags SYN,FIN,ACK,RST RST -m limit --limit 25/second --limit-burst 50
+        iptables -w -A forward_wan_dos -j DROP -p tcp --tcp-flags SYN,FIN,ACK,RST RST
+        #ICMP FLOOD
+        iptables -w -A forward_wan_dos -j RETURN -p icmp --icmp-type 8 -m limit --limit 25/second --limit-burst 50
+        iptables -w -A forward_wan_dos -j DROP -p icmp --icmp-type 8
+        
+        #UDP FLOOD
+        #iptables -A dos -j RETURN -p udp -m limit --limit 25/second --limit-burst 50
+        #iptables -A dos -j DROP -p udp
+fi

@@ -1,0 +1,9 @@
+Package: luci-base
+Version: svn-r86181-1
+Depends: libc, lua, libuci-lua, libubus-lua
+Source: package/ramips/ui/luci-mtk
+Section: luci
+Maintainer: LuCI Development Team <luci@lists.subsignal.org>
+Architecture: ramips_24kec
+Installed-Size: 139923
+Description:  LuCI core libraries

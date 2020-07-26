@@ -1,0 +1,408 @@
+@charset "utf-8";
+body{
+font-family: "微软雅黑 Regular","微软雅黑";
+}
+#u125_img {
+    height: 65px;
+    left: 7px;
+    position: absolute;
+    top: -3px;
+    width: 103px;
+}
+.pull-left {
+    float: left;
+}
+.pull-right {
+    float: right;
+}
+.clearboth {
+    clear: both;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.menulist {
+    float: left;
+}
+
+.nav-bar {
+    color: #ffffff;
+    font-size: 20px;
+    left: 50%;
+    margin-left: -500px;
+    position: absolute;
+    text-align: left;
+    top: 0;
+    width: 1050px;
+}
+
+#home,#internet,#wirless,#devicecontrol,#qos,#parentcontrol,#more{
+     float:left;
+	 cursor: pointer;
+}
+
+
+.nav-title {
+	font-family: "微软雅黑 Regular","微软雅黑";
+    color: #6b6b6b;
+    font-size: 14px;
+    padding-top: 10px;
+	text-align:center;
+
+}
+.wrap-icon {
+    padding-left: 50px;
+    padding-right: 50px;
+}
+.wrap-icon div {
+    margin-top: 5px;
+}
+
+.want_internet {
+
+    background-repeat: no-repeat;
+    cursor: pointer;
+    height: 48px;
+    width: 48px;
+}
+
+.headerline {
+    color: #282828;
+    font-family: "微软雅黑 Bold","微软雅黑";
+    font-size: 18px;
+    font-style: normal;
+    font-weight: bold;
+}
+
+.block {
+    color: #6b6b6b;
+    font-size: 12px;
+    margin: 0 0 15px;
+    padding: 0;
+    position: relative;
+    top: 0;
+    width: 420px;
+}
+.block tr{
+padding-top:10px;
+ 
+
+}
+
+.block th {
+background-color:#CCCCCC;
+    font-weight: normal;
+    text-align: right;
+    width: 100px;
+	height:25px;
+	padding-right:15px;
+
+
+}
+.block td {
+	height:25px;
+
+}
+.styled-text {
+    border: 1px solid #CCCCCC;
+    font-size: 14px;
+    height: 25px;
+	line-height: 25px;
+    margin: 0;
+    padding: 0 0 0 10px;
+    width: 210px;
+}
+.space{
+height:10px;
+ 
+}
+
+.checkbox_on {
+    background: #fff url("../image/enable.png") no-repeat scroll left top;
+    color: #fff;
+    cursor: pointer;
+    display: block;
+    font-size: 11pt;
+    height: 25px;
+    line-height: 25px;
+    padding-right: 15px;
+    text-align: center;
+    width: 85px;
+}
+.checkbox_on input, .checkbox_off input {
+    display: none;
+}
+.checkbox_off {
+    background: #fff url("../image/disable.png") no-repeat scroll left top;
+    color: #fff;
+    cursor: pointer;
+    display: block;
+    font-size: 11pt;
+    height: 25px;
+    line-height: 25px;
+    padding-left: 15px;
+    text-align: center;
+    width: 85px;
+}
+
+.styled_button_s {
+    background: url("../image/u100.png") repeat-x scroll;
+    border: none;
+    color: #6b6b6b;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 11pt;
+    min-width: 120px;
+    padding: 2px 15px;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    top: 0;
+}
+.styled_button_s:hover {
+    background: #4496a8 url("../image/button_bg.png?v=TimeStamp_QzwsxDcRfvTGByHn") repeat-x scroll left top;
+}
+#foot .copyright {
+    color: #a5a5a5;
+    margin-bottom: 10px;
+    margin-top: 35px;
+    text-align: center;
+}
+#foot{
+    color: #6b6b6b;
+    font-size: 12px;
+    font-style: normal;
+}
+
+#DetectRouterConnection {
+	position: fixed;
+	z-index: 999;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height:100%;
+	background:url(../image/black_bg.png?v=TimeStamp_QzwsxDcRfvTGByHn);
+	text-align: center;
+}
+
+.dialogBox {
+    background: #fff url("../image/dialog_bg.png?v=TimeStamp_QzwsxDcRfvTGByHn") repeat-x scroll left top;
+    border: 2px solid #fff;
+    border-radius: 15px;
+    box-shadow: 3px 3px 25px #000;
+    margin: 0 auto;
+    padding: 20px 20px 30px;
+    position: relative;
+    top: 100px;
+}
+
+.myCreatePop_table {
+    color: #56583f;
+    font-size: 14px;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    top: 0;
+    width: 100%;
+}
+.myCreatePop_table th {
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+    width: 150px;
+}
+.myCreatePop_table td {
+    padding: 6px;
+    text-align: left;
+}
+
+.popTitle {
+    color: #6b6b6b;
+    font-size: 17pt;
+    font-weight: normal;
+    left: 0;
+    margin: 0 0 10px 30px;
+    position: relative;
+    top: 0;
+}
+#save_td {
+    padding: 20px 0 0;
+}
+
+#Save_edit_pop_btn {
+    background-color: #CCCCCC;
+    color: #6b6b6b;
+    font-size: 18px;
+    height: 40px;
+    line-height: 42px;
+    text-align: center;
+    width: 130px;
+}
+
+#CreatePopAlertMessage {
+    background: rgba(0, 0, 0, 0) url("../image/black_bg.png?v=TimeStamp_QzwsxDcRfvTGByHn") repeat scroll 0 0;
+    height: 100%;
+    left: 0;
+    position: fixed;
+    text-align: center;
+    top: 0;
+    width: 100%;
+    z-index: 500;
+}
+
+#AlertPopRect {
+    height: 368px;
+    margin: 0 auto;
+    position: relative;
+    top: 100px;
+    width: 368px;
+}
+
+#AlertPopBody {
+    background: rgba(0, 0, 0, 0) url("../image/loading_big.png?v=TimeStamp_QzwsxDcRfvTGByHn") no-repeat scroll left top;
+    height: 368px;
+    position: relative;
+    top: 0;
+    width: 368px;
+}
+
+.myAlertPop_table_b {
+    color: #56583f;
+    font-size: 14px;
+    left: 55px;
+    margin: 0;
+    max-height: 360px;
+    max-width: 260px;
+    padding: 0;
+    position: absolute;
+    top: 90px;
+    word-break: break-all;
+}
+
+#Loading_pop_image2 {
+    background: rgba(0, 0, 0, 0) url("../image/loading.gif?v=TimeStamp_QzwsxDcRfvTGByHn") no-repeat scroll center center / 62px 62px;
+    left: 2px;
+    min-height: 62px;
+    position: relative;
+    top: 0;
+    width: 62px;
+}
+
+#reciprocal_Number {
+    font-size: 12pt;
+    font-weight: bold;
+}
+
+#dialog_msg_black2 {
+    color: #454545;
+    font-size: 11pt;
+    font-weight: bold;
+    line-height: 25px;
+    max-height: 120px;
+    min-height: 90px;
+    padding: 20px 0;
+    text-align: center;
+    width: 260px;
+    word-break: normal;
+    word-wrap: break-word;
+}
+
+#internetIcon {
+    cursor: pointer;
+    left: 130px;
+    position: absolute;
+    top: 148px;
+    z-index: 99;
+}
+
+.IconName {
+    color: #7e7e7e;
+    left: 0;
+    position: relative;
+    text-align: center;
+    top: 0;
+}
+
+.btn_bg2 {
+    background: rgba(0, 0, 0, 0) url("../image/click_bg1.png?v=TimeStamp_QzwsxDcRfvTGByHn") no-repeat scroll left top;
+    height: 119px;
+    left: 0;
+    position: relative;
+    top: 0;
+    width: 119px;
+}
+
+.image_icon {
+    cursor: pointer;
+    left: 29px;
+    position: absolute;
+    top: 29px;
+    z-index: 100;
+}
+
+#routerIcon {
+    cursor: pointer;
+    left: 395px;
+    position: absolute;
+    top: 148px;
+    z-index: 99;
+}
+
+#clientIcon {
+    cursor: pointer;
+    left: 635px;
+    position: absolute;
+    top: 40px;
+    z-index: 99;
+}
+
+.IconName_clients {
+    color: #7e7e7e;
+    left: 0;
+    position: relative;
+    text-align: center;
+    top: 0;
+}
+
+.btn_bg {
+    background: rgba(0, 0, 0, 0) url("../image/circle_bg1.png?v=TimeStamp_QzwsxDcRfvTGByHn") no-repeat scroll left top;
+    height: 119px;
+    left: 0;
+    position: relative;
+    top: 0;
+    width: 119px;
+}
+.btn_bg:hover {
+    background: rgba(0, 0, 0, 0) url("../image/circle_bg2.png?v=TimeStamp_QzwsxDcRfvTGByHn") no-repeat scroll left top;
+}
+
+#line_wan {
+    left: 175px;
+    position: absolute;
+    top: 219px;
+    z-index: 1;
+}
+
+#wan_connstat {
+    left: 303px;
+    position: absolute;
+    top: 213px;
+    z-index: 2;
+}
+
+#line_wifi {
+    left: 450px;
+    position: absolute;
+    top: 219px;
+}
+#map {
+	margin: 0 auto;
+    position: relative;
+
+    width: 900px;
+}

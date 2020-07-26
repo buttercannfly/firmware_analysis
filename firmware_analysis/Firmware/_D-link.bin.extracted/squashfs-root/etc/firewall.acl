@@ -1,0 +1,55 @@
+#!/bin/sh
+
+wan_ping_enable=`uci get acl.wan_acl.ping_enable`
+wan_web_enable=`uci get acl.wan_acl.web_enable`
+wan_telnet_enable=`uci get acl.wan_acl.telnet_enable`
+
+
+guest_web_enable=`uci get acl.guest_acl.web_enable`
+guest_telnet_enable=`uci get acl.guest_acl.telnet_enable`
+
+
+#wan acl
+iptables -w -t filter -N wan_acl
+iptables -w -t filter -A input_wan_rule -j wan_acl
+
+if [ $wan_ping_enable = '1' ]
+then
+	iptables -w -t filter -A wan_acl -p icmp -j ACCEPT
+else
+
+	iptables -w -t filter -A wan_acl -p icmp -j DROP
+fi
+
+if [ $wan_web_enable = '1' ]
+then
+	iptables -w -t filter -A wan_acl -p tcp --dport 80 -j ACCEPT
+else
+
+	iptables -w -t filter -A wan_acl -p tcp --dport 80 -j DROP
+fi
+
+if [ $wan_telnet_enable = '1' ]
+then
+	iptables -w -t filter -A wan_acl -p tcp --dport 23 -j ACCEPT
+else
+	iptables -w -t filter -A wan_acl -p tcp --dport 23 -j DROP
+fi
+
+
+#guest acl
+iptables -w -t filter -N guest_acl
+iptables -w -t filter -A input_guest_rule -j guest_acl
+if [ $guest_web_enable = '1' ]
+then
+	iptables -w -t filter -A guest_acl -p tcp --dport 80 -j ACCEPT
+else
+	iptables -w -t filter -A guest_acl -p tcp --dport 80 -j DROP
+fi
+
+if [ $guest_telnet_enable = '1' ]
+then
+	iptables -w -t filter -A guest_acl -p tcp --dport 23 -j ACCEPT
+else
+	iptables -w -t filter -A guest_acl -p tcp --dport 23 -j DROP
+fi

@@ -1,0 +1,8 @@
+Package: stad
+Version: 1
+Depends: libc, libubus, libuci, libubox, libjson-c, libblobmsg-json, libblobmsg-json, libpthread
+Source: package/tw-prog.priv/stad
+Section: TW Prog Priv
+Architecture: ramips_24kec
+Installed-Size: 23048
+Description:  WriteMTDflash Tools

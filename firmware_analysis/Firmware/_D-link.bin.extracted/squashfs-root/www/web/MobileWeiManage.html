@@ -1,0 +1,204 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns= "http://www.w3c.org/1999/xhtml">
+
+<head>
+<!-- <title>首页</title> -->
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" type="text/css" href="/css/style_mobile.css" media="all" />
+<link rel=stylesheet type="text/css" href="css/jquery.selectbox.css" media="all" />
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.selectbox-0.2_new.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<style>
+body
+{
+	margin: 0;
+	padding: 0;
+	font-size: 62.5%;/*1rem = 10px;*/
+	font-family: "微软雅黑 Regular","微软雅黑";
+}
+.codeshow{
+	width:300px;
+	height:406px;
+    border: 1px solid #4598aa;
+    border-radius: 6px;
+	left: 50%;
+    margin-left: -150px;
+    margin-top: -203px;
+    overflow-x: hidden;
+    overflow-y: auto;
+	position:absolute;
+    top: 50%;
+    z-index: 2;
+}
+
+#codevalue{
+width:236px;
+height:236px;
+margin:0 auto;
+margin-top:6px;
+}
+
+.qrcode{
+width:236px;
+height:236px;
+}
+
+.nonetwork{
+
+	
+}
+p{
+margin-top:0xp;
+margin-bottom:0px;
+}
+</style>
+<script type="text/javascript">
+//xframeoption
+if(top!=self){top.location=self.location;}
+function gotoIndex()
+{
+	window.location.href = "MobileIndex.html";
+}
+
+var HNAP = new HNAP_XML();
+var DebugMode = 0;
+var run_day;
+var run_hour;
+var run_minute;
+var run_second;
+var time=0;
+var G_NetworkStatue="0";
+//var isConflict=false;
+var lanwantimer=null;
+var timer1=null;
+
+
+function GetMultiXML()
+{
+	GetMultiXML_1st();
+}
+
+function GetMultiXML_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		result_xml.Set("GetMultipleHNAPs/GetNetworkConnectStatus");
+		result_xml.Set("GetMultipleHNAPs/GetQrCodeUrl");
+		HNAP.SetXMLAsync("GetMultipleHNAPs", result_xml, function(xml)	{	GetMultiXML_2nd(xml);	});
+	}
+	else	
+	{	
+		if (DebugMode == 1)	
+			{	alert("[!!GetXML Error!!] Function: GetMultiXML_1st");	}	
+	}
+}
+
+var codeTime=0;
+
+function GetMultiXML_2nd(result_xml)
+{
+	var GetResult_xml = result_xml.Get("GetMultipleHNAPsResponse/GetMultipleHNAPsResult");
+	if (GetResult_xml == "OK"){
+
+
+		var connect_status = result_xml.Get("GetMultipleHNAPsResponse/GetNetworkConnectStatusResponse/network_connect_status");
+
+		var codeurl=result_xml.Get("GetMultipleHNAPsResponse/GetQrCodeUrlResponse/qrurl");
+		if(connect_status=="1")
+		{
+			document.getElementById("sancode").style.display="";
+			document.getElementById("sancodenull").style.display="none";
+			
+		}
+		else
+		{
+			document.getElementById("sancode").style.display="none";
+			document.getElementById("sancodenull").style.display="";
+		}
+		
+		if(connect_status=="1")
+		{
+			if(codeurl=="")
+			{
+				document.getElementById("sancodecontent").style.display="none";
+				document.getElementById("connetingcloud").style.display="";
+			}
+			
+			else
+			{
+				if(codeTime==0)
+				{
+					document.getElementById("codevalue").innerHTML="<img class=\"qrcode\" src=\""+codeurl+"\" />";	
+					codeTime++;
+				}
+					
+				document.getElementById("sancodecontent").style.display="";
+				document.getElementById("connetingcloud").style.display="none";
+			
+			}
+		}
+		if(connect_status!="1" || codeurl=="")
+		{
+			setTimeout("GetMultiXML()", 2000);
+		}
+
+	} 
+	else {if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetLanWanConfilct_2nd");	}	}
+}
+
+$(document).ready( function()  {
+	GetMultiXML();
+	checkTimeout();
+});
+
+</script>
+</head>
+<body >
+<div class="clearboth" align="center" id="content">
+	<div style="padding:0 3%;text-align: center;background-color:#4598aa;" class="headerline" align="center"><script>I18N("h","Commom_WeiApp_Code");</script>
+	<img class="clearboth" onclick="gotoIndex();" style="padding-top:13px;width:23px;float:left" src="/image/mobile/icon_back.png" align="left">
+	</div>
+	
+	   		<div class="codeshow" id="sancodeshow">
+				<div id="sancode" style="display:none; ">
+					<p style="color:#333333; font-size:1.6em; margin-top:8px; margin-bottom:0px; text-align:center;">扫一扫</p>
+					<p style=" color:#666666;font-size:1.4em; margin-top:6px; margin-bottom:0px; text-align:center;">微信小程序管理设备</p>
+					<div id="connetingcloud" style="display:none;  border:1px solid #bbbbbb;  border-radius: 6px; width:248px; height:248px;margin:0 auto;margin-top:16px;">
+						<div style="width:82px; height:82px; margin:0 auto; margin-top:48px;"><img src="/image/mobile/Wait.gif" height="82" width="82"></div>
+						<p style=" text-align:center; color:#666666; margin-top:0px; margin-bottom:0px;font-size:1.4em; padding-top:26px; ">正在连接云服务器</p>
+						<p style=" text-align:center; color:#666666; margin-top:0px; margin-bottom:0px;font-size:1.4em; padding-top:2px; ">请稍后...</p>
+					</div>
+					<div style="border:1px solid #bbbbbb;border-radius: 6px; width:248px; height:248px;margin:0 auto;margin-top:2px;display:none;" id="sancodecontent"><div id="codevalue"></div></div>
+					<p style="color:#999999; font-size:14px; margin-top:0px; margin-bottom:0px;padding-top:14px;text-align:center;">请先在微信小程序中搜索"智简无线"</p>
+					<p style="color:#999999; font-size:14px;margin-top:0px; margin-bottom:0px; padding-top:2px;text-align:center;">用此小程序扫一扫二维码，即可远程管理</p>
+				</div>
+				<div id="sancodenull" style=" display:none;">
+					<p style="color:#333333; font-size:1.6em; margin-top:8px; margin-bottom:0px;text-align:center;">扫一扫</p>
+					<p style=" color:#666666; font-size:1.4em; margin-top:6px; margin-bottom:0px;text-align:center;">微信小程序管理设备</p>
+					<div style="border:1px solid #bbbbbb;  border-radius: 6px; width:248px; height:248px; margin:0 auto;margin-top:16px; ">
+						<img src="/image/mobile/pic_no-network.png" width="82" height="74" style="text-align:center; margin-top:48px; ">
+						<p style=" text-align:center; color:#666666; font-size:1.4em; margin-top:0px; margin-bottom:0px;padding-top:16px; ">网络暂未连接</p>
+						<p style=" text-align:center; color:#666666; font-size:1.4em; margin-top:0px; padding-top:8px; ">请检查网络后重试</p>
+					</div>
+					<p style="color:#999999; font-size:1.4em; padding-top:14px; margin-top:0px; margin-bottom:0px;text-align:center;">请先在微信小程序中搜索"智简无线"</p>
+					<p style="color:#999999; font-size:1.4em; padding-top:2px; margin-top:0px; margin-bottom:0px;text-align:center;">用此小程序扫一扫二维码，即可远程管理</p>
+
+				</div>
+		</div>	 
+
+
+</div>
+
+</body>
+</html>

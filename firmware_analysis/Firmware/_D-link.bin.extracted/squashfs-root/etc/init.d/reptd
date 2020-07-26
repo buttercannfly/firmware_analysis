@@ -1,0 +1,21 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006-2011 OpenWrt.org
+
+SERVICE_USE_PID=1
+USE_PROCD=1
+#START=96
+#STOP=100
+PROG=/usr/sbin/reptd
+
+start_service()
+{
+	enabled=`uci get reptd.@reptd[0].enabled`
+	[ "$enabled" = "1" ] || exit 0
+	
+	echo "start_service : reptd"
+	procd_open_instance
+	procd_set_param command $PROG
+	procd_set_param respawn
+	procd_close_instance
+}
+

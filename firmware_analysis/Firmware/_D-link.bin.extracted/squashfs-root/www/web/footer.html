@@ -1,0 +1,44 @@
+	<div id="CreatePopAlertMessage" style=" display:none;">
+	  <div class="AlertPopRect">
+			<div id="waitSettingFinish">
+			 <div class="pull-left" style="margin-left:48px;margin-top:37px;">
+				<img src="/image/submit.gif" width="48" height="48" />
+			  </div>
+			  <div class="pull-left" style="margin-left:30px;font-size:14px;color:#666666;">
+				<table style="height:126px;width:250px;" align="center">
+					<tr align="left">
+						<td id="dialog_msg_black2"><script>I18N("h","Commom_Save_Config");</script><!-- 正在保存配置，请耐心等待... --></td>
+					</tr>
+				</table>
+				</div>
+		</div>
+
+	  </div>
+	</div>
+
+	<!-- Detect Router Connection, Timmy Add 2013/08/15 -->
+	<div style=" display:none;" id="DetectRouterConnection">
+	  <div  class="AlertPopRect">
+		<table style="width:426px; margin-top:20px;" align="center">
+		  <tbody>
+			<tr>
+			  <td align="center" style="font-size:14px;color:#666666; ">
+				<script>I18N("h","Commom_Router_not_Connected");</script><!-- 当前没有连接上路由器，或路由器的WEB SERVER异常,保存失败 -->
+			  </td>
+			</tr>
+			<tr style="height:15px; "></tr>
+			<tr>
+			  <td align="center">
+				<input type="button" class="styled_button_ss" id="Save_edit_pop_btn" value="重试" onclick="CheckHTMLStatus('')">
+			  </td>
+			</tr>
+		  </tbody>
+		</table>
+	  </div>
+	</div>
+
+<div align="center" style="background-color:#e9ecf1; height:48px; width:100%;min-width:1160px;">
+  <div id="foot" style="height:48px; line-height:48px;">
+	<span><script>I18N("h","Commom_Copyright");</script></span>
+  </div>
+</div>

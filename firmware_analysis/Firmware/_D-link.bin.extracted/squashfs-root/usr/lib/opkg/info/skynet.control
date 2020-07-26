@@ -1,0 +1,8 @@
+Package: skynet
+Version: 1
+Depends: libc, libuci
+Source: package/tw-prog.priv/skynet
+Section: TW Prog Priv
+Architecture: ramips_24kec
+Installed-Size: 4029
+Description:  Skynet Tools

@@ -1,0 +1,2 @@
+SINA
+^.[\xe1\xdf]\x0b

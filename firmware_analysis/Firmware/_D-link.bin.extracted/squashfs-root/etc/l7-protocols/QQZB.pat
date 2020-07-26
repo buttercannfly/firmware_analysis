@@ -1,0 +1,2 @@
+QQZB
+^GET .+\.flv

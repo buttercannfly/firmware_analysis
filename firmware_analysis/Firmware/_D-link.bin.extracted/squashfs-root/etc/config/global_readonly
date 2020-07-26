@@ -1,0 +1,5 @@
+config globals 'globals'
+	option wan_ifname 'eth0.5'
+	option lan_ifname 'eth0.1 eth0.2 eth0.3 eth0.4'
+	option repeater_24g_ifname 'apcli0'
+	option repeater_5g_ifname 'apclii0'

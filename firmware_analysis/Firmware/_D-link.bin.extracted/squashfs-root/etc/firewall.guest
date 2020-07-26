@@ -1,0 +1,11 @@
+access_local_resource=`uci get guestsched.settings.local_access`
+
+if [ $access_local_resource = '1' ]
+then
+        iptables -I zone_lan_forward -o br-guest -m comment --comment "always accept lan->guest" -j ACCEPT
+        iptables -I zone_guest_forward -o br-lan -m comment --comment "always accept guest->lan" -j ACCEPT
+else
+        iptables -I zone_lan_forward -o br-guest -m comment --comment "always accept lan->guest" -j ACCEPT
+        iptables -I zone_guest_forward -o br-lan -m state --state NEW  -m comment --comment "drop new packets from guest->lan" -j DROP
+        iptables -I zone_guest_forward 2 -o br-lan -m comment --comment "always accept guest->lan" -j ACCEPT
+fi

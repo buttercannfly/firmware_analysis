@@ -1,0 +1,48 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=112
+
+
+DEBUG_MODE="0"
+
+if [ "$DEBUG_MODE" = "1" ]
+then
+	log="/dev/console"
+else
+	log="/dev/null"
+fi
+
+
+boot() {
+	#获取默认的网络接口
+	cp /rom/etc/config/global_readonly /etc/config/global_readonly
+	wan_if_default=`uci get global_readonly.globals.wan_ifname`
+	lan_if_default=`uci get global_readonly.globals.lan_ifname`
+	
+	if [ "$wan_if_default" = "" -o  "$lan_if_default" = "" ]
+	then
+		return
+	fi
+	
+	network_mode=`uci get network.globals.network_mode`
+	
+	if [ "$network_mode" = "" -o "$network_mode" = "router" ]
+	then
+		lan_if_config=`uci get network.lan.ifname`
+		
+		if [ "$lan_if_default" != "$lan_if_config" ]
+		then
+			uci set network.lan.ifname="$lan_if_default"
+			uci commit network
+		fi
+		
+		wan_if_config=`uci get network.wan.ifname`
+		
+		if [ "$wan_if_default" != "$wan_if_config" ]
+		then
+			uci set network.wan.ifname="$wan_if_default"
+			uci commit network
+		fi
+	fi
+}

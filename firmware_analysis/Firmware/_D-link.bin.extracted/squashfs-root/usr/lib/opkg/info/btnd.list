@@ -1,0 +1,6 @@
+/usr/bin/btnd
+/etc/btnd/wps_click.sh
+/etc/btnd/reset_click.sh
+/etc/btnd/reset_hold.sh
+/etc/btnd/wifi_hold.sh
+/etc/btnd/wifi_click.sh

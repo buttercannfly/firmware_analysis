@@ -1,0 +1,216 @@
+#!/bin/sh
+[ -z "$1" ] && echo "Error: should be run by udhcpc" && exit 1
+
+. /lib/functions.sh
+. /lib/netifd/netifd-proto.sh
+. /lib/functions/network.sh
+. /lib/network/switch.sh
+
+local network
+
+dhcps_auto_startup() {
+	local action lanaddr lanip dhcps_mode
+
+	dhcps_mode=`uci get dhcp.@dnsmasq[0].dhcps_mode`
+
+	[ "$dhcps_mode" != auto ] && exit 0
+
+
+	if [ "$1" = "static" ];then
+        	action=start
+			#打开dhcp server
+			uci set dhcp.lan.ignore=0
+			uci commit dhcp
+	else
+        	action=stop
+			#关闭dhcp server
+			uci set dhcp.lan.ignore=1
+			uci commit dhcp
+	fi
+
+	/etc/init.d/dnsmasq $action
+	reset_lan_link LLLLW
+	wifi_disconnect_all_sta
+}
+
+wifi_disconnect_all_sta()
+{
+	iwpriv ra0 set DisConnectAllSta=2
+	iwpriv rai0 set DisConnectAllSta=2
+}
+
+set_classless_routes() {
+	local max=128
+	local type
+	while [ -n "$1" -a -n "$2" -a $max -gt 0 ]; do
+		proto_add_ipv4_route "${1%%/*}" "${1##*/}" "$2"
+		max=$(($max-1))
+		shift 2
+	done
+}
+
+#在非router模式下，为bridge接口配置保留管理IP地址；根据所带参数决定是否需要通过ubus向netifd更新接口IP地址和up/down状态，这里我们假设非路由模式只有一个bridge接口，且proto为dhcp
+extender_reserve_ip_config() {          
+	local sendupdate=$1  
+	local network_mode                            
+	local lanip subnet 
+	local lanaddr
+                                                                                           
+	network_mode=`uci get network.globals.network_mode`                                                                                     
+	if [ -z "${network_mode}" ];then                                                      
+		return                                                                     
+	fi                                                                                 
+	if [ "${network_mode}" != router ]; then
+		lanip=`uci get network.${INTERFACE}.ipaddr`                                  
+		subnet=`uci get network.${INTERFACE}.netmask`                              
+		if [ -n "${lanip}" ];then                                                    
+			if [ "${sendupdate}" = 1 -o "${sendupdate}" = true ];then              
+				#ifconfig br-"${INTERFACE}":1 0.0.0.0
+				#ifconfig br-"${INTERFACE}" ${lanip}
+				proto_init_update "*" 1                                                
+				proto_add_ipv4_address "${lanip}" "${subnet:-255.255.255.0}"             
+				proto_send_update "${INTERFACE}" 
+				
+				domain=`uci get dhcp.@domain[0].name`
+				if [ "${network_mode}" = "bridge" -a "$domain" != "" ]; then
+					/etc/init.d/nbns restart ${lanip} $domain
+				fi
+				
+				dhcps_auto_startup static
+				
+				url=`uci get dhcp.@domain[0].name`
+                echo "$lanip $url" > /proc/br_ip_mac_change
+				
+			else
+				#ifconfig br-"${INTERFACE}":1 ${lanip} netmask "${subnet:-255.255.255.0}"
+				new_ip=`jsonfilter -s "$(ubus call network.interface dump)" -e "@.interface[@.interface='lan']['ipv4-address'][0].address"`	
+				if [ "$new_ip" != "$old_lan_ip" ]
+				then
+					fastcgi_pid=`cat /var/run/fastcgi.pid`
+					if [ -n "fastcgi_pid" ];then
+						kill -USR1 $fastcgi_pid
+					fi
+					#new_ip=`jsonfilter -s "$(ubus call network.interface dump)" -e "@.interface[@.interface='lan']['ipv4-address'][0].address"`
+					domain=`uci get dhcp.@domain[0].name`
+					if [ "${network_mode}" = "bridge" -a "$domain" != "" -a "$new_ip" != "" ]; then
+						/etc/init.d/nbns restart $new_ip $domain
+					fi
+					
+					dhcps_auto_startup dhcp
+					
+					url=`uci get dhcp.@domain[0].name`
+					echo "$new_ip $url" > /proc/br_ip_mac_change
+				fi
+					
+			fi 
+		fi                                                                        
+	fi                                                                             
+}      
+
+#从使用保留管理IP地址切换到使用dhcp获取的IP地址，我们需要通过ubus先向netifd更新接口状态为down,以产生ifdown和ifup事件，这样其它的业务才可以通过hotplug使用新的IP
+extender_switch_to_dhcp_ip() {
+	local lanaddr lanip
+	local network_mode
+
+	network_mode=`uci get network.globals.network_mode`
+
+	if [ -z "${network_mode}" ];then
+		return
+	fi
+	if [ "${network_mode}" != router ]; then
+		network_get_ipaddr lanaddr "${INTERFACE}" 
+		lanip=`uci get network.${INTERFACE}.ipaddr`
+		#若当前使用的是静态管理IP，则产生ifdown事件
+		if [ -n "${lanaddr}" -a "${lanaddr}" = ${lanip} ];then
+			proto_init_update "*" 0
+			proto_send_update "$INTERFACE"
+		fi
+	fi
+}
+
+setup_interface () {
+	proto_init_update "*" 1
+	logger -t "[Internet]" -p local5.info "DHCP connected: ip=$ip subnet=${subnet:-255.255.255.0} gw=$router dns=$dns"
+	proto_add_ipv4_address "$ip" "${subnet:-255.255.255.0}"
+	# TODO: apply $broadcast
+
+	for i in $router; do
+		proto_add_ipv4_route 0.0.0.0 0 "$i"
+	done
+
+	# CIDR STATIC ROUTES (rfc3442)
+	[ -n "$staticroutes" ] && set_classless_routes $staticroutes
+	[ -n "$msstaticroutes" ] && set_classless_routes $msstaticroutes
+
+	for dns in $dns; do
+		proto_add_dns_server "$dns"
+	done
+	for domain in $domain; do
+		proto_add_dns_search "$domain"
+	done
+
+	proto_add_data
+	[ -n "$ZONE" ] && json_add_string zone "$ZONE"
+	proto_close_data
+
+	proto_send_update "$INTERFACE"
+
+
+	if [ "$IFACE6RD" != 0 -a -n "$ip6rd" ]; then
+		local v4mask="${ip6rd%% *}"
+		ip6rd="${ip6rd#* }"
+		local ip6rdprefixlen="${ip6rd%% *}"
+		ip6rd="${ip6rd#* }"
+		local ip6rdprefix="${ip6rd%% *}"
+		ip6rd="${ip6rd#* }"
+		local ip6rdbr="${ip6rd%% *}"
+
+		[ -n "$ZONE" ] || ZONE=$(fw3 -q network $INTERFACE)
+		[ -z "$IFACE6RD" -o "$IFACE6RD" = 1 ] && IFACE6RD=${INTERFACE}_6rd
+
+		json_init
+		json_add_string name "$IFACE6RD"
+		json_add_string ifname "@$INTERFACE"
+		json_add_string proto "6rd"
+		json_add_string peeraddr "$ip6rdbr"
+		json_add_int ip4prefixlen "$v4mask"
+		json_add_string ip6prefix "$ip6rdprefix"
+		json_add_int ip6prefixlen "$ip6rdprefixlen"
+		json_add_string tunlink "$INTERFACE"
+		[ -n "$IFACE6RD_DELEGATE" ] && json_add_boolean delegate "$IFACE6RD_DELEGATE"
+		[ -n "$ZONE6RD" ] || ZONE6RD=$ZONE
+		[ -n "$ZONE6RD" ] && json_add_string zone "$ZONE6RD"
+		json_close_object
+
+		ubus call network add_dynamic "$(json_dump)"
+	fi
+
+	# TODO
+	# [ -n "$ntpsrv" ] && 	change_state network "$ifc" lease_ntpsrv "$ntpsrv"
+	# [ -n "$timesvr" ] && 	change_state network "$ifc" lease_timesrv "$timesvr"
+	# [ -n "$hostname" ] &&	change_state network "$ifc" lease_hostname "$hostname"
+	# [ -n "$timezone" ] && 	change_state network "$ifc" lease_timezone "$timezone"
+}
+
+deconfig_interface() {
+	proto_init_update "*" 0
+	proto_send_update "$INTERFACE"
+}
+
+case "$1" in
+	deconfig)
+		deconfig_interface
+		extender_reserve_ip_config true
+	;;
+	renew|bound)
+		extender_switch_to_dhcp_ip
+		old_lan_ip=`ifconfig br-lan|grep "inet addr"|cut -d: -f2 | awk '{ print $1}'`
+		setup_interface
+		extender_reserve_ip_config false
+	;;
+esac
+
+# user rules
+[ -f /etc/udhcpc.user ] && . /etc/udhcpc.user
+
+exit 0

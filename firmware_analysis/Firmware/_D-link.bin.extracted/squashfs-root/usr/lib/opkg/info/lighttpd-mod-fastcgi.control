@@ -1,0 +1,10 @@
+Package: lighttpd-mod-fastcgi
+Version: 1.4.32-1
+Depends: libc, lighttpd
+Source: package/feeds/packages/lighttpd
+License: BSD-3c
+LicenseFiles: COPYING
+Section: net
+Architecture: ramips_24kec
+Installed-Size: 22184
+Description:  FastCGI module

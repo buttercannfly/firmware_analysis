@@ -1,0 +1,10 @@
+Package: kmod-nls-utf8
+Version: 3.10.14-1
+Depends: kernel (=3.10.14-1-dfaf6ac8f16c02ab6e279930227df9e5), kmod-nls-base
+Source: package/kernel/linux
+License: GPLv2
+Section: kernel
+Status: unknown hold not-installed
+Architecture: ramips_24kec
+Installed-Size: 1039
+Description:  Kernel module for NLS UTF-8

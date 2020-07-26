@@ -1,0 +1,217 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns= "http://www.w3c.org/1999/xhtml">
+
+<head>
+<title>debug</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.selectbox-0.2_new.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/verify/verify.js"></script>
+<style>
+body
+{
+	margin: 0;
+	padding: 0;
+	font-size: 62.5%;/*1rem = 10px;*/
+	font-family: "微软雅黑 Regular","微软雅黑";
+}
+.inputForm{
+	font-size:20px;
+	padding-left:10px;
+	margin-left:20px;
+	height:30px; 
+	width:300px;
+	border:1px solid #dddddd;
+	border-radius:8px;
+}
+.nodeName{
+	font-size:20px;
+	padding-left:10px;
+	height:30px; 
+	width:90%;
+	border:none;
+}
+.nodeValue{
+	font-size:20px;
+	padding-left:10px;
+	height:30px; 
+	width:90%;
+	border:none;
+}
+.addbutton{
+    background: url("/image/icon_tianjia.png");
+    color: #fff;
+    cursor: pointer;
+    height: 24px;
+    line-height: 24px;
+	position:absolute;
+	top:12px;
+	right:57px;
+    text-align: center;
+    width: 24px;
+	background-repeat: no-repeat;
+
+}
+</style>
+<script type="text/javascript">
+//xframeoption
+if(top!=self){top.location=self.location;}
+
+var DebugMode=0;
+var HNAP = new HNAP_XML();
+
+$(document).ready( function() {
+	
+	
+});
+
+function Add(){
+	var Table = document.getElementById("PostArgTable");
+	var Tbody = Table.getElementsByTagName('tbody')[0];
+	
+	if(Tbody == null){
+		Tbody = document.createElement('tbody');
+	}
+	
+	var Tr = document.createElement('tr');
+	var Td = [];
+	Td[0] = document.createElement('td');
+	var id_0 = "nodeName_" +Table.rows.length;
+	Td[0].innerHTML = "<input type=\"text\" class=\"nodeName\" id=\""+id_0+ "\">";
+	Td[0].style.width = "250px";
+	
+	Td[1] = document.createElement('td');
+	var id_1 = "nodeValue_" +Table.rows.length;
+	Td[1].innerHTML = "<input type=\"text\" class=\"nodeValue\" id=\""+id_1+ "\">";
+	Td[1].style.width = "250px";
+	
+	Tr.appendChild(Td[0]);
+	Tr.appendChild(Td[1]);
+	Tbody.appendChild(Tr);
+	Table.appendChild(Tbody);
+}
+var setForm = "";
+function setJson(){
+
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		setForm = document.getElementById("postInput").value;
+		
+		if(setForm == "")
+		{
+			alert("form表单不能为空");
+			return;
+		}
+		var Table = document.getElementById("PostArgTable");
+		
+		var a=0;
+		for(var i=0;i<Table.rows.length;i++)
+		{
+			var name = document.getElementById("nodeName_"+i).value;
+			var value = document.getElementById("nodeValue_"+i).value;
+			if(name != "")
+			{
+				a=1;
+				result_xml.Set(setForm+ "/"+name,value);
+			}
+		}
+		if(a==1)
+		{
+			HNAP.SetXMLAsync(setForm, result_xml, function(xml)	{	SetResult(xml);	});
+		}
+		else
+			alert("不支持没有节点的form表单");
+		
+	}
+}
+function SetResult(result_xml) {
+
+	var SetResult_1st = result_xml.Get(setForm+"Response/"+setForm+"Result");
+	if (SetResult_1st == "OK") {
+		alert("节点下发成功");
+	}
+	else{
+		alert("节点下发出错");
+	}
+}
+var getForm = "";
+function detect_KeyValue(e){
+
+	var key = window.event ? e.keyCode : e.which;
+	if (key == 13)	
+	{	
+		var result_xml = new StringDoc();
+		if (result_xml != null)
+		{
+			getForm = document.getElementById("getInput").value;
+			result_xml.Set(getForm);
+			HNAP.SetXMLAsync(getForm, result_xml, function(xml)	{	getFormResult(xml);	});
+		} else{	
+			if (DebugMode == 1)	{	
+				alert("[!!GetInfoXML Error!!] Function: GetDHCPClientInfoXML");	
+			}	
+		}
+	}
+}
+function getFormResult(result_xml){
+	var GetResult = result_xml.Get(getForm+"Response/"+getForm+"Result");
+	if (GetResult == "OK"){
+		document.getElementById("getValue").innerHTML = "数据获取成功，请按F12进入调试窗口查看表单Get的结果";
+	}else
+		document.getElementById("getValue").innerHTML = "数据获取失败，请检查表单输入是否有错";
+}
+</script>
+</head>
+
+<body style="margin:0;background-color:white">
+	<div style="font-size:20px;margin-top:100px" align="center">
+		<div>
+			<span style="font-size:25px;text-align:center;width:250px">输入想要获取的表单名字</span><input type="text" id="getInput" class="inputForm" placeholder="输入后回车即可" onkeydown="detect_KeyValue(event)">
+		</div>
+		<div style="text-align:center;center;width:250px;margin-top:20px;">
+			获取到的结果为：
+		</div>
+		<div style="height:100px;width:500px;">
+		<div id="getValue" style="height:100px;width:500px;border:1px solid #dddddd;line-height:30px;margin-top:10px;text-align:left;padding:0 33px"></div>
+		</div>
+		
+		<table id="getArgTable">
+		</table>
+		<div style="margin-top:80px;">
+			<span style="font-size:25px;text-align:center;center;width:250px">输入想要下发的表单名字</span><input type="text" id="postInput" class="inputForm">
+		</div>
+		
+		<div style="position:relative;width:500px;margin-top:20px;height:48px;line-height:48px;border: 1px solid #d4d8de;background-color: #f5f6f9;">
+			<span style="text-align:center;width:250px">下发的参数</span>
+			<div onClick="Add();" class="addbutton"></div>
+		</div>
+		<table cellpadding="1" border="1" cellspacing="0"align="center" style="border:1px solid #dddddd;">
+		<tbody>
+			<tr align="left">
+				<td width=250px>
+				节点名称
+				</td>
+				<td width=250px>
+				节点值
+				</td>
+			</tr>
+			
+		</tbody>
+		</table>
+		<table id="PostArgTable" cellpadding="1" border="1" cellspacing="0"align="center" style="border:1px solid #dddddd;">
+		
+		</table>
+		<div style="margin:30px;">
+		<input type="button" style="width:300px" value="下发" onclick="setJson();">
+		</div>
+	</div>
+</body>
+</html>

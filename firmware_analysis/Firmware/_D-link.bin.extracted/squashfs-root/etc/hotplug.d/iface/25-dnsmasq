@@ -1,0 +1,27 @@
+#!/bin/sh
+
+setup_proc_dns()
+{
+        local mode=$1
+
+        [ "$INTERFACE" != lan  ] && exit 0
+
+        if [ -z "${mode}" -o "${mode}" = router ];then
+                #如果是路由模式不进行dns拦截
+                echo "0.0.0.0 0" > /proc/br_ip_mac_change
+        fi
+}
+
+network_mode=`uci get network.globals.network_mode`
+#保留原有router模式的处理
+if [ -z "${network_mode}" -o "${network_mode}" = router ];then
+	[ "$ACTION" = ifup ] || exit 0
+
+	/etc/init.d/dnsmasq enabled && /etc/init.d/dnsmasq start
+#extender模式
+#else
+#	dhcps_auto_startup
+fi
+
+setup_proc_dns $network_mode
+

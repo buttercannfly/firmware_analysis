@@ -1,0 +1,97 @@
+#!/bin/sh /etc/rc.common
+
+START=19
+USE_PROCD=1
+QUIET=""
+
+validate_firewall_redirect()
+{
+	uci_validate_section firewall redirect "${1}" \
+		'proto:or(uinteger, string)' \
+		'src:string' \
+		'src_ip:cidr' \
+		'src_dport:or(port, portrange)' \
+		'dest:string' \
+		'dest_ip:cidr' \
+		'dest_port:or(port, portrange)' \
+		'target:or("SNAT", "DNAT")'
+}
+
+validate_firewall_rule()
+{
+	uci_validate_section firewall rule "${1}" \
+		'proto:or(uinteger, string)' \
+		'src:string' \
+		'dest:string' \
+		'src_port:or(port, portrange)' \
+		'dest_port:or(port, portrange)' \
+		'target:string'
+}
+
+service_triggers() {
+	procd_add_reload_trigger firewall	
+
+	procd_open_validate
+	validate_firewall_redirect
+	validate_firewall_rule
+	procd_close_validate
+}
+
+restart() {
+	trap "lock -u /var/run/fw3_run.lock; exit 0" EXIT HUP INT QUIT PIPE TERM
+	lock /var/run/fw3_run.lock
+	fw3 restart
+	lock -u /var/run/fw3_run.lock
+	#firewall restart will clean qos chain	
+	/etc/init.d/qos restart
+	#firewall restart will clean miniupnp chain
+	/etc/init.d/miniupnpd restart
+}
+
+start_service() {
+	trap "lock -u /var/run/fw3_run.lock; exit 0" EXIT HUP INT QUIT PIPE TERM
+	lock /var/run/fw3_run.lock
+	fw3 ${QUIET} start
+	lock -u /var/run/fw3_run.lock
+}
+
+stop_service() {
+	trap "lock -u /var/run/fw3_run.lock; exit 0" EXIT HUP INT QUIT PIPE TERM
+	lock /var/run/fw3_run.lock
+	fw3 flush
+	lock -u /var/run/fw3_run.lock
+}
+
+reload_service() {
+	trap "lock -u /var/run/fw3_run.lock; exit 0" EXIT HUP INT QUIT PIPE TERM
+	lock /var/run/fw3_run.lock
+	#Do not flush contrack table when reloading firewall
+	#fw3 reload
+	fw3 sc_reload
+	lock -u /var/run/fw3_run.lock
+}
+
+sc_reload_service() {
+	trap "lock -u /var/run/fw3_run.lock; exit 0" EXIT HUP INT QUIT PIPE TERM
+	lock /var/run/fw3_run.lock
+	fw3 sc_reload
+	lock -u /var/run/fw3_run.lock
+	#firewall restart will clean qos chain	
+	/etc/init.d/qos restart
+	#firewall restart will clean miniupnp chain
+	/etc/init.d/miniupnpd restart
+}
+
+boot() {
+	# Be silent on boot, firewall might be started by hotplug already,
+	# so don't complain in syslog.
+	if [ -e /var/run/fw3_run.lock ]; then
+		echo "/var/run/fw3_run.lock exit###########"
+	else
+		echo "touch /var/run/fw3_run.lock########"
+		touch /var/run/fw3_run.lock
+	fi
+	
+	QUIET=-q
+	start
+}

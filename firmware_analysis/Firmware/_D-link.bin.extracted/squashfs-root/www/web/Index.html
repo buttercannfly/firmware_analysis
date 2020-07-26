@@ -1,0 +1,54 @@
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.cookie.js"></script>
+<script type="text/javascript">
+<!--
+	var url = window.location.href;
+	var page = url.split("reason=")[1];
+	var portalflag="0";
+	var startportal=url.indexOf("portal_flag=");
+	if(startportal>-1)
+	{
+		portalflag=url.substring(startportal+12,startportal+13);
+	}
+	var isMobile = false;
+	var redirect ="";
+	if(navigator.userAgent.match(/iPad|Android|webOS|iPhone|iPod|BlackBerry/i)) {
+		isMobile = true;
+		redirect ="Mobile";
+	}else {
+		isMobile = false;
+	}
+	var isOSX=navigator.platform.match(/(mac)/i);
+	if(isOSX && portalflag =="1")
+	{
+		$.cookie('ismacportal', "1", {path: '/' }); 
+	}
+	
+	switch(page){
+		case "Wizard":
+			window.location.href = redirect + "Wizard.html";
+			break;
+		case "Problem_Cable":
+			window.location.href = redirect + "Problem_Cable.html";
+			break;
+		case "Problem_WAN":
+			window.location.href = redirect + "Problem_WAN.html";
+			break;
+		case "Problem_Conflict":
+			window.location.href = redirect + "Problem_Conflict.html";
+			break;
+		case "Problem_success":
+			window.location.href = redirect + "Problem_success.html";
+			break;
+		case "Problem_Key":
+			window.location.href = redirect + "Problem_Key.html";
+			break;
+		case "Problem_Unknown":
+			window.location.href = redirect + "Problem_Unknown.html";
+			break;
+		default:
+			window.location.href = redirect + "Login.html";
+	}
+
+-->
+</script>

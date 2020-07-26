@@ -1,0 +1,10 @@
+Package: kmod-stp
+Version: 3.10.14-1
+Depends: kernel (=3.10.14-1-dfaf6ac8f16c02ab6e279930227df9e5), kmod-llc
+Source: package/kernel/linux
+License: GPLv2
+Section: kernel
+Status: unknown hold not-installed
+Architecture: ramips_24kec
+Installed-Size: 105
+Description:  Kernel module for Ethernet Spanning Tree Protocol support.

@@ -1,0 +1,2 @@
+/etc/lighttpd/conf.d/10-fastcgi.conf
+/usr/lib/lighttpd/mod_fastcgi.so

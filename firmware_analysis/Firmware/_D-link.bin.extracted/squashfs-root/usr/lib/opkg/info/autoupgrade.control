@@ -1,0 +1,8 @@
+Package: autoupgrade
+Version: 1
+Depends: libc, libuci, libjson-c
+Source: package/tw-prog.priv/autoupgrade
+Section: TW Prog Priv
+Architecture: ramips_24kec
+Installed-Size: 9387
+Description:  auto upgrade

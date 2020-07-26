@@ -1,0 +1,142 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=108
+
+macfilter_global_mode=""
+
+DEBUG_MODE="0"
+
+if [ "$DEBUG_MODE" = "1" ]
+then
+	log="/dev/console"
+else
+	log="/dev/null"
+fi
+
+fix_macfilter() {
+	#get macfilter exit
+	macfilter_exits=`cat /etc/config/wireless |grep maclist_mode`
+	if [ "$macfilter_exits" != "" ]
+	then
+		echo really_fix_macfilter################################# > $log
+		#获取无线访问控制的模式
+		maclist_mode=`uci get wireless.@wifi-iface[0].maclist_mode`
+
+		if [ "$maclist_mode" = "0" ] 
+		then
+			#如果无线访问控制关闭
+			uci set macfilter.globals.enabled='0'
+
+			#获取上一次的模式
+			last_maclist_mode=`uci get wireless.@wifi-iface[0].last_maclist_mode`
+
+			#上一次是白名单
+			if [ "$last_maclist_mode" = "1" ]  
+			then 
+				uci set macfilter.globals.mode="allow"
+				macfilter_global_mode="allow"
+			#上一次是黑名单
+			elif [ "$last_maclist_mode" = "2" ]
+			then
+				uci set macfilter.globals.mode="deny"
+				macfilter_global_mode="deny"
+			fi
+			
+		#如果是白名单	
+		elif [ "$maclist_mode" = "1" ]
+		then
+			#白名单的时候仍然关闭mac地址过滤功能，避免升级之后有线口不能使用
+			uci set macfilter.globals.enabled='0'
+			uci set macfilter.globals.mode="allow"
+			macfilter_global_mode="allow"
+		#如果是黑名单
+		elif [ "$maclist_mode" = "2" ]
+		then
+			uci set macfilter.globals.enabled='1'
+			uci set macfilter.globals.mode="deny"
+			macfilter_global_mode="deny"
+		fi
+
+
+		#同步uci配置
+		maclist=`uci get wireless.@wifi-iface[0].maclist`
+		maclist_name=`uci get wireless.@wifi-iface[0].maclist_name`
+		i=0
+		j=0
+
+		if [ "$maclist" != "" -a "$maclist_name" != "" ]
+		then
+			echo have_rule > $log
+			for mac_addr in $maclist
+			do
+				i=`expr $i + 1`;
+				j=0
+				echo $mac_addr > $log
+				
+				uci add macfilter macfilter
+				
+				uci set macfilter.@macfilter[-1].device="$mac_addr"
+				uci set macfilter.@macfilter[-1].name="$mac_addr"
+				uci set macfilter.@macfilter[-1].type="$macfilter_global_mode"
+
+				mac_exist_stad=`uci show stad|grep -i ".macaddr=$mac_addr"`
+
+
+				if [ "$mac_exist_stad" != "" ]
+				then
+					#该MAC存在于客户端列表，看看它是否存在别名
+					echo exist_in_stad > $log
+					stad_section=${mac_exist_stad%.*}
+					dev_extname=`uci get $stad_section.extname`
+					if [ "$dev_extname" != "" ]
+					then
+						echo stad_have_extname > $log
+						uci set macfilter.@macfilter[-1].extname="$dev_extname"
+					else
+						echo stad_not_have_extname > $log
+						for dev_name in $maclist_name
+						do
+							j=`expr $j + 1`;
+							if [ $i = $j ]
+							then
+								uci set macfilter.@macfilter[-1].extname="$dev_name"
+								break
+							fi
+						done
+					fi
+				else
+					echo not_exist_in_stad > $log
+					#该客户端不存于MAC地址列表
+					for dev_name in $maclist_name
+					do
+						j=`expr $j + 1`;
+						if [ $i = $j ]
+						then
+							uci set macfilter.@macfilter[-1].extname="$dev_name"
+							break
+						fi
+					done
+				fi
+				
+			done
+		fi
+
+	fi
+	
+}
+	
+
+boot() {
+		#get macfilter fixed flag
+		macfilter_fixed=`uci get macfilter.globals.fixed`
+
+		if [ "$macfilter_fixed" = "0" ]
+		then
+			echo fix_macfilter################################# > $log
+			fix_macfilter
+			uci set macfilter.globals.fixed='1'
+			uci commit macfilter
+		fi
+}
+

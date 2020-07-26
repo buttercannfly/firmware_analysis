@@ -1,0 +1,5 @@
+/usr/sbin/wifi_down.sh
+/sbin/upload_firmware.cgi
+/usr/sbin/prog.cgi
+/usr/sbin/wifi_up.sh
+/sbin/upload_settings.cgi

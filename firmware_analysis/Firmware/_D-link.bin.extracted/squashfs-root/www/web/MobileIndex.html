@@ -1,0 +1,2025 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns= "http://www.w3c.org/1999/xhtml">
+
+<head>
+<!-- <title>首页</title> -->
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="No-cache" />
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+<meta http-equiv="Expires" content="-1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" type="text/css" href="/css/style_mobile.css" media="all" />
+<link rel=stylesheet type="text/css" href="css/jquery.selectbox.css" media="all" />
+<script type="text/javascript" charset="utf-8" src="js/localization/zh-cn.js?V=dir822"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.selectbox-0.2_new.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/SOAP/SOAPAction.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/initialJS.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/verify/verify.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/AES.js"></script>
+<style>
+body
+{
+	margin: 0;
+	padding: 0;
+	font-size: 62.5%;/*1rem = 10px;*/
+	font-family: "微软雅黑 Regular","微软雅黑";
+}
+.header{
+	height:50px;
+	width:100%;
+	color:#ffffff;
+}
+.indexlogo{
+	background: -webkit-linear-gradient(top, #4598aa, #61c8de);   /*颜色渐变*/
+	width:100%;
+}
+.download {
+	height:24px;
+	width:24px;
+	float:left;
+}
+.internet_bg {
+    left: 0;
+    position: relative;
+    top: 0;
+	margin:0 auto;
+	position: relative;
+	cursor:pointer;
+}
+.internet_bg_bridge {
+    left: 0;
+    top: 0;
+	margin:0 auto;
+	position: relative;
+	cursor:pointer;
+}
+.nav-title {
+	padding-top:12px;
+	cursor:pointer;
+}
+.nav-title-pre {
+	padding-top:12px;
+    color: #3e4954;
+}
+
+.menuicon
+{
+    cursor: pointer;
+    position: absolute;
+    z-index: 100;
+}
+._logout{
+	background-color:transparent;
+	color:#ffffff;
+	font-size:1.4em;
+	line-height:50px;
+	width:26%;
+}
+._logout:active{
+	font-size:1.4em;
+	line-height:50px;
+	width:26%;
+	-moz-opacity:0.5;
+	-khtml-opacity:0.5;
+	opacity: 0.5;
+}
+.changemode{
+	position:fixed;
+	bottom:80px;
+	font-size:1.4em;
+	text-align:center;
+	cursor:pointer;
+	color:#399de3;
+	width:100%;
+}
+
+.downloadDIV{
+	-webkit-tap-highlight-color:rgba(0,0,0,0); 
+	position:fixed;
+	bottom:0px;
+	width:100%;
+	font-size:1.4em;
+	background-color:#f6f8f8;
+	cursor:pointer;
+
+}
+#expandother_div{
+	position:fixed;
+	font-size:1.4em;
+	text-align:left;
+	color:#4598aa;
+	text-decoration:underline;
+}
+.titleline{
+	text-align: left;
+	background-color:#858e96;
+    color: #ffffff;
+    font-size: 1.4em;
+	height:33px;
+	line-height:33px;
+}
+.styled-text{
+    color: #333333;
+    border:0;
+    font-size: 1.4em;
+    height: 32px;
+	padding-left:10px;
+    width: 100%;
+}
+.input_div{
+	height:44px;
+	line-height:44px;
+	width:93.33%;
+	margin:12px 0 9px;
+	text-align:left;
+	border:1px solid #bbbbbb;
+	border-radius:3px;
+}
+.leftth {
+	color:#666666;
+    font-weight: normal;
+    text-align: left;
+	padding-left:14px;
+	width:80px;
+	float:left;
+	font-size:1.4em;
+}
+.frequInfo{
+	font-size:1.6em;
+	text-align:left;
+	padding-left:3.33%;
+	float:left;
+	line-height:45px;
+}
+.enable_switch{
+	float:right;
+	vertical-align:middle;
+	padding-right:3.33%;
+}
+.enable_switch div{
+	height:45px;
+	display:table-cell;
+	vertical-align:middle;
+}
+.indexlogo_repeater{
+	background: -webkit-linear-gradient(top, #4598aa, #61c8de);   /*颜色渐变*/
+	width:100%;
+}
+.extend_quality{
+	width:13px;
+	height:12px;
+	margin:0 6px -1px;
+}
+.select{
+	height:18px;
+	width:18px;
+	padding-top:12.5px;
+}
+.div_new_ssid
+{
+	width:265px;
+	text-overflow:ellipsis;
+	overflow:hidden;
+	white-space:nowrap;
+}
+.list{
+	font-size:1.6em;
+	color:#333333;
+	height:42px;
+	line-height:42px;
+	padding-right:24px;
+	background-image:linear-gradient(180deg, #cccccc, #cccccc 50%, transparent 50%),
+	linear-gradient(270deg, #cccccc, #cccccc 50%, transparent 50%),
+	linear-gradient(0deg, #cccccc, #cccccc 50%, transparent 50%),
+	linear-gradient(90deg, #cccccc, #cccccc 50%, transparent 50%);
+	background-size: 0,0 ,100% 1px, 0;
+	background-repeat: no-repeat;
+	background-position: top, right top,  bottom, left top;
+	padding-bottom: 0px;
+}
+.listLastRow{
+	background-size: 0,0 ,0, 0;
+}
+</style>
+<script type="text/javascript">
+//xframeoption
+if(top!=self){top.location=self.location;}
+
+var DebugMode=0;
+var HNAP = new HNAP_XML();
+var timer1=null;
+var timer2=null;
+var timer3=null;
+var time=0;
+var curr_mode = "";
+var G_wifiName_5="";
+var G_wifiName_24="";
+var G_Wifi=[];
+var G_apc_wifi_ssid="";//上行ssid
+var G_apc_wifi_channel="";//上行信道
+var G_apc_wifi_mac="";//上行mac
+var G_apc_wifi_encrypt_mode="";//上行加密模式
+var G_apc_wifi_encrypt_type="";//上行加密算法（类型）
+var G_apc_wifi_key="";//密钥
+var G_wifi_hidden="";//无线隐身
+var G_local_repeater_ssid="";//摩中继本身ssid
+var G_local_repeater_ssid_5G="";//摩中继本身ssid
+var G_apc_wifi_bw="";//上行无线带宽
+var isManualInput=false;//是否为手动输入
+var isRetryInput=false;//是否为点击重试
+var isExistPassword=false;//判断上行AP是否有密码
+var isSelectAp="0";
+
+var G_Wifi_5G=[];
+var G_apc_wifi_ssid_5G="";//上行ssid
+var G_apc_wifi_channel_5G="";//上行信道
+var G_apc_wifi_mac_5G="";//上行mac
+var G_apc_wifi_encrypt_mode_5G="";//上行加密模式
+var G_apc_wifi_encrypt_type_5G="";//上行加密算法（类型）
+var G_apc_wifi_key_5G="";//密钥
+var G_wifi_hidden_5G="";//无线隐身
+var G_apc_wifi_bw_5G="";//上行无线带宽
+var isManualInput_5G=false;//是否为手动输入
+var isExistPassword_5G=false;//判断上行AP是否有密码
+var isSelectAp_5G="0";
+var repeat_timmer=null;
+var repeat_timeout=35*1000;
+var EncryptionType_2G="wpa";
+var EncryptionType_5G="wpa";
+var timer_sucess = 80;
+
+$(document).ready( function() {
+	GetResult_1st();
+	GetWanStatus();
+	document.title=I18N("j","MobileIndex_HomePage");//标题 首页
+	GetLanWanConfilct_1st();
+	
+	checkTimeout();
+	document.getElementById("btn_retry").value = I18N("j","Commom_Retry");//重试
+	document.getElementById("btn_wep_confirm").value = I18N("j","Commom_Apply");//确定
+	//document.getElementById("finisrepeater").value = I18N("j","Wizard_Complete");//完成
+});
+function GetWanStatus()	
+{	
+	GetResult_3rd();	
+}
+function GetResult_3rd() {
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		result_xml.Set("GetNetworkConnectStatus");
+		HNAP.SetXMLAsync("GetNetworkConnectStatus", result_xml, function(xml) {GetResult_4th(xml); });
+	} else {
+		if (DebugMode == 1) {
+			alert("[!!GetXML Error!!] Function: GetResult_1st");
+		}
+	}
+}
+
+function GetResult_4th(result_xml) {
+	var GetResult_4th = result_xml.Get("GetNetworkConnectStatusResponse/GetNetworkConnectStatusResult");
+	if (GetResult_4th == "OK") {
+		var wizard_status = result_xml.Get("GetNetworkConnectStatusResponse/network_connect_status");
+
+		if(curr_mode == "bridge" || curr_mode == "repeater"){
+			$("#internet_bg").removeAttr("onclick");
+			$("#wan_status").removeAttr("onclick");
+			if (wizard_status == '1') {
+				document.getElementById("wan_status").innerHTML = I18N("j","MobileIndex_Connect_Sucess_UpAp");
+				document.getElementById("pic_status").src = "/image/mobile/state_successful.png";
+			}
+			else{
+				document.getElementById("wan_status").innerHTML = I18N("j","MobileIndex_Connect_Fail_UpAp");
+				document.getElementById("pic_status").src = "/image/mobile/icon_lianjie_sb.png";
+			}
+		}
+		else if(curr_mode == "router"){
+			if (wizard_status == '1') {
+				//document.getElementById("wan_status").innerHTML = "成功连接互联网";
+				document.getElementById("wan_status").innerHTML = I18N("j","MobileIndex_Connect_Internet");
+				document.getElementById("pic_status").src = "/image/mobile/state_successful.png";
+			}
+			else{
+				//document.getElementById("wan_status").innerHTML = "无法连接互联网";
+				document.getElementById("wan_status").innerHTML = I18N("j","MobileIndex_not_Connect");
+				document.getElementById("pic_status").src = "/image/mobile/icon_lianjie_sb.png";
+			}
+		}
+		timer3 = setTimeout("GetWanStatus()", 2*1000);
+	} else {
+		if (DebugMode == 1) {
+		  alert("[!!GetXML Error!!] Function: GetResult_4th");
+		}
+	}
+}
+function GetResult_1st() {
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		result_xml.Set("GetMultipleHNAPs/GetNetworkModeSettings");
+		result_xml.Set("GetMultipleHNAPs/GetMasterWLanSettings");
+		HNAP.SetXMLAsync("GetMultipleHNAPs", result_xml, function(xml) {GetResult_2nd(xml); });
+	} else {
+		if (DebugMode == 1) {
+			alert("[!!GetXML Error!!] Function: GetResult_1st");
+		}
+	}
+}
+
+function GetResult_2nd(result_xml) {
+	var GetResult_2nd = result_xml.Get("GetMultipleHNAPsResponse/GetMultipleHNAPsResult");
+	if (GetResult_2nd == "OK") {
+		G_wifiName_24=result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(0).(0)_ssid");
+		G_wifiName_5=result_xml.Get("GetMultipleHNAPsResponse/GetMasterWLanSettingsResponse/wl(1).(0)_ssid");
+		curr_mode = result_xml.Get("GetMultipleHNAPsResponse/GetNetworkModeSettingsResponse/global_network_mode");
+		document.getElementById("wirelessBox").style.display = "";
+		document.getElementById("workmodeBox").style.display = "";
+		if( curr_mode == "bridge" || curr_mode =="repeater")
+		{
+			//$("#internet_bg").removeClass("internet_bg").addClass("internet_bg_bridge");
+			document.getElementById("networkBox").style.display = "none";
+			document.getElementById("deviceBox").style.display = "none";//隐藏终端列表
+			$("#menuBox").removeClass("divmenu_router").addClass("divmenu_repeater");
+			$("#networkBox").removeClass("menu_router").addClass("menu");
+			$("#wirelessBox").removeClass("menu_router").addClass("menu");
+			$("#deviceBox").removeClass("menu_router").addClass("menu");
+			$("#workmodeBox").removeClass("menu_router").addClass("menu");
+			$(".downloadDIV").hide();
+		}
+		else
+		{
+			document.getElementById("networkBox").style.display = "";
+			document.getElementById("deviceBox").style.display = "";
+		}
+		if(curr_mode =="repeater")
+		{
+			$("#div_indexlogo").removeClass("indexlogo").addClass("indexlogo_repeater");
+			document.getElementById("div_repeater_click").style.display = "";
+			$("#div_internetstatue").removeClass("internetstatue").addClass("internetstatue_repeater");
+			//document.getElementById("div_status_24g").style.display = "";
+		}
+		
+	} else {
+		if (DebugMode == 1) {
+		  alert("[!!GetXML Error!!] Function: GetResult_2nd");
+		}
+	}
+}
+function changePage(index)
+{
+	clearAllTimeout();
+	switch(index)
+	{
+		case 0:
+			$("#networktext").addClass("nav-title-pre");
+			//document.getElementById("networkimg").src = "image/mobile/icon_wangluo_pre.png";
+			window.location.href = "MobileNetwork.html";
+			break;
+		case 1:
+			$("#wifitext").addClass("nav-title-pre");
+			//document.getElementById('wifiimg').src = "image/mobile/icon_wifishezhi_pre.png";
+			window.location.href = "MobileWireless.html";
+			break;
+		case 2:
+			$("#devicetext").addClass("nav-title-pre");
+			//document.getElementById('deviceimg').src = "image/mobile/icon_zhongduan_pre.png";
+			window.location.href = "MobileDevices.html";
+			break;
+		case 3:
+			$("#workmodetext").addClass("nav-title-pre");
+			window.location.href = "MobileWorkMode.html";
+			break;
+
+	}
+}
+function gotoPCPage()
+{
+	//document.getElementById('pcwebimg').src = "/image/mobile/icon_web-duan_pre.png";
+	clearAllTimeout();
+	window.location.href = "Home.html";
+}
+function clearAllTimeout(){
+	if(timer1!=null){clearTimeout(timer1);timer1 = null;}
+	if(timer2!=null){clearTimeout(timer2);timer2 = null;}
+	if(timer3!=null){clearTimeout(timer3);timer3 = null;}
+}
+
+function Logout()
+{
+	clearAllTimeout();
+	readyLogout();
+}
+function downloadAPP()
+{
+	window.location.href = "MobileWeiManage.html";
+}
+
+//Lan Wan冲突检测
+function GetLanWanConfilct_1st()
+{
+	var result_xml = new StringDoc();
+	if(result_xml != null)
+	{
+		result_xml.Set("GetWanplugInfo");
+		HNAP.SetXMLAsync("GetWanplugInfo", result_xml, function(xml)	{	GetLanWanConfilct_2nd(xml);	});
+	}
+	else 	{	if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetLanWanConfilct_1st");	}	}
+}
+function GetLanWanConfilct_2nd(result_xml)
+{
+	var GetWanIPResult = result_xml.Get("GetWanplugInfoResponse/GetWanplugInfoResult");
+	if(GetWanIPResult == "OK")
+	{
+		var type = result_xml.Get("GetWanplugInfoResponse/wan_status");
+		if(type == "3")
+		{
+			clearAllTimeout();
+			window.location.href = "MobileProblem_Conflict.html";
+		}
+		else
+		{	
+			if(time >= 15000)
+			{
+				if(timer2!=null)
+				{
+					clearTimeout(timer2);
+					timer2=null;
+				}
+				timer1=setTimeout("GetLanWanConfilct_1st()", 15000);//15s后判断一次lan wan冲突
+			}
+			else 
+			{
+				time+=2000;
+				timer2=setTimeout("GetLanWanConfilct_1st()", time);//2s后判断一次lan wan冲突
+			}
+		}
+	}
+	else {if (DebugMode == 1)	{	alert("[!!GetXML Error!!] Function: GetLanWanConfilct_2nd");	}	}
+}
+
+//点击回到主页部分
+function gotoIndex()
+{
+	$("body").css("background-color","#ffffff"); 
+	document.getElementById("repeaterpart").style.display="none";
+	document.getElementById("internet_status_content").style.display="";
+	window.location.href = "MobileIndex.html";//回到主页后刷新页面
+}
+
+function changeinput(inputId)
+{
+	if(document.getElementById(inputId).value != "")
+		document.getElementById("clear_"+inputId).style.display="";
+	else
+		document.getElementById("clear_"+inputId).style.display="none";
+}
+function clearInput(inputId)
+{
+	document.getElementById("clear_"+inputId).style.display = "none";
+	document.getElementById(inputId).value = "";
+}
+
+function ExpandOtherNetwork()
+{
+	$("body").css("background-color","#edeff2"); 
+	document.getElementById("internet_status_content").style.display = "none";
+	document.getElementById("repeaterpart").style.display = "";
+	document.getElementById("scanNetworkresult").style.display="";
+	document.getElementById("scanresult").style.display="none";
+	document.getElementById("scanning").style.display="none";
+	document.getElementById("AutoselectNetwork").style.display="none";
+	document.getElementById("MannualselectNetwork").style.display="none";
+	GetScanApData("1");
+}
+
+function CreateTable(Node,Value)
+{
+	var Table = document.getElementById(Node);
+	var Tbody = Table.getElementsByTagName('tbody')[0];
+	if(Tbody == null){
+		Tbody = document.createElement('tbody');
+	}
+	for(var i = 0; i < Value.length; i++){
+		var Tr = [];
+		Tr[i]  = document.createElement('tr');
+		if(Value[i] == undefined) continue;
+		for(var j = 0; j < Value[i].length; j++){
+			var Td = [];
+			Td[j]  = document.createElement('td');
+			Td[j].innerHTML = Value[i][j];
+			Td[j].align = "center";
+			Td[j].id        = Node + "_" + i.toString() + j.toString();
+			if(j==1){
+				Td[j].style.width= "23px";
+			}
+			if(j==2){
+				Td[j].style.width= "30px";
+			}
+			Tr[i].appendChild(Td[j]);
+		}
+		Tbody.appendChild(Tr[i]);
+	}
+	Table.appendChild(Tbody);
+}
+
+function CreateWifiRepeatTable()
+{
+	ClearTable("table_wifi_repeat",0);
+	var WifiRepeatTableList=[];
+	var n=0;
+	for(var i=0;i<G_Wifi.length;i++)
+	{
+		WifiRepeatTableList[n]=[];
+		var outstring1="";
+		outstring1="<div class='devicename scan_ssid_ellipse' onclick='ExpandWireless(" +i+ ")'>" +G_Wifi[i].SSID+ "</div>";
+		outstring1+="<div class='deviceipmac' onclick='ExpandWireless(" +i+ ")'><span>MAC : " +G_Wifi[i].BSSID + "</span></div>";
+
+		WifiRepeatTableList[n].push(outstring1);
+		var security=G_Wifi[i].Security;
+		var index=security.lastIndexOf("\/");
+		var security_mode="OPEN";
+
+		if(index !=-1)
+		{
+			security_mode=security.substring(index+1);
+		}
+		if("OPEN"==security_mode || "NONE" == security_mode )
+		{
+			WifiRepeatTableList[n].push("<span></span>");
+		}
+		else
+		{
+			WifiRepeatTableList[n].push("<img src='image/mobile/icon_lock.png' width='16' height='16' onclick='ExpandWireless(" +i+ ")' />");
+		}
+		var siganl = parseInt(G_Wifi[i].Siganl,10);
+		var img_src = "image/mobile/icon_wifi01.png";
+		if(66 <= siganl)
+		{
+			img_src = "image/mobile/icon_wifi03.png";
+		}
+		else if(44 <= siganl && siganl <= 65)
+		{
+			img_src = "image/mobile/icon_wifi02.png";
+		}
+		WifiRepeatTableList[n].push("<img src='"+img_src+"' width='16' height='16' onclick='ExpandWireless(" +i+ ")' />");
+		n++;
+	}
+	CreateTable("table_wifi_repeat", WifiRepeatTableList);
+}
+
+function CreateWifiRepeatTable_5G()
+{
+	ClearTable("table_wifi_repeat_5G",0);
+	var WifiRepeatTableList=[];
+	var n=0;
+	for(var i=0;i<G_Wifi_5G.length;i++)
+	{
+		WifiRepeatTableList[n]=[];
+		var outstring1="";
+		outstring1="<div class='devicename scan_ssid_ellipse' onclick='ExpandWireless_5G(" +i+ ")'>" +G_Wifi_5G[i].SSID+ "</div>";
+		outstring1+="<div class='deviceipmac' onclick='ExpandWireless_5G(" +i+ ")'><span>MAC : " +G_Wifi_5G[i].BSSID + "</span></div>";
+
+		WifiRepeatTableList[n].push(outstring1);
+		var security=G_Wifi_5G[i].Security;
+		var index=security.lastIndexOf("\/");
+		var security_mode="OPEN";
+
+		if(index !=-1)
+		{
+			security_mode=security.substring(index+1);
+		}
+		if("OPEN"==security_mode || "NONE" == security_mode )
+		{
+			WifiRepeatTableList[n].push("<span></span>");
+		}
+		else
+		{
+			WifiRepeatTableList[n].push("<img src='image/mobile/icon_lock.png' width='16' height='16' onclick='ExpandWireless_5G(" +i+ ")' />");
+		}
+		var siganl = parseInt(G_Wifi_5G[i].Siganl,10);
+		var img_src = "image/mobile/icon_wifi01.png";
+		if(66 <= siganl)
+		{
+			img_src = "image/mobile/icon_wifi03.png";
+		}
+		else if(44 <= siganl && siganl <= 65)
+		{
+			img_src = "image/mobile/icon_wifi02.png";
+		}
+		WifiRepeatTableList[n].push("<img src='"+img_src+"' width='16' height='16' onclick='ExpandWireless_5G(" +i+ ")' />");
+		n++;
+	}
+	CreateTable("table_wifi_repeat_5G", WifiRepeatTableList);
+}
+
+//选择您需要扩展的无线网络中点击某一行
+function ExpandWireless(i)
+{
+	$("#selectSsid").text(G_Wifi[i].SSID);
+	G_apc_wifi_ssid=G_Wifi[i].SSID;//上行ssid
+	G_apc_wifi_channel=G_Wifi[i].Channel;//上行信道
+	G_apc_wifi_mac=G_Wifi[i].BSSID;//上行mac
+	G_apc_wifi_bw=G_Wifi[i].Bw;//上行无线带宽
+	var security=G_Wifi[i].Security;
+	document.getElementById("scanNetworkresult").style.display="none";
+	document.getElementById("scanresult").style.display="none";
+	document.getElementById("scanning").style.display="none";
+	document.getElementById("AutoselectNetwork").style.display="";
+	document.getElementById("MannualselectNetwork").style.display="none";
+	if(security == "NONE")
+	{
+		G_apc_wifi_encrypt_mode="NONE";//上行加密模式
+		G_apc_wifi_encrypt_type="NONE";//上行加密算法（类型）
+		document.getElementById("havePwd").style.display="none";
+		isExistPassword=false;
+	}
+	else if(security == "WEP")
+	{
+		document.getElementById("scanNetworkresult").style.display="";
+		document.getElementById("scanresult").style.display="";
+		document.getElementById("scanning").style.display="none";
+		document.getElementById("AutoselectNetwork").style.display="none";
+		document.getElementById("MannualselectNetwork").style.display="none";
+		document.getElementById("CreatePopAlert_WEP").style.display="";
+		return false;
+	}
+	else
+	{
+		var index=security.lastIndexOf("\/");
+		if(index !=-1)
+		{
+			G_apc_wifi_encrypt_mode=security.substring(0,index);//上行加密模式
+			G_apc_wifi_encrypt_type=security.substring(index+1);//上行加密算法（类型）
+		}
+		if(G_apc_wifi_encrypt_type=="NONE")
+		{
+			G_apc_wifi_encrypt_mode="NONE";//上行加密模式
+			G_apc_wifi_encrypt_type="NONE";//上行加密算法（类型）
+			document.getElementById("havePwd").style.display="none";
+		}
+		else if(G_apc_wifi_encrypt_type=="WEP")
+		{
+			document.getElementById("scanNetworkresult").style.display="";
+			document.getElementById("scanresult").style.display="";
+			document.getElementById("scanning").style.display="none";
+			document.getElementById("AutoselectNetwork").style.display="none";
+			document.getElementById("MannualselectNetwork").style.display="none";
+			document.getElementById("CreatePopAlert_WEP").style.display="";
+			return false;
+		}
+		else
+		{
+			document.getElementById("havePwd").style.display="";
+		}
+		
+		isExistPassword=true;
+	}
+	document.getElementById("scanautowirelesspwd").value="";
+	document.getElementById("clear_scanautowirelesspwd").style.display="none";
+	document.getElementById("error_mainrouter_notselect").style.display = "none";
+	isManualInput = false;
+	isSelectAp="1";
+}
+
+//选择您需要扩展的无线网络中点击某一行
+function ExpandWireless_5G(i)
+{
+	$("#selectSsid_5G").text(G_Wifi_5G[i].SSID);
+	G_apc_wifi_ssid_5G=G_Wifi_5G[i].SSID;//上行ssid
+	G_apc_wifi_channel_5G=G_Wifi_5G[i].Channel;//上行信道
+	G_apc_wifi_mac_5G=G_Wifi_5G[i].BSSID;//上行mac
+	G_apc_wifi_bw_5G=G_Wifi_5G[i].Bw;//上行无线带宽
+	var security_5G=G_Wifi_5G[i].Security;
+	document.getElementById("scanNetworkresult_5G").style.display="none";
+	document.getElementById("scanresult_5G").style.display="none";
+	document.getElementById("scanning_5G").style.display="none";
+	document.getElementById("AutoselectNetwork_5G").style.display="";
+	document.getElementById("MannualselectNetwork_5G").style.display="none";
+	if(security_5G == "NONE")
+	{
+		G_apc_wifi_encrypt_mode_5G="NONE";//上行加密模式
+		G_apc_wifi_encrypt_type_5G="NONE";//上行加密算法（类型）
+		document.getElementById("havePwd_5G").style.display="none";
+		isExistPassword_5G=false;
+	}
+	else if(security_5G == "WEP")
+	{
+		document.getElementById("scanNetworkresult_5G").style.display="";
+		document.getElementById("scanresult_5G").style.display="";
+		document.getElementById("scanning_5G").style.display="none";
+		document.getElementById("AutoselectNetwork_5G").style.display="none";
+		document.getElementById("MannualselectNetwork_5G").style.display="none";
+		document.getElementById("CreatePopAlert_WEP").style.display="";
+		return false;
+	}
+	else
+	{
+		var index=security_5G.lastIndexOf("\/");
+		if(index !=-1)
+		{
+			G_apc_wifi_encrypt_mode_5G=security_5G.substring(0,index);//上行加密模式
+			G_apc_wifi_encrypt_type_5G=security_5G.substring(index+1);//上行加密算法（类型）
+		}
+		if(G_apc_wifi_encrypt_type_5G=="NONE")
+		{
+			G_apc_wifi_encrypt_mode_5G="NONE";//上行加密模式
+			G_apc_wifi_encrypt_type_5G="NONE";//上行加密算法（类型）
+			document.getElementById("havePwd_5G").style.display="none";
+		}
+		else if(G_apc_wifi_encrypt_type_5G=="WEP")
+		{
+			document.getElementById("scanNetworkresult_5G").style.display="";
+			document.getElementById("scanresult_5G").style.display="";
+			document.getElementById("scanning_5G").style.display="none";
+			document.getElementById("AutoselectNetwork_5G").style.display="none";
+			document.getElementById("MannualselectNetwork_5G").style.display="none";
+			document.getElementById("CreatePopAlert_WEP").style.display="";
+			return false;
+		}
+		else
+		{
+			document.getElementById("havePwd_5G").style.display="";
+		}
+		
+		isExistPassword_5G=true;
+	}
+	document.getElementById("scanautowirelesspwd_5G").value="";
+	document.getElementById("clear_scanautowirelesspwd_5G").style.display="none";
+	document.getElementById("error_mainrouter_notselect").style.display = "none";
+	isManualInput_5G = false;
+	isSelectAp_5G="1";
+}
+
+function ManualInputClick()
+{ 
+	hideAllMainRouterErrorInfo();
+	document.getElementById("scanNetworkresult").style.display="none";
+	document.getElementById("AutoselectNetwork").style.display="none";
+	document.getElementById("MannualselectNetwork").style.display="";
+	document.getElementById("mannual_wireless_name").value="";
+	document.getElementById("mannual_wireless_pwd").value="";
+	document.getElementById("clear_mannual_wireless_name").style.display = "none";
+	document.getElementById("clear_mannual_wireless_pwd").style.display = "none";
+	document.getElementById("error_mainrouter_notselect").style.display = "none";
+	isSelectAp="1";
+	//isSelectAp_5G="0";
+	isManualInput = true;
+	selectEncryptionType("wpa",'2G');
+}
+
+function ManualInputClick_5G()
+{ 
+	hideAllMainRouterErrorInfo();
+	document.getElementById("scanNetworkresult_5G").style.display="none";
+	document.getElementById("AutoselectNetwork_5G").style.display="none";
+	document.getElementById("MannualselectNetwork_5G").style.display="";
+	document.getElementById("mannual_wireless_name_5G").value="";
+	document.getElementById("mannual_wireless_pwd_5G").value="";
+	document.getElementById("clear_mannual_wireless_name_5G").style.display = "none";
+	document.getElementById("clear_mannual_wireless_pwd_5G").style.display = "none";
+	document.getElementById("error_mainrouter_notselect").style.display = "none";
+	isSelectAp_5G="1";
+	//isSelectAp="0";
+	isManualInput_5G = true;
+	selectEncryptionType("wpa",'5G');
+}
+
+function reSelectWireless()
+{
+	hideAllMainRouterErrorInfo();
+	document.getElementById("scanNetworkresult").style.display="";
+	document.getElementById("scanresult").style.display="";
+	document.getElementById("scanning").style.display="none";
+	document.getElementById("AutoselectNetwork").style.display="none";
+	document.getElementById("MannualselectNetwork").style.display="none";
+	isSelectAp="0";
+}
+
+function reSelectWireless_5G()
+{
+	document.getElementById("scanNetworkresult_5G").style.display="";
+	document.getElementById("scanresult_5G").style.display="";
+	document.getElementById("scanning_5G").style.display="none";
+	document.getElementById("AutoselectNetwork_5G").style.display="none";
+	document.getElementById("MannualselectNetwork_5G").style.display="none";
+	isSelectAp_5G="0";
+}
+
+//获取扫描的AP信息
+function GetScanApData(status)
+{
+	document.getElementById("scanNetworkresult").style.display="";
+	document.getElementById("scanresult").style.display="none";
+	document.getElementById("scanning").style.display="";
+	document.getElementById("AutoselectNetwork").style.display="none";
+	document.getElementById("MannualselectNetwork").style.display="none";
+	
+	document.getElementById("scanNetworkresult_5G").style.display="";
+	document.getElementById("scanresult_5G").style.display="none";
+	document.getElementById("scanning_5G").style.display="";
+	document.getElementById("AutoselectNetwork_5G").style.display="none";
+	document.getElementById("MannualselectNetwork_5G").style.display="none";	
+	if(document.getElementById("for_repeater_24G").src.indexOf("/image/mobile/but_radio_pre.png") >0)
+	{
+		document.getElementById("repeater_24G").style.display="";
+		document.getElementById("repeater_5G").style.display="none";
+	}
+	else
+	{
+		document.getElementById("repeater_24G").style.display="none";
+		document.getElementById("repeater_5G").style.display="";
+	}
+	GetScanApDataXML_1st(status);
+}
+
+function GetScanApDataXML_1st(status)
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null)
+	{
+		if(status=="0")
+		{
+			result_xml.Set("GetWLanApcliScanSettings");
+		}
+		else
+		{
+			result_xml.Set("GetWLanApcliScanSettings/status","1");
+		}
+		HNAP.SetXMLAsync("GetWLanApcliScanSettings", result_xml, function(xml)	{	GetScanApDataXML_2nd(xml);	});
+	}
+	else{	
+		if (DebugMode == 1)	
+			{	alert("[!!GetXML Error!!] Function: GetRepeaterXML_1st");	}
+	}
+}
+
+function GetScanApDataXML_2nd(result_xml)
+{
+	var GetResult_xml = result_xml.Get("GetWLanApcliScanSettingsResponse/GetWLanApcliScanSettingsResult");
+	if (GetResult_xml == "OK"){
+		var ApcliScanList = result_xml.GetObjectNode("GetWLanApcliScanSettingsResponse/ApcliScanList");
+		var ApcliScanList_5G = result_xml.GetObjectNode("GetWLanApcliScanSettingsResponse/ApcliScanList_5g");
+		G_Wifi = [];
+		G_Wifi_5G = [];
+		if(ApcliScanList!=null)
+		{
+			G_Wifi = ApcliScanList.sort(by("Siganl"));
+		}
+		
+		if(ApcliScanList_5G!=null)
+		{
+			G_Wifi_5G = ApcliScanList_5G.sort(by("Siganl"));
+		}		
+		CreateWifiRepeatTable();
+		CreateWifiRepeatTable_5G();
+		document.getElementById("scanresult").style.display="";
+		document.getElementById("scanning").style.display="none";
+		document.getElementById("scanresult_5G").style.display="";
+		document.getElementById("scanning_5G").style.display="none";
+	}
+	else{
+		if (DebugMode == 1)	{
+			alert("[!!GetXML Error!!] Function: GetScanApDataXML_2nd");
+		}
+	}
+}
+
+function scanRefresh()
+{
+	isSelectAp="0";
+	isSelectAp_5G="0";
+	GetScanApData("1");
+}
+
+function scanRefresh_5G()
+{
+	isSelectAp="0";
+	isSelectAp_5G="0";
+	GetScanApData("1");
+	
+}
+
+//隐藏扩展错误部分
+function hideAllMainRouterErrorInfo()
+{
+	document.getElementById("error_mannual_wireless_name").style.display = "none";
+	document.getElementById("error_mannual_wireless_pwd").style.display = "none";
+	document.getElementById("error_autopassword").style.display = "none";
+	document.getElementById("error_mannual_wireless_name_5G").style.display = "none";
+	document.getElementById("error_mannual_wireless_pwd_5G").style.display = "none";
+	document.getElementById("error_autopassword_5G").style.display = "none";
+}
+
+//隐藏中继模式的路由器无线名称和密码错误部分
+function hideAllRouterErrorInfo()
+{
+	document.getElementById("error_repeater_pwd").style.display = "none";
+	document.getElementById("error_mainrouter_notselect").style.display = "none";
+}
+
+function checkRepeateWirelessInput()
+{
+	if(isManualInput == true)
+	{
+		var MainWifiValue=$("#mannual_wireless_name").val();//主路由Wifi的SSID
+		if(MainWifiValue == "")
+		{
+			showErr("error_mannual_wireless_name","errorinfo_mannual_wireless_name",I18N("j","Err_Wizard_MaiRouterNameEmpty"));
+			return false;
+		}
+		//手动输入的上行AP密码
+		var passwordstr_manul = $("#mannual_wireless_pwd").val();
+		var select_encr_type=EncryptionType_2G;
+		if(select_encr_type != "none")
+		{
+			if(passwordstr_manul == "")
+			{
+				showErr("error_mannual_wireless_pwd","errorinfo_mannual_wireless_pwd",I18N("j","Err_Wizard_MainRouterPwdEmpty"));
+				return false;
+			}
+			if(!checkDoubleByteStr(passwordstr_manul))//验证是否有双字节
+			{
+				if(!isKeyboardInput(passwordstr_manul))//是否只为ASCII码
+				{
+					showErr("error_mannual_wireless_pwd","errorinfo_mannual_wireless_pwd",I18N("j","Err_Wizard_MainRouterPwdInvalid"));
+					return false;
+				}
+				if(!checkInputLength(passwordstr_manul,8,64))
+				{
+					showErr("error_mannual_wireless_pwd","errorinfo_mannual_wireless_pwd",I18N("j","Err_Wizard_MainRouterPwdLength"));
+					return false;
+				}
+			}
+			else
+			{
+				showErr("error_mannual_wireless_pwd","errorinfo_mannual_wireless_pwd",I18N("j","Err_Wizard_MainRouterPwdInvalid"));
+				return false;
+			}
+		}
+		
+	}
+	else//如果不是手动输入
+	{
+		//主路由无线密码
+		if(isExistPassword == true)
+		{
+			if(G_apc_wifi_encrypt_mode!="NONE" && G_apc_wifi_encrypt_mode!="OPEN")
+			{
+				var passwordstr = $("#scanautowirelesspwd").val();
+				if(passwordstr == "")
+				{
+					showErr("error_autopassword","errorinfo_autopassword",I18N("j","Err_Wizard_MainRouterPwdEmpty"));
+					return false;
+				}
+				if(!checkDoubleByteStr(passwordstr))//验证是否有双字节
+				{
+					if(!isKeyboardInput(passwordstr))//是否只为ASCII码
+					{
+						showErr("error_autopassword","errorinfo_autopassword",I18N("j","Err_Wizard_MainRouterPwdInvalid"));
+						return false;
+					}
+					if(!checkInputLength(passwordstr,8,64))
+					{
+						showErr("error_autopassword","errorinfo_autopassword",I18N("j","Err_Wizard_MainRouterPwdLength"));
+						return false;
+					}
+				}
+				else
+				{
+					showErr("error_autopassword","errorinfo_autopassword",I18N("j","Err_Wizard_MainRouterPwdInvalid"));
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+function checkRepeateWirelessInput_5G()
+{
+	if(isManualInput_5G == true)
+	{
+		var MainWifiValue=$("#mannual_wireless_name_5G").val();//主路由Wifi的SSID
+		if(MainWifiValue == "")
+		{
+			showErr("error_mannual_wireless_name_5G","errorinfo_mannual_wireless_name_5G",I18N("j","Err_Wizard_MaiRouterNameEmpty"));
+			return false;
+		}
+		//手动输入的上行AP密码
+		var passwordstr_manul = $("#mannual_wireless_pwd_5G").val();
+		var select_encr_type=EncryptionType_5G;
+		if(select_encr_type != "none")
+		{
+			if(passwordstr_manul == "")
+			{
+				showErr("error_mannual_wireless_pwd_5G","errorinfo_mannual_wireless_pwd_5G",I18N("j","Err_Wizard_MainRouterPwdEmpty"));
+				return false;
+			}
+			if(!checkDoubleByteStr(passwordstr_manul))//验证是否有双字节
+			{
+				if(!isKeyboardInput(passwordstr_manul))//是否只为ASCII码
+				{
+					showErr("error_mannual_wireless_pwd_5G","errorinfo_mannual_wireless_pwd_5G",I18N("j","Err_Wizard_MainRouterPwdInvalid"));
+					return false;
+				}
+				if(!checkInputLength(passwordstr_manul,8,64))
+				{
+					showErr("error_mannual_wireless_pwd_5G","errorinfo_mannual_wireless_pwd_5G",I18N("j","Err_Wizard_MainRouterPwdLength"));
+					return false;
+				}
+			}
+			else
+			{
+				showErr("error_mannual_wireless_pwd_5G","errorinfo_mannual_wireless_pwd_5G",I18N("j","Err_Wizard_MainRouterPwdInvalid"));
+				return false;
+			}
+		}
+		
+	}
+	else//如果不是手动输入
+	{
+		//主路由无线密码
+		if(isExistPassword_5G == true)
+		{
+			if(G_apc_wifi_encrypt_mode_5G!="NONE" && G_apc_wifi_encrypt_mode_5G!="OPEN")
+			{
+				var passwordstr = $("#scanautowirelesspwd_5G").val();
+				if(passwordstr == "")
+				{
+					showErr("error_autopassword_5G","errorinfo_autopassword_5G",I18N("j","Err_Wizard_MainRouterPwdEmpty"));
+					return false;
+				}
+				if(!checkDoubleByteStr(passwordstr))//验证是否有双字节
+				{
+					if(!isKeyboardInput(passwordstr))//是否只为ASCII码
+					{
+						showErr("error_autopassword_5G","errorinfo_autopassword_5G",I18N("j","Err_Wizard_MainRouterPwdInvalid"));
+						return false;
+					}
+					if(!checkInputLength(passwordstr,8,64))
+					{
+						showErr("error_autopassword_5G","errorinfo_autopassword_5G",I18N("j","Err_Wizard_MainRouterPwdLength"));
+						return false;
+					}
+				}
+				else
+				{
+					showErr("error_autopassword_5G","errorinfo_autopassword_5G",I18N("j","Err_Wizard_MainRouterPwdInvalid"));
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+//点击下一步
+function SetRepeateData()
+{
+	hideAllMainRouterErrorInfo();
+	hideAllRouterErrorInfo();
+	isRetryInput = false;
+	if(document.getElementById("for_repeater_24G").src.indexOf("/image/mobile/but_radio_pre.png") >0)
+	{
+		if(isSelectAp=="0")
+		{
+			showErr("error_mainrouter_notselect","errorinfo_mainrouter_notselect",I18N("j","Err_Wizard_MainRouterNotSelect"));
+			return false;
+		}
+	
+		var checkresult = checkRepeateWirelessInput();
+		if(checkresult)
+		{
+			SetRepeateDataFinish();
+		}
+	}
+	else if(document.getElementById("for_repeater_5G").src.indexOf("/image/mobile/but_radio_pre.png") >0)
+	{
+		if(isSelectAp_5G=="0")
+		{
+			showErr("error_mainrouter_notselect","errorinfo_mainrouter_notselect",I18N("j","Err_Wizard_MainRouterNotSelect"));
+			return false;
+		}
+	
+		var checkresult_5G = checkRepeateWirelessInput_5G();
+		if(checkresult_5G)
+		{
+			SetRepeateDataFinish();
+		}	
+	}
+}
+
+function SetRepeateDataFinish()
+{
+	$.ajax({
+		cache: false,
+		url: "./js/CheckConnection",
+		timeout: 5000,
+		type: "GET",
+		success: function(data) {
+			SetRepeaterJson();
+		},
+		error: function() {
+			document.getElementById("DetectRouterConnection").style.display = "inline";
+		}
+	});
+
+}
+
+function SetRepeaterJson()
+{
+	document.getElementById("save_repeat_settings").style.display="";
+	document.getElementById("createPop_Repeat_Fail").style.display = "inline";
+	document.getElementById("div_wrong_password").style.display="none";
+	document.getElementById("div_not_search").style.display="none";
+	document.getElementById("div_repeate_uprouter_fail").style.display="none";
+	SetRepeateDataXML_1st();
+}
+
+function SetRepeateDataXML_1st()
+{
+	var result_xml = new StringDoc();
+	if (result_xml != null) {
+		if(document.getElementById("for_repeater_24G").src.indexOf("/image/mobile/but_radio_pre.png") >0)
+		{
+			if(isManualInput)//如果手动输入
+			{
+				G_apc_wifi_ssid = document.getElementById("mannual_wireless_name").value;//上行ssid
+				G_apc_wifi_key = document.getElementById("mannual_wireless_pwd").value;//密钥（无线密码）
+				G_apc_wifi_mac="00:00:00:00:00:00";
+				G_apc_wifi_channel="7";
+				G_apc_wifi_bw="0";
+				var select_encr_type=EncryptionType_2G;
+				if(select_encr_type=="none")
+				{
+					G_apc_wifi_encrypt_mode="NONE";//上行加密模式
+					G_apc_wifi_encrypt_type="NONE";//上行加密算法（类型）
+				}
+				else if(select_encr_type=="wpa")
+				{
+					G_apc_wifi_encrypt_mode="WPAPSK";//上行加密模式
+					G_apc_wifi_encrypt_type="TKIP";//上行加密算法（类型）
+				}
+				else
+				{
+					G_apc_wifi_encrypt_mode="WPA2PSK";//上行加密模式
+					G_apc_wifi_encrypt_type="AES";//上行加密算法（类型）
+				}
+
+				for(var i=0;i<G_Wifi.length;i++)
+				{
+					if(G_apc_wifi_ssid == G_Wifi[i].SSID)
+					{
+						G_apc_wifi_channel=G_Wifi[i].Channel;//上行信道
+						G_apc_wifi_mac=G_Wifi[i].BSSID;//上行mac
+						G_apc_wifi_bw=G_Wifi[i].Bw;//上行无线带宽
+						var security=G_Wifi[i].Security;
+						break;
+					}
+				}
+			}
+			else//点击某一行得到的扩展信息
+			{
+				G_apc_wifi_key = document.getElementById("scanautowirelesspwd").value;
+			}
+			if(isRetryInput)//如果是重试的输入
+			{
+				G_apc_wifi_key = document.getElementById("mainwireless_password_retry").value;
+			}
+	
+			result_xml.Set("SetWLanApcliSettings/ApCliSsid",G_apc_wifi_ssid);//上行ssid
+			result_xml.Set("SetWLanApcliSettings/ApCliBssid",G_apc_wifi_mac);//上行mac
+			result_xml.Set("SetWLanApcliSettings/ApCliChannel",G_apc_wifi_channel);//上行信道
+			result_xml.Set("SetWLanApcliSettings/ApCliAuthMode",G_apc_wifi_encrypt_mode);//上行加密模式
+			result_xml.Set("SetWLanApcliSettings/ApCliEncrypType",G_apc_wifi_encrypt_type);//上行加密算法（类型）
+			result_xml.Set("SetWLanApcliSettings/wl(0).(0)_bw",G_apc_wifi_bw);//上行无线带宽
+			result_xml.Set("SetWLanApcliSettings/ApCliKeyStr",AES_Encrypt128(G_apc_wifi_key));//密钥（无线密码）
+			result_xml.Set("SetWLanApcliSettings/wl(0).(0)_ssid_hidden","0");//无线隐身）
+			result_xml.Set("SetWLanApcliSettings/Mode","2.4G");//无线隐身
+		}
+		
+		else
+		{
+			if(isManualInput_5G)//如果手动输入
+			{
+				G_apc_wifi_ssid_5G = document.getElementById("mannual_wireless_name_5G").value;//上行ssid
+				G_apc_wifi_key_5G = document.getElementById("mannual_wireless_pwd_5G").value;//密钥（无线密码）
+				G_apc_wifi_mac_5G="00:00:00:00:00:00";
+				G_apc_wifi_channel_5G="0";
+				G_apc_wifi_bw_5G="0";
+				var select_encr_type_5G=EncryptionType_5G;
+				if(select_encr_type_5G=="none")
+				{
+					G_apc_wifi_encrypt_mode_5G="NONE";//上行加密模式
+					G_apc_wifi_encrypt_type_5G="NONE";//上行加密算法（类型）
+				}
+				else if(select_encr_type_5G=="wpa")
+				{
+					G_apc_wifi_encrypt_mode_5G="WPAPSK";//上行加密模式
+					G_apc_wifi_encrypt_type_5G="TKIP";//上行加密算法（类型）
+				}
+				
+				else
+				{
+					G_apc_wifi_encrypt_mode_5G="WPA2PSK";//上行加密模式
+					G_apc_wifi_encrypt_type_5G="AES";//上行加密算法（类型）
+				}
+				
+				for(var i=0;i<G_Wifi_5G.length;i++)
+				{
+					if(G_apc_wifi_ssid_5G == G_Wifi_5G[i].SSID)
+					{
+						G_apc_wifi_channel_5G=G_Wifi_5G[i].Channel;//上行信道
+						G_apc_wifi_mac_5G=G_Wifi_5G[i].BSSID;//上行mac
+						G_apc_wifi_bw_5G=G_Wifi_5G[i].Bw;//上行无线带宽
+						var security_5G=G_Wifi_5G[i].Security;
+						break;
+					}
+				}
+			}
+			else//点击某一行得到的扩展信息
+			{
+				G_apc_wifi_key_5G = document.getElementById("scanautowirelesspwd_5G").value;
+			}
+			if(isRetryInput)//如果是重试的输入
+			{
+				G_apc_wifi_key_5G = document.getElementById("mainwireless_password_retry").value;
+			}
+	
+			result_xml.Set("SetWLanApcliSettings/ApCliSsid",G_apc_wifi_ssid_5G);//上行ssid
+			result_xml.Set("SetWLanApcliSettings/ApCliBssid",G_apc_wifi_mac_5G);//上行mac
+			result_xml.Set("SetWLanApcliSettings/ApCliChannel",G_apc_wifi_channel_5G);//上行信道
+			result_xml.Set("SetWLanApcliSettings/ApCliAuthMode",G_apc_wifi_encrypt_mode_5G);//上行加密模式
+			result_xml.Set("SetWLanApcliSettings/ApCliEncrypType",G_apc_wifi_encrypt_type_5G);//上行加密算法（类型）
+			result_xml.Set("SetWLanApcliSettings/wl(0).(0)_bw",G_apc_wifi_bw_5G);//上行无线带宽
+			result_xml.Set("SetWLanApcliSettings/ApCliKeyStr",AES_Encrypt128(G_apc_wifi_key_5G));//密钥（无线密码）
+			result_xml.Set("SetWLanApcliSettings/wl(0).(0)_ssid_hidden","0");//无线隐身
+			result_xml.Set("SetWLanApcliSettings/Mode","5G");
+		
+		}
+		
+		HNAP.SetXMLAsync("SetWLanApcliSettings", result_xml, function(xml)	{	SetRepeateDataXML_2nd(xml);	});
+		ClearRepeateTimmer();
+		repeat_timmer = setTimeout("ShowRepeateTimmer()",repeat_timeout);
+	} 
+	else {	
+		if (DebugMode == 1)	{	
+			alert("[!!SetXML Error!!] Function: SetRepeateDataXML_1st");
+		}
+	}
+}
+
+function SetRepeateDataXML_2nd(result_xml)
+{
+	ClearRepeateTimmer();
+	var SetResult_1st = result_xml.Get("SetWLanApcliSettingsResponse/SetWLanApcliSettingsResult");
+	if (SetResult_1st == "OK")
+	{
+		$("body").css("background-color","#ffffff"); 
+		document.getElementById("createPop_Repeat_Fail").style.display="none";
+		$("#success_ssid").text(G_wifiName_24);
+		$("#success_ssid_5g").text(G_wifiName_5);
+		document.getElementById("repeaterpart").style.display="none";
+		document.getElementById("repeat_success_content").style.display="";
+		Start_Reboot();
+	} 
+	else if(SetResult_1st == "PASSWORD_FAILURE")
+	{
+		document.getElementById("mainwireless_password_retry").value="";
+		if(document.getElementById("for_repeater_24G").src.indexOf("/image/mobile/but_radio_pre.png") >0)
+		{
+			$("#repeat_fail_password").text(G_apc_wifi_ssid);
+		}
+		else
+		{
+			$("#repeat_fail_password").text(G_apc_wifi_ssid_5G);
+		}
+		document.getElementById("createPop_Repeat_Fail").style.display="";
+		document.getElementById("save_repeat_settings").style.display="none";
+		document.getElementById("div_not_search").style.display="none";
+		document.getElementById("div_wrong_password").style.display="";
+		document.getElementById("div_repeate_uprouter_fail").style.display="none";
+	}
+	else if(SetResult_1st == "ROOTAP_NOTFOUND")
+	{
+		document.getElementById("createPop_Repeat_Fail").style.display="";
+		document.getElementById("save_repeat_settings").style.display="none";
+		document.getElementById("div_not_search").style.display="none";
+		document.getElementById("div_wrong_password").style.display="none";
+		document.getElementById("div_repeate_uprouter_fail").style.display="";
+	}
+	else {	if (DebugMode == 1)	{	alert("[!!SetXML Error!!] Function: SetRepeateDataXML_2nd");	}	}
+}
+
+//扩展失败密码错误时点击重试
+function RepeatFailRetry_Password()
+{
+	//重试的上行AP密码
+	$("#error_retry_pwd").hide();
+	var passwordstr_retry = $("#mainwireless_password_retry").val();
+	if(passwordstr_retry == "")
+	{
+		showErr("error_retry_pwd","errorinfo_retry_pwd",I18N("j","Err_Wizard_Pwd2GEmpty"));
+		return false;
+	}
+	if(!checkDoubleByteStr(passwordstr_retry))//验证是否有双字节
+	{
+		if(!isKeyboardInput(passwordstr_retry))//是否只为ASCII码
+		{
+			showErr("error_retry_pwd","errorinfo_retry_pwd",I18N("j","Err_Wizard_Pwd2GInvalid"));
+			return false;
+		}
+		if(!checkInputLength(passwordstr_retry,8,64))
+		{
+			showErr("error_retry_pwd","errorinfo_retry_pwd",I18N("j","Err_Wizard_MainRouterPwdLength"));
+			return false;
+		}
+	}
+	else
+	{
+		showErr("error_retry_pwd","errorinfo_retry_pwd",I18N("j","Err_Wizard_Pwd2GInvalid"));
+		return false;
+	}
+	
+	isRetryInput = true;
+	document.getElementById("createPop_Repeat_Fail").style.display="none";
+	SetRepeateDataFinish();
+}
+
+//扩展失败时点击取消
+function RepeatFailCancel()
+{
+	document.getElementById("createPop_Repeat_Fail").style.display="none";
+}
+//扩展失败未找到上行路由时重试
+function RepeatFailRetry_NotFound()
+{
+	document.getElementById("createPop_Repeat_Fail").style.display="none";
+	SetRepeateDataFinish();
+}
+
+//2.4G和5G扩展切换
+function repeaterFreSelec(tag)
+{
+	if(tag==0)
+	{
+		document.getElementById("for_repeater_24G").src = "/image/mobile/but_radio_pre.png";
+		document.getElementById("for_repeater_5G").src = "/image/mobile/but_radio.png";
+		document.getElementById("repeater_24G").style.display="";
+		document.getElementById("repeater_5G").style.display="none";
+		
+	}
+	else if(tag==1)
+	{
+		document.getElementById("for_repeater_24G").src = "/image/mobile/but_radio.png";
+		document.getElementById("for_repeater_5G").src = "/image/mobile/but_radio_pre.png";
+		document.getElementById("repeater_24G").style.display="none";
+		document.getElementById("repeater_5G").style.display="";
+	}
+}
+
+//页面扩展时加入超时，规避扩展时wifi断开没有收到response
+function ShowRepeateTimmer()
+{
+	document.getElementById("createPop_Repeat_Fail").style.display="none";
+	document.getElementById("CreatePopAlert_Timeout").style.display="";
+}
+
+//清除超时的定时器
+function ClearRepeateTimmer()
+{
+	if(repeat_timmer!=null)
+	{
+		clearTimeout(repeat_timmer);
+		repeat_timmer=null;
+	}
+}
+
+//收不到response超时后点击确定
+function TimeoutComfirm()
+{
+	document.getElementById("CreatePopAlert_Timeout").style.display="none";
+}
+
+//WEP加密方式弹窗点击确定
+function WEPEncryptionComfirm()
+{
+	document.getElementById("CreatePopAlert_WEP").style.display="none";
+}
+
+function showEncryptionSelect(id)
+{
+	document.getElementById("creatPop_encryption_select_"+id).style.display = "";
+	//禁止背景滚动
+	$("body").removeClass("allow");
+	$("body").addClass("forbidden");
+}
+
+function selectEncryptionType(type,id)
+{
+	//允许背景滚动
+	$("body").removeClass("forbidden");
+	$("body").addClass("allow");
+	
+	document.getElementById("encrytion_0_"+id).style.display = "none";
+	document.getElementById("encrytion_1_"+id).style.display = "none";
+	document.getElementById("encrytion_2_"+id).style.display = "none";
+	if(type == "none")
+	{
+		document.getElementById("encrytion_0_"+id).style.display = "";
+		document.getElementById("select_encryption_type_"+id).innerHTML = I18N("j","无");
+		if(id == "2G")
+		{
+			document.getElementById("mannual_wireless_pwd").value ="";
+			document.getElementById("clear_mannual_wireless_pwd").style.display = "none";
+			document.getElementById("error_mannual_wireless_pwd").style.display = "none";
+		}
+		else if(id == "5G")
+		{
+			document.getElementById("mannual_wireless_pwd_5G").value ="";
+			document.getElementById("clear_mannual_wireless_pwd_5G").style.display = "none";
+			document.getElementById("error_mannual_wireless_pwd_5G").style.display = "none";
+		}
+		document.getElementById("div_manual_password_"+id).style.display = "none";
+		document.getElementById("div_manual_password_"+id).style.display = "none";
+	}
+	else if(type == "wpa")
+	{
+		document.getElementById("encrytion_1_"+id).style.display = "";
+		document.getElementById("select_encryption_type_"+id).innerHTML = I18N("j","WPA-TKIP");
+		document.getElementById("div_manual_password_"+id).style.display = "";
+	}
+	else if(type == "wpa2")
+	{
+		document.getElementById("encrytion_2_"+id).style.display = "";
+		document.getElementById("select_encryption_type_"+id).innerHTML = I18N("j","WPA2-AES");
+		document.getElementById("div_manual_password_"+id).style.display = "";
+	}
+	document.getElementById("creatPop_encryption_select_"+id).style.display = "none";
+	if(id == "2G")
+	{
+		EncryptionType_2G = type;
+	}
+	else if(id == "5G")
+	{
+		EncryptionType_5G = type;
+	}
+}
+
+function quitSelectEncryptionType(id)
+{
+	var a = ["none","wpa","wpa2"];
+	for(var i=0;i<3;i++)
+	{
+		var display = $("#encrytion_"+i+id).css("display");
+		if(display == "" || display == "block")
+		{
+			selectEncryptionType(a[i],id);
+			break;
+		}
+	}
+}
+
+function Start_Reboot()
+{
+	timer_sucess--;
+	document.getElementById("remaining_time").innerHTML = timer_sucess + I18N("j","Backup_Second");
+	if(timer_sucess <= 0)
+	{
+		window.location.href = "http://dlinkrouter.com";
+		return false;
+	}
+	setTimeout("Start_Reboot()", 1000);
+}
+
+</script>
+</head>
+
+<body>
+<div id="internet_status_content">
+<div class="content">
+	<div id="div_indexlogo" class="indexlogo">
+		<div class="header">
+			<div style="padding-left:3.33%;text-align:left" class="_logout left" align="left" onclick="Logout();">
+				<script>I18N("h","Commom_Logout");</script><!-- 退出登陆 -->
+			</div>
+			<div style="width:40%;height:50px;line-height:50px;text-align:center;font-size:1.9em" class="left">
+				<script>I18N("h","Login_Router_Name");</script><!-- Dlink-822+ -->
+			</div>
+			<div style="padding-right:3.33%;text-align:right" class="_logout right" align="right" onclick="gotoPCPage();">
+				<script>I18N("h","MobileIndex_PC");</script><!-- 电脑版 -->
+			</div>
+		</div>
+			<div id="div_internetstatue" class="internetstatue">
+				<div align="center" id="internet_bg" class="internet_bg" onclick="changePage(0);">
+					<img id="pic_status" src="/image/mobile/icon_lianjie_cg.png" style="width:34px;height:34px;position:absolute;right:1px;bottom:0;" />
+				</div>
+				<div align="center" id="wan_status" style="height:30px;line-height:30px; font-size:1.6em;padding-top:11px;color:#ffffff; cursor:pointer;" onclick="changePage(0);"><script>I18N("h","MobileIndex_Connect_Internet");</script><!-- 成功连接互联网 --></div>
+				<div id="div_status_24g" align="center" style="display:none;font-size:1.2em;padding-top:6px;color:#caccce;">
+					<span><script>I18N("h","2.4G无线信号质量");</script></span>
+					<img class="extend_quality" id="img_extend_quality_24g" src="image/mobile/wifi_signal_03.png" />
+					<span id="expand_status_24g"><script>I18N("h","好");</script></span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="menuBox" class="divmenu_router">
+		<div id="networkBox" class="menu_router" style="display:none; ">
+			  <div id="networkimg" onclick="changePage(0);">
+			  </div>
+			<div id="networktext" class="nav-title" onclick="changePage(0);">
+			  <span>
+				<script>I18N("h","Commom_Internet");</script><!-- 上网设置 -->
+			  </span>
+			</div>
+		</div>
+		<div id="wirelessBox" class="menu_router" style="display:none; ">
+			<div id="wifiimg" onclick="changePage(1);">
+			</div>
+			<div id="wifitext" class="nav-title" onclick="changePage(1);">
+			  <span>
+				<script>I18N("h","Commom_Wireless");</script><!-- 无线设置 -->
+			  </span>
+			</div>
+		</div>
+		<div id="deviceBox" class="menu_router" style="display:none; ">
+			  <div id="deviceimg" onclick="changePage(2);" >
+			  </div>
+			<div id="devicetext" class="nav-title" onclick="changePage(2)">
+			  <span>
+				<script>I18N("h","Commom_Device_Users");</script><!-- 终端用户 -->
+			  </span>
+			</div>
+		</div>
+		<div id="workmodeBox" class="menu_router" style="display:none; ">
+			  <div id="workmodeimg" onclick="changePage(3);" >
+			  </div>
+			<div id="workmodetext" class="nav-title" onclick="changePage(3)">
+			  <span>
+				<script>I18N("h","MobileIndex_Mode_Work");</script><!-- 工作模式 -->
+			  </span>
+			</div>
+		</div>
+	</div>
+	<div id="div_repeater_click" align="center" style="display:none;margin:0 auto;width:90px;">
+		<div id="expandother_div" onclick="ExpandOtherNetwork();">
+			<div><script>I18N("h","Home_Expand_Other");</script><!-- 扩展其他网络 --></div>
+		</div>
+	</div>
+	<div align="center" class="downloadDIV" onclick="downloadAPP();">
+		<div style="width:225px;vertical-align:middle; text-align:center; color:#999999;">
+			<img style="vertical-align:middle;" border=0 src="/image/mobile/icon_qr_code.png" class="download" /><script>I18N("h","MobileIndex_Download_App");</script>
+		</div>
+	</div>
+
+</div>
+	
+	<div align="center" id="repeaterpart" style="display:none; height:100%;">
+		<div style="padding:0 3.33%;text-align: center;background-color:#4598aa;" class="headerline" align="center">
+			<script>I18N("h","Home_Expand_Other");</script><!-- 扩展其他网络 -->
+			<img class="clearboth" onclick="gotoIndex();" style="padding-top:13px;height:23px;width:23px " src="/image/mobile/icon_back.png" align="left">
+		</div>
+		<div class="space_word">
+			<script>I18N("h","Wizard_Network_San");</script><!-- 选择您需要扩展的无线网络 -->
+		</div>
+		<div style="padding:12px 3.33%;color:#333333;font-size:1.6em;text-align:left; background-color:#ffffff;">
+			<span>频段选择：</span>
+			<img id="for_repeater_24G" onclick="repeaterFreSelec(0)" width="14" height="14" src="/image/mobile/but_radio_pre.png" style="margin:0 4px 2px 8px;vertical-align:middle;"/>
+			<span><script>I18N("h","2.4G");</script></span>
+			<img id="for_repeater_5G" onclick="repeaterFreSelec(1)" width="14" height="14" src="/image/mobile/but_radio.png" style="margin:0 4px 2px 12px;vertical-align:middle;"/>
+			<span><script>I18N("h","5G");</script></span>
+		</div>
+		<div class="clearboth titlespace" style="height:9px;"></div>
+		
+		<!-- 扩展2.4G无线网络部分 -->
+		<div id="repeater_24G" style="background:#ffffff; ">
+			<div id="scanNetworkresult">
+				<div style="padding:0 3.33%;">
+					<div class="scan_head_words">2.4G无线网络</div>
+					<div class="manual_input_words" onClick="ManualInputClick();">手动输入</div>
+					<div class="imgrefresh" onClick="scanRefresh();"></div>
+				</div>
+				<div class="clearboth line"></div>
+				<div style="display:none;" id="scanning">
+					<div align="center" style="padding-top:20px;"><img style="width:42px;height:42px" src="/image/mobile/Wait.gif"></div>
+					<div style="color:#333333; font-size:1.2em; margin-top:8px; padding-bottom:20px;">正在扫描可用的Wi-Fi...</div>
+				</div>
+				<div style="margin:0px;display:none;" id="scanresult">
+					<table border="0" cellpadding="0" cellspacing="0" align="center" id="table_wifi_repeat" class="repeat_scan_content"></table>
+				</div>
+			</div><!--end scanNetworkresult -->
+			
+			<!-- 选择已有网络部分 -->
+			<div id="AutoselectNetwork" style="display:none;padding-bottom:20px;">
+				<div style="padding:0 3.33%;">
+					<div class="scan_head_words pull-left">2.4G无线网络</div>
+					<div class="auto_select_words" onClick="ManualInputClick();">手动输入</div>
+					<div class="clearboth"></div>
+					<div class="manual_input_words" onClick="reSelectWireless();">重新选择</div>
+					<div id="selectSsid" class="select_ssid"></div>
+				</div>
+				<div class="clearboth line"></div>
+				<div id="havePwd">
+					<div class="input_div">
+						<div class="leftth" style="width:90px"><script>I18N("h","MobileWizard_Wireless_Password");</script><!-- 无线密码  --></div>
+						<div style="float:left;width:55%" align="left">
+							<input type="text" id="scanautowirelesspwd" size="27" maxlength="64" name="scanautowirelesspwd" class="styled-text"  placeholder="" onfocus="changeinput(this.id);" onkeyup="changeinput(this.id);">
+						</div>
+						<div id="clear_scanautowirelesspwd" style="float:right;padding-right:14px;display:none;">
+							<div style="vertical-align:middle;" onClick="clearInput(scanautowirelesspwd.id);">
+								<img src="/image/mobile/icon_all-del.png" class="input_del_img">
+							</div>
+						</div>
+					</div>
+					<div id="error_autopassword" class="errordiv">
+						<div class="errorimg">
+							<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+						</div>
+						<div id="errorinfo_autopassword" class="errorinfo"></div>
+					</div>
+				</div>
+				<div id="NonePwd_24" style="display:none;">
+					<div class="input_div">
+						<div class="leftth" style="width:90px"><script>I18N("h","MobileWizard_Wireless_Password");</script><!-- 无线密码  --></div>
+						<div style="float:left;width:55%" align="left">
+							<input type="text" class="styled-text" placeholder="" value="None" readonly="readonly">
+						</div>
+					</div>
+				</div>
+			</div><!--end AutoselectNetwork -->
+			
+			<!-- 手动输入部分 -->
+			<div id="MannualselectNetwork" style="display:none;padding-bottom:20px;">
+				<div style="padding:0 3.33%;">
+					<div class="scan_head_words pull-left">2.4G无线网络</div>
+					<div class="auto_select_words" onClick="reSelectWireless();">选择已有网络</div>
+				</div>
+				<div class="clearboth line"></div>
+				<div class="input_div">
+					<div class="leftth" style="width:90px"><script>I18N("h","MobileWizard_Wireless_Name");</script><!-- 无线名称  --></div>
+					<div style="float:left;width:55%" align="left">
+						<input type="text" id="mannual_wireless_name" size="27" maxlength="32" name="mannual_wireless_name" class="styled-text"  placeholder="" onfocus="changeinput(this.id);" onkeyup="changeinput(this.id);">
+					</div>
+					<div id="clear_mannual_wireless_name" style="float:right;padding-right:14px;display:none;">
+						<div style="vertical-align:middle;" onClick="clearInput(mannual_wireless_name.id);">
+							<img src="/image/mobile/icon_all-del.png" class="input_del_img">
+						</div>
+					</div>
+				</div>
+				<div id="error_mannual_wireless_name" class="errordiv">
+					<div class="errorimg">
+						<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+					</div>
+					<div id="errorinfo_mannual_wireless_name" class="errorinfo"></div>
+				</div>
+				<div style="padding:3px 0 0 3.33%;">
+					<div style="padding:13px 0;border-bottom:1px solid #dddddd;border-top:1px solid #dddddd;font-size:1.4em;color:#666666">
+						<div class="pull-left">加密方式</div>
+						<div class="pull-right" style="padding-right:3.33%;" onclick="showEncryptionSelect('2G');">
+							<span id="select_encryption_type_2G" style="margin-right:5px;color:#999999;">无</span>
+							<img src="/image/mobile/icon_go.png" style="width:10px;height:10px;vertical-align:middle;padding-bottom:2px;" />
+						</div>
+						<div class="clearboth"></div>
+					</div>
+				</div>
+				<div id="div_manual_password_2G" class="input_div">
+					<div class="leftth" style="width:90px"><script>I18N("h","MobileWizard_Wireless_Password");</script><!-- 无线密码  --></div>
+					<div style="float:left;width:55%" align="left">
+						<input type="text" id="mannual_wireless_pwd" size="27" maxlength="64" name="mannual_wireless_pwd" class="styled-text"  placeholder="" onfocus="changeinput(this.id);" onkeyup="changeinput(this.id);">
+					</div>
+					<div id="clear_mannual_wireless_pwd" style="float:right;padding-right:14px;display:none;">
+						<div style="vertical-align:middle;" onClick="clearInput(mannual_wireless_pwd.id);">
+							<img src="/image/mobile/icon_all-del.png" class="input_del_img">
+						</div>
+					</div>
+				</div>
+				<div id="error_mannual_wireless_pwd" class="errordiv">
+					<div class="errorimg">
+						<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+					</div>
+					<div id="errorinfo_mannual_wireless_pwd" class="errorinfo"></div>
+				</div>
+			</div><!--end MannualselectNetwork -->
+		</div>
+	
+		<!-- 扩展5G无线网络部分 -->
+		<div id="repeater_5G" style="display:none; background-color:#ffffff;">
+			<div id="scanNetworkresult_5G">
+				<div style="padding:0 3.33%;">
+					<div class="scan_head_words">5G无线网络</div>
+					<div class="manual_input_words" onClick="ManualInputClick_5G();">手动输入</div>
+					<div class="imgrefresh" onClick="scanRefresh();"></div>
+				</div>
+				<div class="clearboth line"></div>
+				<div style="display:none;" id="scanning_5G">
+					<div align="center" style="padding-top:20px;"><img style="width:42px;height:42px" src="/image/mobile/Wait.gif"></div>
+					<div style="color:#333333; font-size:1.2em; margin-top:8px; padding-bottom:20px;">正在扫描可用的Wi-Fi...</div>
+				</div>
+				<div style="margin:0px;display:none;" id="scanresult_5G">
+					<table border="0" cellpadding="0" cellspacing="0" align="center" id="table_wifi_repeat_5G" class="repeat_scan_content"></table>
+				</div>
+			</div><!--end scanNetworkresult_5G -->
+
+			<!-- 选择已有网络部分 -->
+			<div id="AutoselectNetwork_5G" style="display:none;padding-bottom:20px;">
+				<div style="padding:0 3.33%;">
+					<div class="scan_head_words pull-left">5G无线网络</div>
+					<div class="auto_select_words" onClick="ManualInputClick_5G();">手动输入</div>
+					<div class="clearboth"></div>
+					<div class="manual_input_words" onClick="reSelectWireless_5G();">重新选择</div>
+					<div id="selectSsid_5G" class="select_ssid"></div>
+				</div>
+				<div class="clearboth line"></div>
+				<div id="havePwd_5G">
+					<div class="input_div">
+						<div class="leftth" style="width:90px"><script>I18N("h","MobileWizard_Wireless_Password");</script><!-- 无线密码  --></div>
+						<div style="float:left;width:55%" align="left">
+							<input type="text" id="scanautowirelesspwd_5G" size="27" maxlength="64" name="scanautowirelesspwd_5G" class="styled-text"  placeholder="" onfocus="changeinput(this.id);" onkeyup="changeinput(this.id);">
+						</div>
+						<div id="clear_scanautowirelesspwd_5G" style="float:right;padding-right:14px;display:none;">
+							<div style="vertical-align:middle;" onClick="clearInput(scanautowirelesspwd_5G.id);">
+								<img src="/image/mobile/icon_all-del.png" class="input_del_img">
+							</div>
+						</div>
+					</div>
+					<div id="error_autopassword_5G" class="errordiv">
+						<div class="errorimg">
+							<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+						</div>
+						<div id="errorinfo_autopassword_5G" class="errorinfo"></div>
+					</div>
+				</div>
+				<div id="NonePwd_5G" style="display:none;">
+					<div class="input_div">
+						<div class="leftth" style="width:90px"><script>I18N("h","MobileWizard_Wireless_Password");</script><!-- 无线密码  --></div>
+						<div style="float:left;width:55%" align="left">
+							<input type="text" class="styled-text" placeholder="" value="None" readonly="readonly">
+						</div>
+					</div>
+				</div>
+			</div><!--end AutoselectNetwork_5G -->
+
+			<!-- 手动输入部分 -->
+			<div id="MannualselectNetwork_5G" style="display:none;padding-bottom:20px;">
+				<div style="padding:0 3.33%;">
+					<div class="scan_head_words pull-left">5G无线网络</div>
+					<div class="auto_select_words" onClick="reSelectWireless_5G();">选择已有网络</div>
+				</div>
+				<div class="clearboth line"></div>
+				<div class="input_div">
+					<div class="leftth" style="width:90px"><script>I18N("h","MobileWizard_Wireless_Name");</script><!-- 无线名称  --></div>
+					<div style="float:left;width:55%" align="left">
+						<input type="text" id="mannual_wireless_name_5G" size="27" maxlength="32" name="mannual_wireless_name_5G" class="styled-text"  placeholder="" onfocus="changeinput(this.id);" onkeyup="changeinput(this.id);">
+					</div>
+					<div id="clear_mannual_wireless_name_5G" style="float:right;padding-right:14px;display:none;">
+						<div style="vertical-align:middle;" onClick="clearInput(mannual_wireless_name_5G.id);">
+							<img src="/image/mobile/icon_all-del.png" class="input_del_img">
+						</div>
+					</div>
+				</div>
+				<div id="error_mannual_wireless_name_5G" class="errordiv">
+					<div class="errorimg">
+						<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+					</div>
+					<div id="errorinfo_mannual_wireless_name_5G" class="errorinfo"></div>
+				</div>
+				<div style="padding:3px 0 0 3.33%;">
+					<div style="padding:13px 0;border-bottom:1px solid #dddddd;border-top:1px solid #dddddd;font-size:1.4em;color:#666666">
+						<div class="pull-left">加密方式</div>
+						<div class="pull-right" style="padding-right:3.33%;" onclick="showEncryptionSelect('5G');">
+							<span id="select_encryption_type_5G" style="margin-right:5px;color:#b6b7b8;">无</span>
+							<img src="/image/mobile/icon_go.png" style="width:10px;height:10px;vertical-align:middle;padding-bottom:2px;" />
+						</div>
+						<div class="clearboth"></div>
+					</div>
+				</div>
+				<div id="div_manual_password_5G" class="input_div">
+					<div class="leftth" style="width:90px"><script>I18N("h","MobileWizard_Wireless_Password");</script><!-- 无线密码  --></div>
+					<div style="float:left;width:55%" align="left">
+						<input type="text" id="mannual_wireless_pwd_5G" size="27" maxlength="64" name="mannual_wireless_pwd_5G" class="styled-text"  placeholder="" onfocus="changeinput(this.id);" onkeyup="changeinput(this.id);">
+					</div>
+					<div id="clear_mannual_wireless_pwd_5G" style="float:right;padding-right:14px;display:none;">
+						<div style="vertical-align:middle;" onClick="clearInput(mannual_wireless_pwd_5G.id);">
+							<img src="/image/mobile/icon_all-del.png" class="input_del_img">
+						</div>
+					</div>
+				</div>
+				<div id="error_mannual_wireless_pwd_5G" class="errordiv">
+					<div class="errorimg">
+						<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+					</div>
+					<div id="errorinfo_mannual_wireless_pwd_5G" class="errorinfo"></div>
+				</div>
+			</div><!--end MannualselectNetwork_5G -->
+		</div>
+		<div id="error_repeater_pwd" class="errordiv">
+			<div class="errorimg">
+				<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+			</div>
+			<div id="errorinfo_repeater_pwd" class="errorinfo"></div>
+		</div>
+		<div id="error_mainrouter_notselect" class="errordiv">
+			<div class="errorimg">
+				<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+			</div>
+			<div id="errorinfo_mainrouter_notselect" class="errorinfo"></div>
+		</div>
+		<div align="center" style="margin:30px 0;"><input type="button" value="扩展" id="finisrepeater" class="styled_button_s" onClick="SetRepeateData();"></div>
+	</div><!--end repeaterpart div-->
+
+	<div align="center" id="repeat_success_content" style="display:none; background-color:#ffffff;">
+		<div style="text-align:center;background-color:#4598aa;" class="headerline" align="center">
+			<script>I18N("h","Home_Expand_Other");</script><!-- 扩展其他网络 -->
+		</div>
+		<div style="padding:0 3.33%;margin-top:35px;">
+			<div><img src="image/mobile/icon_lianjie_cg.png" width="68" height="68" /></div>
+			<div class="connect_word">
+				<script>I18N("h","无线网络扩展成功");</script>
+			</div>
+			<div style="font-size:1.4em;color:#333333;">
+				<div style="color:#666666;"><script>I18N("h","无线正在重启，重启完成后的无线名称为：");</script></div>
+				<div class="div_new_ssid" id="success_ssid" style="padding-top:16px;"></div>
+				<div class="div_new_ssid" id="success_ssid_5g" style="padding-top:9px;"></div>
+			</div>
+			<div style="width:276px;height:28px;background-color:#eef6f7;border-radius:28px;margin-top:30px;">
+				<div style="padding:6px 0;color:#666666;font-size:1.2em;">
+					<span>您可以通过访问</span><span style="color:#4598aa">dlinkrouter.com</span><span>进行路由器管理</span>
+				</div>
+			</div>
+			<div style="color:#666666; text-align:center; margin-top:16px;">无线正在重启，请稍后...</script></div>
+			<div id="remaining_time" style="color:#333333;font-weight:bold;font-size:1.4em;margin-top:16px; ">80<script>I18N("h","Backup_Second");</script><!-- 秒 --></div>
+		</div>
+	</div>
+
+	<div id="createPop_Repeat_Fail" class="CreatePopAlertMessage_repeat" style="display:none;">
+		<div class="AlertPopRect_repeat">
+			<div class="AlertPopBody_repeat">
+				<img class="loading_big" src="/image/mobile/white_background.png" />
+				<div class="myAlertPop_div_b" id="save_repeat_settings" border="0" cellspacing="0" style="display:none;top:45px;">
+					<center>
+						<div><img style="width:42px;height:42px" src="/image/mobile/Wait.gif" /></div>
+						<div id="dialog_msg_black2" style="font-size:1.4em;padding:18px 33px 0"><script>I18N("h","Home_Wireless_Expanding");</script><!-- 无线正在扩展中，请稍候... --></div>
+					</center>
+				</div>
+				<div class="myAlertPop_div_b" id="div_not_search" style="display:none;">
+					<center style="height:97px;padding:0 33px;">
+						<div class="fail_word"><!-- <script>I18N("h","MobileRouterInfo_Fail_Expand");</script> -->扩展失败</div>
+						<div align="center" style="font-size:1.4em;">
+							<div><!-- <script>I18N("h","MobileIndex_RootAP_NotFound2");</script> -->可能原因：未找到无线</div>
+							<table border="0" cellpadding="0" cellspacing="0" style="margin-top:5px;">
+								<tr>
+									<td>“</td>
+									<td><div class="ssid_ellipse" id="repeat_fail_reason">HUAWEI-2345fadfasdfadfafffa</div></td>
+									<td>”</td>
+								</tr>
+							</table>
+						</div>
+					</center>
+					<div style="height:44px;" align="center">
+						<!-- <span style="width:50%"><input type="button" value="" class="styled_button_left" onClick="RepeatFailCancel();" id="btn_rootap_notfound_cancel"></span><span><input type="button" value="" class="styled_button_right" onClick="RepeateFailRetry();" id="btn_rootap_notfound_retry"></span> -->
+						<span style="width:50%"><input type="button" value="取消" class="styled_button_left" onClick="RepeatFailCancel();" id="btn_rootap_notfound_cancel"></span><span><input type="button" value="重试" class="styled_button_right" onClick="RepeatFailRetry_NotFound();" id="btn_rootap_notfound_retry"></span>
+					</div>
+				</div>
+				<div class="myAlertPop_div_b" id="div_wrong_password" style="display:none;">
+					<center style="padding:0 10px;">
+						<div class="fail_word" style="margin-bottom:5px;"><!-- <script>I18N("h","MobileIndex_Password_Wrong");</script> -->连接失败</div>
+						<div align="center" style="font-size:1.4em;line-height:19px;">
+							<table border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td>请重新输入"</td>
+									<td><div class="ssid_ellipse" id="repeat_fail_password" style="max-width:105px;">HUAWEI-2345fadfasdfadfafadfasdf</div></td>
+									<td><!-- <script>I18N("h","MobileIndex_Password_Wrong_Ellipsis");</script> -->"的密码</td>
+								</tr>
+							</table>
+						</div>
+						<div class="input_div" style="height:34px;line-height:34px;width:100%;margin:8px 0 12px;">
+							<input type="text" id="mainwireless_password_retry" size="30" placeholder="" name="mainwireless_password_retry" class="styled-text" maxlength="64" style="width:90%;">
+						</div>
+						<div id="error_retry_pwd" class="errordiv">
+							<div class="errorimg" style="width:8%;">
+								<img src="/image/mobile/icon_jingshi.png" class="ic-sign" >
+							</div>
+							<div id="errorinfo_retry_pwd" class="errorinfo" style="color:#333333;"></div>
+						</div>
+					</center>
+					<div style="height:44px;" align="center">
+						<span style="width:50%"><input type="button" value="取消" class="styled_button_left" onClick="RepeatFailCancel();" id="btn_rootap_notfound_cancel"></span><span><input type="button" value="确认" class="styled_button_right" onClick="RepeatFailRetry_Password();" id="btn_rootap_notfound_retry"></span>
+					</div>
+				</div>
+				<div class="myAlertPop_div_b" id="div_repeate_uprouter_fail" style="display:none;">
+					<img width="40" height="40" src="/image/mobile/icon_lianjie_gz.png" />
+					<div style="color:#333333;font-size:1.6em;padding:16px 0">
+						<script>I18N("h","无线网络扩展失败");</script><!-- 无线网络扩展失败 -->
+					</div>
+					<div style="height:44px;" align="center">
+						<input type="button" value="关闭" class="styled_button_retry" onClick="RepeatFailCancel();" id="btn_repeat_failed_close">
+						<!-- <input type="button" value="关闭" class="styled_button_retry" onClick="RepeatFailCancel();" id="btn_repeat_failed_close"> -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- 对于WEP加密方式的提示 -->
+	<div id="CreatePopAlert_WEP" class="CreatePopAlertMessage_repeat" style="display:none;">
+		<div class="AlertPopRect_repeat">
+			<div class="AlertPopBody_repeat">
+				<img class="loading_big" src="/image/mobile/white_background.png" />
+				<div class="myAlertPop_div_b">
+					<center style="height:90px;padding:0 33px;">
+						<div class="fail_word" style="padding-top:22px;"><script>I18N("h","MobileIndex_WEP_Tips");</script><!-- 不支持的加密类型！ --></div>
+					</center>
+					<div style="height:44px;" align="center">
+						<input type="button" value="确定" class="styled_button_retry" onClick="WEPEncryptionComfirm();" id="btn_wep_confirm">
+						<!-- <input type="button" value="确定" class="styled_button_retry" onClick="WEPEncryptionComfirm();" id="btn_wep_confirm"> -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- 对于扩展过程中wifi断开超时提示 -->
+	<div id="CreatePopAlert_Timeout" class="CreatePopAlertMessage_repeat" style="display:none;">
+		<div class="AlertPopRect_repeat">
+			<div class="AlertPopBody_repeat">
+				<img class="loading_big" src="/image/mobile/white_background.png" />
+				<div class="myAlertPop_div_b">
+					<center style="font-size:1.4em;height:95px;padding:0 40px;">
+						<div style="padding-top:16px;line-height:22px;"><script>I18N("h","Home_Repeat_Timeout");</script><!-- 扩展结果返回超时，请检查设备与路由器的连接状态。 --></div>
+					</center>
+					<div style="height:44px;" align="center">
+						<!-- <input type="button" value="" class="styled_button_retry" onClick="TimeoutComfirm();" id="btn_repeat_timeout_confirm"> -->
+						<input type="button" value="确定" class="styled_button_retry" onClick="TimeoutComfirm();" id="btn_repeat_timeout_confirm">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div id="creatPop_encryption_select_2G" class="CreatePopAlertMessage_repeat" onclick="quitSelectEncryptionType('2G');" style="display:none;">
+		<div style="margin:0 auto;position:relative;top:30%;padding:12px 0;width:290px;background-color:white;border-radius:3px;">
+			<div style="color:#666666;margin-left:24px;">
+				<div onclick="selectEncryptionType('none','2G');" class="list" align="left">
+					<script>I18N("h","无");</script><!-- 无 -->
+					<img id="encrytion_0_2G" class="clearboth select" src="/image/mobile/icon_gouxuan.png" align="right" />
+				</div>
+				<div onclick="selectEncryptionType('wpa','2G');" class="list" align="left">
+					<script>I18N("h","WPA-TKIP");</script>
+					<img id="encrytion_1_2G" class="clearboth select" style="display:none" src="/image/mobile/icon_gouxuan.png" align="right" />
+				</div>
+				<div onclick="selectEncryptionType('wpa2','2G');" class="list listLastRow" align="left">
+					<script>I18N("h","WPA2-AES");</script>
+					<img id="encrytion_2_2G" class="clearboth select" style="display:none" src="/image/mobile/icon_gouxuan.png" align="right" />
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div id="creatPop_encryption_select_5G" class="CreatePopAlertMessage_repeat" onclick="quitSelectEncryptionType('5G');" style="display:none;">
+		<div style="margin:0 auto;position:relative;top:30%;padding:12px 0;width:290px;background-color:white;border-radius:3px;">
+			<div style="color:#666666;margin-left:24px;">
+				<div onclick="selectEncryptionType('none','5G');" class="list" align="left">
+					<script>I18N("h","无");</script><!-- 无 -->
+					<img id="encrytion_0_5G" class="clearboth select" src="/image/mobile/icon_gouxuan.png" align="right" />
+				</div>
+				<div onclick="selectEncryptionType('wpa','5G');" class="list" align="left">
+					<script>I18N("h","WPA-TKIP");</script>
+					<img id="encrytion_1_5G" class="clearboth select" style="display:none" src="/image/mobile/icon_gouxuan.png" align="right" />
+				</div>
+				<div onclick="selectEncryptionType('wpa2','5G');" class="list listLastRow" align="left">
+					<script>I18N("h","WPA2-AES");</script>
+					<img id="encrytion_2_5G" class="clearboth select" style="display:none" src="/image/mobile/icon_gouxuan.png" align="right" />
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Detect Router Connection, hujian Add 2016/12/03 -->
+	<div style="display:none" id="DetectRouterConnection">
+		<div id="AlertPopRect">
+			<div id="AlertPopBody">
+				<img class="loading_big" src="/image/mobile/white_background.png" />
+				<div class="myAlertPop_div_b">
+					<div style="height:62px;padding:17px 18px;text-align:left;font-size: 1.4em;">
+						<div>
+							<script>I18N("h","MobileNetwork_Router_not_Connected1");</script><!-- 当前没有连接上路由器，或路由器 -->
+						</div>
+						<div align="left" style="padding-top:7px">
+							<script>I18N("h","MobileNetwork_Router_not_Connected2");</script><!-- 的WEB SERVER异常，保存失败 -->
+						</div>
+					</div>
+					<div style="height:44px;" align="center">
+						<!-- <span><input type="button" value="重试" class="styled_button_retry" onClick="CheckHTMLStatus();"></span> -->
+						<span><input type="button" id="btn_retry" value="重试" class="styled_button_retry" onClick="CheckHTMLStatus('');"></span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
