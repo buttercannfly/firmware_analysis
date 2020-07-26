@@ -25,8 +25,18 @@ def firm_analysis(request):
             extractfs(name)
         dir = get_dir(name)
         print(dir)  # dir是提取固件之后的文件夹
-        # for files
+        fragile_services = {}
+        fragile_services = find_vuln_services(dir)
         dict['code'] = 400
         dict['msg'] = 'fail'
         dict['data'] = None
         return JsonResponse(dict, safe=False)
+
+
+def find_vuln_services(dir):
+    dict_vuln_services = {}
+    fs_dir = os.path.join(os.getcwd(), "firmware_analysis", "Firmware", dir, "squashfs-root")
+    services = []
+    for file in os.path.join(fs_dir,"usr","bin"):
+        services.append(file)
+    print(services)
