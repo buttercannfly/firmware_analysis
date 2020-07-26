@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from firmware_analysis.fs_extraction import get_dir, extractfs
 
 from django.http import JsonResponse
@@ -26,17 +27,40 @@ def firm_analysis(request):
         dir = get_dir(name)
         print(dir)  # dir是提取固件之后的文件夹
         fragile_services = {}
-        fragile_services = find_vuln_services(dir)
+        fragile_services = find_services_versions(dir)
         dict['code'] = 400
         dict['msg'] = 'fail'
         dict['data'] = None
         return JsonResponse(dict, safe=False)
 
 
-def find_vuln_services(dir):
-    dict_vuln_services = {}
+def find_services_versions(dir):
+    dict_vuln_services = []
     fs_dir = os.path.join(os.getcwd(), "firmware_analysis", "Firmware", dir, "squashfs-root")
-    services = []
-    for file in os.path.join(fs_dir,"usr","bin"):
-        services.append(file)
-    print(services)
+    services_alt = []
+    for root,dirs,files in os.walk(os.path.join(fs_dir,"usr","bin")): # /usr/bin下的可运行服务
+        for file in files:
+            services_alt.append(file)
+    opkg_path = os.path.join(fs_dir,"usr","lib","opkg","status")
+    f = open(opkg_path,'r')
+    line = f.readline()
+    while line:
+        line1 = f.readline()
+        for service in services_alt:
+            if service in line and "Version" in line1:
+                regex = "Version: (.+?)-"
+                regex1 = "Version: (.+?)"
+                version = ""
+                version=re.findall(regex,line1)
+                # if version == "":
+                #     version = re.findall(regex1,line1)
+                if version:
+                    if {"service":service,"version":version} not in dict_vuln_services:
+                        dict_vuln_services.append({"service":service,"version":version})
+                else:
+                    version =re.findall(regex1,line1)
+                    if {"service":service,"version":version} not in dict_vuln_services:
+                        dict_vuln_services.append({"service":service,"version":version})
+                break
+        line = line1
+    print(dict_vuln_services)
