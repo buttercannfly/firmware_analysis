@@ -1,6 +1,8 @@
 import json
 import os
 import re
+
+from app.models import Firmware, Service, Cve
 from firmware_analysis.fs_extraction import get_dir, extractfs
 
 from django.http import JsonResponse
@@ -35,7 +37,20 @@ def firm_analysis(request):
             return JsonResponse(dict,safe=False)
         dict['code'] = 200
         dict['msg'] = 'success'
-        dict['data'] = fragile_services
+        # dict['data'] = fragile_services
+        if Firmware.objects.filter(name=firmware.name):
+            id = Firmware.objects.get(name=firmware.name).id
+            dict['data'] = id
+            return JsonResponse(dict, safe=False)
+        else:
+            Firmware.objects.create(name=firmware.name)
+            id = Firmware.objects.get(name=firmware.name).id
+            for service in fragile_services:
+                Service.objects.create(name=service["service"],version=service["version"][0],firmware_id=id)
+                serv_id = Service.objects.get(name=service["service"]).id
+                for cve in service["cve"]:
+                    Cve.objects.create(id=cve["cve_id"],des=cve["description"],cvss2=cve["cvss2"],cvss3=cve["cvss3"],service_id=serv_id)
+            dict['data'] = id
         return JsonResponse(dict, safe=False)
 
 
