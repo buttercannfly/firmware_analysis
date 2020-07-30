@@ -118,8 +118,19 @@ def match_cve_by_version(cve_dir,dict_vuln_services):
                                         for item in dict_vuln_services:
                                             if str(item["service"]) in service_affected["cpe23Uri"]:
                                                 if str(item["version"][0]) in service_affected["cpe23Uri"]:
-                                                    if {"cve_id":cve["cve"]["CVE_data_meta"]["ID"],"description":cve["cve"]["description"]["description_data"][0]["value"]} not in item["cve"]:
-                                                        item["cve"].append({"cve_id":cve["cve"]["CVE_data_meta"]["ID"],"description":cve["cve"]["description"]["description_data"][0]["value"]})
+                                                    dict = {}
+                                                    if "baseMetricV3" in cve["impact"]:
+                                                        if "baseMetricV2" in cve["impact"]:
+                                                            dict={"cve_id":cve["cve"]["CVE_data_meta"]["ID"],"description":cve["cve"]["description"]["description_data"][0]["value"],
+                                                            "cvss3":cve["impact"]["baseMetricV3"]["cvssV3"]["baseScore"],"cvss2":cve["impact"]["baseMetricV2"]["cvssV2"]["baseScore"]}
+                                                        else:
+                                                             dict={"cve_id":cve["cve"]["CVE_data_meta"]["ID"],"description":cve["cve"]["description"]["description_data"][0]["value"],
+                                                            "cvss3":cve["impact"]["baseMetricV3"]["cvssV3"]["baseScore"],"cvss2":0}
+                                                    elif "baseMetricV2" in cve["impact"]:
+                                                         dict={"cve_id":cve["cve"]["CVE_data_meta"]["ID"],"description":cve["cve"]["description"]["description_data"][0]["value"],
+                                                            "cvss3":0,"cvss2":cve["impact"]["baseMetricV2"]["cvssV2"]["baseScore"]}
+                                                    if dict not in item["cve"]:
+                                                        item["cve"].append(dict)
                                                         continue
                                 elif "children" in node:
                                     # print("children match")
@@ -130,9 +141,20 @@ def match_cve_by_version(cve_dir,dict_vuln_services):
                                         for service_affected in services_affected:
                                             for item in dict_vuln_services:
                                                 if str(item["service"]) in str(service_affected["cpe23Uri"]) and str(item["version"][0]) in str(service_affected["cpe23Uri"]):
-                                                        if {"cve_id":cve["cve"]["CVE_data_meta"]["ID"],"description":cve["cve"]["description"]["description_data"][0]["value"]} not in item["cve"]:
-                                                            item["cve"].append({"cve_id":cve["cve"]["CVE_data_meta"]["ID"],"description":cve["cve"]["description"]["description_data"][0]["value"]})
-                                                            continue
+                                                    dict = {}
+                                                    if "baseMetricV3" in cve["impact"]:
+                                                        if "baseMetricV2" in cve["impact"]:
+                                                            dict={"cve_id":cve["cve"]["CVE_data_meta"]["ID"],"description":cve["cve"]["description"]["description_data"][0]["value"],
+                                                            "cvss3":cve["impact"]["baseMetricV3"]["cvssV3"]["baseScore"],"cvss2":cve["impact"]["baseMetricV2"]["cvssV2"]["baseScore"]}
+                                                        else:
+                                                             dict={"cve_id":cve["cve"]["CVE_data_meta"]["ID"],"description":cve["cve"]["description"]["description_data"][0]["value"],
+                                                            "cvss3":cve["impact"]["baseMetricV3"]["cvssV3"]["baseScore"],"cvss2":0}
+                                                    elif "baseMetricV2" in cve["impact"]:
+                                                         dict={"cve_id":cve["cve"]["CVE_data_meta"]["ID"],"description":cve["cve"]["description"]["description_data"][0]["value"],
+                                                            "cvss3":0,"cvss2":cve["impact"]["baseMetricV2"]["cvssV2"]["baseScore"]}
+                                                    if dict not in item["cve"]:
+                                                        item["cve"].append(dict)
+                                                        continue
                                 else:
                                     print("????")
     # print(dict_vuln_services)
