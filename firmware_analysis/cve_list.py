@@ -43,4 +43,5 @@ def unzip_cve():
         if file.name.endswith('.zip') and file.is_file():
             unzip(os.path.join(cve_dir,file.name))
 
+
 unzip_cve()
