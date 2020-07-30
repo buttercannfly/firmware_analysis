@@ -17,8 +17,10 @@ from django.contrib import admin
 from django.urls import path
 
 from firmware_analysis.firmware_analysis import firm_analysis
+from firmware_analysis.fimware_result import get_result
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path(r'api/firmware/upload',firm_analysis),
+    path(r'api/firmware/get',get_result)
 ]
