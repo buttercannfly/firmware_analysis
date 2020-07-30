@@ -31,7 +31,7 @@ class Cve(models.Model):
     des = models.CharField(max_length=400)
     cvss3 = models.FloatField(max_length=5)
     cvss2 = models.FloatField(max_length=5)
-    service = models.ForeignKey(Service,on_delete=models.CASCADE)
+    service = models.ManyToManyField(Service)
 
     class Meta:
         db_table = 'cve'
